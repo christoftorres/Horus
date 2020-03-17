@@ -1,0 +1,252 @@
+#include "lib/horus.dl"
+
+/* Call Stack Depth */
+.decl CallStackDepth(step:number, caller:Address, callee:Address, amount:Value)
+CallStackDepth(step, caller, callee, amount) :-
+  call(step, _, "CALL", caller, callee, _, amount, depth, _),
+  depth > 1024.
+.output CallStackDepth
+
+/* Reentrancy */
+.decl Reentrancy(hash:symbol, caller:Address, callee:Address, amount:Value, depth:number)
+Reentrancy(hash, caller, callee, amount, depth1) :-
+  call(_, hash, "CALL", caller, callee, _, amount, depth1, 1),
+  call(_, hash, "CALL", caller, callee, _, amount, depth2, 1),
+  depth1 < depth2,
+  !match("0", amount).
+.output Reentrancy
+
+/* Cross-Function Reentrancy */
+.decl CrossFunctionReentrancy(hash:symbol, contract:Address)
+CrossFunctionReentrancy(hash, callee) :-
+  call(_, hash, "CALL", caller, callee, input_data1, amount1, depth1, 1),
+  call(_, hash, "CALL", callee, caller, _, amount2, depth2, 1),
+  call(_, hash, "CALL", caller, callee, input_data3, amount1, depth3, 1),
+  depth1 < depth2,
+  depth2 < depth3,
+  input_data1 != input_data3,
+  !match("0", amount2).
+.output CrossFunctionReentrancy
+
+/* Delegated Reentrancy */
+.decl DelegatedReentrancy(hash:symbol, caller:Address, callee:Address)
+DelegatedReentrancy(hash, caller, callee) :-
+  call(_, hash, "DELEGATECALL", caller, callee, _, amount, depth1, 1),
+  call(_, hash, "DELEGATECALL", caller, callee, _, amount, depth2, 1),
+  depth1 < depth2,
+  !match("0", amount).
+.output DelegatedReentrancy
+
+/* Create-Based Reentrancy */
+.decl CreateBasedReentrancy(hash:symbol, contract:Address)
+CreateBasedReentrancy(hash, caller) :-
+  call(_, hash, "CREATE", caller, _, _, amount, depth1, 1),
+  call(_, hash, "CREATE", caller, _, _, amount, depth2, 1),
+  depth1 < depth2.
+.output CreateBasedReentrancy
+
+/* Unhandled Exception */
+.decl UnhandledException(step:number, caller:Address, callee:Address, amount:Value)
+UnhandledException(step1, caller, callee, amount) :-
+  call(step1, _, "CALL", caller, callee, _, amount, _, 0),
+  !match("0", amount),
+  opcode(step2, "JUMPI"),
+  step1 < step2,
+  !data_flow(step1, step2).
+.output UnhandledException
+
+/* Integer Overflow */
+.decl IntegerOverflow(step:number, opcode:Opcode, first_operand:Value, second_operand:Value, arithmetic_result:Value, evm_result:Value)
+IntegerOverflow(step2, opcode, first_operand, second_operand, arithmetic_result, evm_result) :-
+  opcode(step1, "CALLDATALOAD"),
+  arithmetic(step2, opcode, first_operand, second_operand, arithmetic_result, evm_result),
+  arithmetic_result != evm_result,
+  match("ADD", opcode),
+  data_flow(step1, step2),
+  opcode(step3, "SSTORE"),
+  data_flow(step2, step3).
+IntegerOverflow(step2, opcode, first_operand, second_operand, arithmetic_result, evm_result) :-
+  opcode(step1, "CALLDATALOAD"),
+  arithmetic(step2, opcode, first_operand, second_operand, arithmetic_result, evm_result),
+  arithmetic_result != evm_result,
+  match("MUL", opcode),
+  data_flow(step1, step2),
+  opcode(step3, "SSTORE"),
+  data_flow(step2, step3).
+.output IntegerOverflow
+
+/* Integer Underflow */
+.decl IntegerUnderflow(step:number, first_operand:Value, second_operand:Value, arithmetic_result:Value, evm_result:Value)
+IntegerUnderflow(step2, first_operand, second_operand, arithmetic_result, evm_result) :-
+  opcode(step1, "CALLDATALOAD"),
+  arithmetic(step2, "SUB", first_operand, second_operand, arithmetic_result, evm_result),
+  arithmetic_result != evm_result,
+  data_flow(step1, step2),
+  opcode(step3, "SSTORE"),
+  data_flow(step2, step3).
+.output IntegerUnderflow
+
+/* Transaction Order Dependency */
+.decl TransactionOrderDependency(transaction1:Value, transaction2:Value, block:number, storage_index:Value)
+TransactionOrderDependency(transaction1, transaction2, block, index) :-
+  storage(step1, "SSTORE", block, transaction1, caller1, contract, index),
+  storage(step2, "SLOAD", block, transaction2, caller2, contract, index),
+  step1 < step2,
+  transaction1 != transaction2,
+  caller1 != caller2.
+.output TransactionOrderDependency
+
+/* Unchecked Suicide */
+.decl UncheckedSuicide(step:number, caller:Address, destination:Address)
+UncheckedSuicide(step, caller, destination) :-
+  !caller_check(),
+  selfdestruct(step, caller, destination).
+.output UncheckedSuicide
+
+/* Unchecked Delegatecall */
+.decl UncheckedDelegatecall(step:number, caller:Address, callee:Address)
+UncheckedDelegatecall(step, caller, callee) :-
+  !caller_check(),
+  call(step, _, "DELEGATECALL", caller, callee, _, _, _, _).
+.output UncheckedDelegatecall
+
+/* Parity Wallet Hack 1 */
+.decl ParityWalletHack1(step:number, caller:Address, callee:Address, amount:Value)
+ParityWalletHack1(step6, caller, callee, amount) :-
+  call(step1, _, "DELEGATECALL", _, _, _, _, _, _),
+  storage(step2, "SSTORE", _, transaction1, from, contract, index),
+  step1 < step2,
+  call(step3, _, "DELEGATECALL", _, _, _, _, _, _),
+  storage(step4, "SLOAD", _, transaction2, from, contract, index),
+  step3 < step4,
+  step2 < step4,
+  transaction1 != transaction2,
+  opcode(step5, "JUMPI"),
+  data_flow(step4, step5),
+  call(step6, _, "CALL", caller, callee, _, amount, _, 1),
+  step5 < step6,
+  !match("0", amount).
+.output ParityWalletHack1
+
+/* Parity Wallet Hack 2 */
+.decl ParityWalletHack2(step:number, caller:Address, destination:Address)
+ParityWalletHack2(step4, caller, destination) :-
+  storage(step1, "SSTORE", _, transaction1, from, contract, index),
+  storage(step2, "SLOAD", _, transaction2, from, contract, index),
+  step1 < step2,
+  transaction1 != transaction2,
+  opcode(step3, "JUMPI"),
+  data_flow(step2, step3),
+  selfdestruct(step4, caller, destination),
+  step3 < step4.
+.output ParityWalletHack2
+
+/* Short Address */
+.decl ShortAddress(hash:symbol, size:number, step:number)
+ShortAddress(hash, size, step5) :-
+  transaction(hash, _, _, input_data, _),
+  size = strlen(input_data) / 2,
+  size > 36,
+  size < 68,
+  opcode(step1, "CALLDATALOAD"),
+  bitwise_logic(step2, "AND", _, second_operand),
+  match("1461501637330902918203684832716283019655932542975", second_operand),
+  data_flow(step1, step2),
+  opcode(step3, "SLOAD"),
+  data_flow(step2, step3),
+  opcode(step4, "ADD"),
+  data_flow(step3, step4),
+  opcode(step5, "SSTORE"),
+  data_flow(step4, step5).
+.output ShortAddress
+
+/* DoS with Unexpected Throw */
+.decl DoSWithUnexpectedThrow(step:number, caller:Address, callee:Address, amount:Value)
+DoSWithUnexpectedThrow(step3, caller, callee, amount) :-
+  call(step1, _, "CALL", caller, callee, _, amount, depth1, 0),
+  !match("0", amount),
+  throw(step2, _, _, depth2),
+  step1 < step2,
+  depth1 < depth2,
+  throw(step3, _, _, depth3),
+  step1 < step3,
+  depth1 = depth3.
+.output DoSWithUnexpectedThrow
+
+/* DoS with Block Gas Limit */
+.decl DoSWithBlockGasLimit(caller:Address, callee:Address, amount:Value)
+DoSWithBlockGasLimit(caller, callee, amount) :-
+  block(block, gasUsed, gasLimit),
+  gasUsed = gasLimit,
+  call(_, hash, "CALL", caller, callee, _, amount, _, 1),
+  !match("0", amount),
+  transaction(hash, _, _, _, block),
+  error(hash, "out of gas").
+.output DoSWithBlockGasLimit
+
+/* Timestamp Dependence */
+.decl TimestampDependence(step:number, caller:Address, callee:Address, amount:Value)
+TimestampDependence(step1, caller, callee, amount) :-
+  opcode(step1, "TIMESTAMP"),
+  opcode(step2, "JUMPI"),
+  data_flow(step1, step2),
+  call(step3, _, "CALL", caller, callee, _, amount, _, 1),
+  !match("0", amount),
+  step2 < step3.
+.output TimestampDependence
+
+/* Transaction State Dependence */
+.decl TransactionStateDependence(step:number, caller:Address, callee:Address, amount:Value)
+TransactionStateDependence(step1, caller, callee, amount) :-
+  opcode(step1, "ORIGIN"),
+  opcode(step2, "JUMPI"),
+  data_flow(step1, step2),
+  call(step3, hash, "CALL", caller, callee, _, amount, _, 1),
+  !match("0", amount),
+  step2 < step3,
+  transaction(hash, from, _, _, _),
+  callee != from.
+.output TransactionStateDependence
+
+/* Block State Dependence */
+.decl BlockStateDependence(step:number, caller:Address, callee:Address, amount:Value)
+BlockStateDependence(step1, caller, callee, amount) :-
+  opcode(step1, "BLOCKHASH"),
+  opcode(step2, "JUMPI"),
+  data_flow(step1, step2),
+  call(step3, _, "CALL", caller, callee, _, amount, _, 1),
+  !match("0", amount),
+  step2 < step3.
+.output BlockStateDependence
+BlockStateDependence(step1, caller, callee, amount) :-
+  opcode(step1, "COINBASE"),
+  opcode(step2, "JUMPI"),
+  data_flow(step1, step2),
+  call(step3, _, "CALL", caller, callee, _, amount, _, 1),
+  !match("0", amount),
+  step2 < step3.
+.output BlockStateDependence
+BlockStateDependence(step1, caller, callee, amount) :-
+  opcode(step1, "NUMBER"),
+  opcode(step2, "JUMPI"),
+  data_flow(step1, step2),
+  call(step3, _, "CALL", caller, callee, _, amount, _, 1),
+  !match("0", amount),
+  step2 < step3.
+.output BlockStateDependence
+BlockStateDependence(step1, caller, callee, amount) :-
+  opcode(step1, "DIFFICULTY"),
+  opcode(step2, "JUMPI"),
+  data_flow(step1, step2),
+  call(step3, _, "CALL", caller, callee, _, amount, _, 1),
+  !match("0", amount),
+  step2 < step3.
+.output BlockStateDependence
+BlockStateDependence(step1, caller, callee, amount) :-
+  opcode(step1, "GASLIMIT"),
+  opcode(step2, "JUMPI"),
+  data_flow(step1, step2),
+  call(step3, _, "CALL", caller, callee, _, amount, _, 1),
+  !match("0", amount),
+  step2 < step3.
+.output BlockStateDependence
