@@ -1,0 +1,29 @@
+#include "types.dl"
+#include "edb.dl"
+
+.decl data_flow(x:number, y:number)
+data_flow(x, x) :-
+  use(x, _).
+
+data_flow(x, x) :-
+  def(x, _).
+
+data_flow(x, y) :-
+  def(x, _),
+  use(y, x).
+
+data_flow(x, y) :-
+  data_flow(x, z),
+  data_flow(z, y).
+
+.decl caller_check(step:number)
+caller_check(step3) :-
+  def(step1, "CALLER"),
+  def(step2, "SLOAD"),
+  def(step3, "JUMPI"),
+  data_flow(step1, step3),
+  data_flow(step2, step3).
+
+.decl opcode(step:number, opcode:Opcode)
+opcode(step, opcode) :-
+  def(step, opcode).

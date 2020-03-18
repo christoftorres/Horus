@@ -242,6 +242,9 @@ class TaintRunner:
     def mutate_mload(record, instruction):
         record.stack.pop()
         index = instruction["stack"][-1]
+        #print("index: "+str(index))
+        #print("value: "+str(record.memory_tainted(index)))
+        #print_memory(record.memory)
         record.stack.append(record.memory_tainted(index))
 
     @staticmethod
@@ -249,6 +252,9 @@ class TaintRunner:
         record.stack.pop()
         index, value = instruction["stack"][-1], record.stack.pop()
         record.memory[index] = value
+        #print("index: "+str(index))
+        #print("value: "+str(value))
+        #print_memory(record.memory)
 
     @staticmethod
     def mutate_sload(record, storage, instruction):
@@ -257,6 +263,8 @@ class TaintRunner:
         index = instruction["stack"][-1]
         if record.address in storage and index in storage[record.address].keys() and storage[record.address][index]:
             taint = storage[record.address][index]
+        #print("index: "+str(index))
+        #print_storage(storage)
         record.stack.append(taint)
 
     @staticmethod
@@ -282,6 +290,10 @@ class TaintRunner:
         record.stack.pop()
         size = int(instruction["stack"][-2], 16)
         value = TaintRunner.extract_taint_from_memory(record.memory, offset, size)
+        #print("offset: "+str(offset))
+        #print("size: "+str(size))
+        #print("value: "+str(value))
+        #print_memory(record.memory)
         record.stack.append(value)
 
     @staticmethod
@@ -342,7 +354,7 @@ class TaintRunner:
             in_offset = int(instruction["stack"][-3], 16)
             in_size = int(instruction["stack"][-4], 16)
         in_mem_taint = TaintRunner.extract_taint_from_memory(record.memory, in_offset, in_size)
-        record.input = TaintRunner.extract_taint_from_memory_with_addresses(record.memory, in_offset, in_size)
+        #record.input = TaintRunner.extract_taint_from_memory_with_addresses(record.memory, in_offset, in_size)
         record.stack.pop()
         record.stack.pop()
         out_offset = None
@@ -353,7 +365,8 @@ class TaintRunner:
         else:
             out_offset = int(instruction["stack"][-5], 16)
             out_size = int(instruction["stack"][-6], 16)
-        out_mem_taint = TaintRunner.extract_taint_from_memory(record.memory, out_offset, out_size)
+        #out_mem_taint = TaintRunner.extract_taint_from_memory(record.memory, out_offset, out_size)
+        out_mem_taint = False
         if out_mem_taint:
             taint += out_mem_taint
         if not taint:
@@ -423,7 +436,6 @@ class TaintRunner:
     @staticmethod
     def extract_taint_from_memory(memory, offset, size):
         taint = []
-        return taint
         length = int(size / 32)
         for i in range(length):
             index = hex(offset + i * 32).replace("0x", "").zfill(64)

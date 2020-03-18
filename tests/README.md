@@ -85,6 +85,8 @@ python3 horus.py -e -t 0xa735288c921e987c6b3cf94cdef03d8c31284ace1583a16f6a887ef
 ```
 ParityWallet (Mainnet)
 
+python3 horus.py  -e -c 0x91efffb9c6cd3a66474688d0a48aa6ecfe515aa5
+
 python3 horus.py  -e -c 0xbec591de75b8699a3ba52f073428822d0bfc0d7e
 ```
 ###### Unchecked Suicide (Parity Wallet Hack 2 - 06.11.2017)

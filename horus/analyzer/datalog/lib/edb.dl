@@ -1,0 +1,24 @@
+
+.decl def(step:number, opcode:Opcode)
+.decl use(step1:number, step2:number)
+.decl arithmetic(step:number, opcode:Opcode, first_operand:Value, second_operand:Value, arithmetic_result:Value, evm_result:Value)
+.decl bitwise_logic(step:number, opcode:Opcode, first_operand:Value, second_operand:Value)
+.decl storage(step:number, opcode:Opcode, block:number, transaction:Value, caller:Address, contract:Address, storage_index:Value)
+.decl call(step:number, hash:symbol, opcode:Opcode, caller:Address, callee:Address, input_data:symbol, amount:Value, depth:number, success:number)
+.decl throw(step:number, opcode:Opcode, caller:Address, depth:number)
+.decl selfdestruct(step:number, caller:Address, destination:Address)
+.decl error(hash:symbol, error_message:symbol)
+.decl block(block:number, gasUsed:number, gasLimit:number)
+.decl transaction(hash:symbol, from:Address, to:Address, input_data:symbol, block:number)
+
+.input def
+.input use
+.input arithmetic
+.input bitwise_logic
+.input storage
+.input call
+.input throw
+.input selfdestruct
+.input error
+.input block
+.input transaction

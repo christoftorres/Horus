@@ -14,7 +14,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -143,4 +142,11 @@ media
 static
 
 .DS_Store
-horus/analyzer/executable
+
+horus/analyzer/executable/analyzer
+
+horus/facts
+horus/results
+
+tests/facts
+tests/results

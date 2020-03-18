@@ -64,8 +64,7 @@ IntegerOverflow(step2, opcode, first_operand, second_operand, arithmetic_result,
   match("ADD", opcode),
   data_flow(step1, step2),
   opcode(step3, "SSTORE"),
-  data_flow(step2, step3).
-IntegerOverflow(step2, opcode, first_operand, second_operand, arithmetic_result, evm_result) :-
+  data_flow(step2, step3);
   opcode(step1, "CALLDATALOAD"),
   arithmetic(step2, opcode, first_operand, second_operand, arithmetic_result, evm_result),
   arithmetic_result != evm_result,
@@ -98,16 +97,22 @@ TransactionOrderDependency(transaction1, transaction2, block, index) :-
 
 /* Unchecked Suicide */
 .decl UncheckedSuicide(step:number, caller:Address, destination:Address)
-UncheckedSuicide(step, caller, destination) :-
-  !caller_check(),
-  selfdestruct(step, caller, destination).
+UncheckedSuicide(step2, caller, destination) :-
+  !caller_check(_),
+  selfdestruct(step2, caller, destination);
+  caller_check(step1),
+  selfdestruct(step2, caller, destination),
+  step2 < step1.
 .output UncheckedSuicide
 
 /* Unchecked Delegatecall */
 .decl UncheckedDelegatecall(step:number, caller:Address, callee:Address)
-UncheckedDelegatecall(step, caller, callee) :-
-  !caller_check(),
-  call(step, _, "DELEGATECALL", caller, callee, _, _, _, _).
+UncheckedDelegatecall(step2, caller, callee) :-
+  !caller_check(_),
+  call(step2, _, "DELEGATECALL", caller, callee, _, _, _, _);
+  caller_check(step1),
+  call(step2, _, "DELEGATECALL", caller, callee, _, _, _, _),
+  step2 < step1.
 .output UncheckedDelegatecall
 
 /* Parity Wallet Hack 1 */
@@ -142,8 +147,8 @@ ParityWalletHack2(step4, caller, destination) :-
 .output ParityWalletHack2
 
 /* Short Address */
-.decl ShortAddress(hash:symbol, size:number, step:number)
-ShortAddress(hash, size, step5) :-
+.decl ShortAddress(hash:symbol, step:number)
+ShortAddress(hash, step5) :-
   transaction(hash, _, _, input_data, _),
   size = strlen(input_data) / 2,
   size > 36,
@@ -154,7 +159,7 @@ ShortAddress(hash, size, step5) :-
   data_flow(step1, step2),
   opcode(step3, "SLOAD"),
   data_flow(step2, step3),
-  opcode(step4, "ADD"),
+  arithmetic(step4, "ADD", _, _, _, _),
   data_flow(step3, step4),
   opcode(step5, "SSTORE"),
   data_flow(step4, step5).
@@ -216,33 +221,25 @@ BlockStateDependence(step1, caller, callee, amount) :-
   data_flow(step1, step2),
   call(step3, _, "CALL", caller, callee, _, amount, _, 1),
   !match("0", amount),
-  step2 < step3.
-.output BlockStateDependence
-BlockStateDependence(step1, caller, callee, amount) :-
+  step2 < step3;
   opcode(step1, "COINBASE"),
   opcode(step2, "JUMPI"),
   data_flow(step1, step2),
   call(step3, _, "CALL", caller, callee, _, amount, _, 1),
   !match("0", amount),
-  step2 < step3.
-.output BlockStateDependence
-BlockStateDependence(step1, caller, callee, amount) :-
+  step2 < step3;
   opcode(step1, "NUMBER"),
   opcode(step2, "JUMPI"),
   data_flow(step1, step2),
   call(step3, _, "CALL", caller, callee, _, amount, _, 1),
   !match("0", amount),
-  step2 < step3.
-.output BlockStateDependence
-BlockStateDependence(step1, caller, callee, amount) :-
+  step2 < step3;
   opcode(step1, "DIFFICULTY"),
   opcode(step2, "JUMPI"),
   data_flow(step1, step2),
   call(step3, _, "CALL", caller, callee, _, amount, _, 1),
   !match("0", amount),
-  step2 < step3.
-.output BlockStateDependence
-BlockStateDependence(step1, caller, callee, amount) :-
+  step2 < step3;
   opcode(step1, "GASLIMIT"),
   opcode(step2, "JUMPI"),
   data_flow(step1, step2),

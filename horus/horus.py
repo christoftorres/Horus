@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
 import time
 import copy
 import http
@@ -219,32 +220,37 @@ def extract_facts_from_transactions(connection, transactions, facts_folder):
                 trace[k+step] = trace_response["result"]["structLogs"][k]
         retrieval_end = time.time()
         retrieval_delta = retrieval_end - retrieval_begin
-        print("Retrieving transaction "+transaction["hash"]+" took %.2f second(s). (%d MB)" % (retrieval_delta, (deep_getsizeof(trace, set()) / 1024) / 1024))
+        if settings.DEBUG_MODE:
+            print("Retrieving transaction "+transaction["hash"]+" took %.2f second(s). (%d MB)" % (retrieval_delta, (deep_getsizeof(trace, set()) / 1024) / 1024))
+        else:
+            print("Retrieving transaction "+transaction["hash"]+" took %.2f second(s)." % (retrieval_delta))
         block = format_block(settings.W3.eth.getBlock(transaction["blockNumber"]))
         step = extract_facts_from_trace(facts_folder, trace, step, block, transaction, taint_runner)
 
 def compile_datalog_file(datalog_file):
-    if os.path.isdir("analyzer/executable"):
-        shutil.rmtree("analyzer/executable")
-        os.mkdir("analyzer/executable")
+    if os.path.isdir(os.path.dirname(sys.argv[0])+"/analyzer/executable"):
+        shutil.rmtree(os.path.dirname(sys.argv[0])+"/analyzer/executable")
+        os.mkdir(os.path.dirname(sys.argv[0])+"/analyzer/executable")
     else:
-        os.mkdir("analyzer/executable")
+        os.mkdir(os.path.dirname(sys.argv[0])+"/analyzer/executable")
     print("Compiling datalog rules and queries into a parallel C++ executable...")
     compilation_begin = time.time()
-    p = subprocess.Popen(shlex.split("souffle -o analyzer/executable/analyzer "+datalog_file), stdout=subprocess.PIPE)
+    p = subprocess.Popen(shlex.split("souffle -o "+os.path.dirname(sys.argv[0])+"/analyzer/executable/analyzer "+datalog_file), stdout=subprocess.PIPE)
     p.communicate()
     compilation_end = time.time()
     print("Compilation took %.2f second(s).\n" % (compilation_end - compilation_begin))
 
 def analyze_facts(facts_folder, results_folder, datalog_file):
     # Create parallel C++ executable if not available or is out-dated
-    if not os.path.isdir("analyzer/executable"):
+    if not os.path.isdir(os.path.dirname(sys.argv[0])+"/analyzer/executable"):
         compile_datalog_file(datalog_file)
-    elif os.stat(datalog_file)[8] > os.stat("analyzer/executable/analyzer")[8]:
+    elif not os.path.isfile(os.path.dirname(sys.argv[0])+"/analyzer/executable/analyzer"):
+        compile_datalog_file(datalog_file)
+    elif os.stat(datalog_file)[8] > os.stat(os.path.dirname(sys.argv[0])+"/analyzer/executable/analyzer")[8]:
         compile_datalog_file(datalog_file)
     # Run datalog analysis through executable
     analysis_begin = time.time()
-    p = subprocess.Popen(shlex.split("./analyzer/executable/analyzer -D "+results_folder+" -F "+facts_folder), stdout=subprocess.PIPE)
+    p = subprocess.Popen(shlex.split(os.path.dirname(sys.argv[0])+"/analyzer/executable/analyzer -D "+results_folder+" -F "+facts_folder), stdout=subprocess.PIPE)
     p.communicate()
     analysis_end = time.time()
     return analysis_end - analysis_begin
@@ -430,11 +436,6 @@ def main():
                     break
             # Sort the list of transactions
             transactions = sorted(transactions, key=itemgetter('blockNumber', 'transactionIndex'))"""
-            #transactions = []
-            #transactions.append(format_transaction(settings.W3.eth.getTransaction("0x9dbf0326a03a2a3719c27be4fa69aacc9857fd231a8d9dcaede4bb083def75ec")))
-            #transactions.append(format_transaction(settings.W3.eth.getTransaction("0xeef10fc5170f669b86c4cd0444882a96087221325f8bf2f55d6188633aa7be7c")))
-            #transactions.append(format_transaction(settings.W3.eth.getTransaction("0x05f71e1b2cb4f03e547739db15d080fd30c989eda04d37ce6264c5686e0722c9")))
-            #transactions.append(format_transaction(settings.W3.eth.getTransaction("0x47f7cff7a5e671884629c93b368cb18f58a993f4b19c2a53a8662e3f1482f690")))
             print("Retrieving "+str(len(transactions))+" transaction(s).\n")
             extract_facts_from_transactions(connection, transactions, settings.FACTS_FOLDER)
 
