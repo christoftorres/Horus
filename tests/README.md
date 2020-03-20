@@ -196,7 +196,7 @@ python3 horus.py -e -t 0x0c10fafe0cdbfff32abfe53d57ec861d09986cc1050c850481f79b1
 ###### Unchecked Signature
 
 ```
-Call Stack Depth (Mainnet)
+UGToken (Mainnet)
 
 python3 horus.py -e -t 0x9008d8ca9a5993d060e0dc2ee7d281b7911d1b39ac3503ba3b8ec22f26d8e04f
 ```
