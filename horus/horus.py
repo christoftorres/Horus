@@ -2,258 +2,20 @@
 # -*- coding: utf-8 -*-
 
 import os
-import sys
 import time
-import copy
 import http
-import json
-import shlex
 import shutil
 import requests
 import argparse
 import traceback
-import subprocess
 
 from web3 import Web3
-from operator import itemgetter
 
 from utils.utils import *
 from utils import settings
-from extractor.data_flow_analysis import TaintRunner
-from extractor.call_flow_analysis import CallFlowAnalysis
 
-def extract_facts_from_trace(facts_folder, trace, step, block, transaction, taint_runner):
-    def_facts           = open(facts_folder+"/def.facts",           "a")
-    use_facts           = open(facts_folder+"/use.facts",           "a")
-    arithmetic_facts    = open(facts_folder+"/arithmetic.facts",    "a")
-    bitwise_logic_facts = open(facts_folder+"/bitwise_logic.facts", "a")
-    storage_facts       = open(facts_folder+"/storage.facts",       "a")
-    call_facts          = open(facts_folder+"/call.facts",          "a")
-    throw_facts         = open(facts_folder+"/throw.facts",         "a")
-    selfdestruct_facts  = open(facts_folder+"/selfdestruct.facts",  "a")
-    error_facts         = open(facts_folder+"/error.facts",         "a")
-    block_facts         = open(facts_folder+"/block.facts",         "a")
-    transaction_facts   = open(facts_folder+"/transaction.facts",   "a")
-
-    call_flow_analysis = CallFlowAnalysis(transaction)
-    execution_begin = time.time()
-
-    first_step = step
-    while step in trace:
-        if settings.DEBUG_MODE:
-            if step == first_step:
-                print("")
-                print("Extracting facts from transaction: "+transaction["hash"]+" (block: "+str(transaction["blockNumber"])+")")
-                print(transaction["from"].lower()+" --> "+transaction["to"].lower())
-                print("")
-                print("Step \t PC \t Operation\t Gas       \t GasCost \t Depth \t Contract")
-                print("-------------------------------------------------------------------------------------------------------------------")
-            print(str(step)+" \t "+str(trace[step]["pc"])+" \t "+trace[step]["op"].ljust(10)+"\t "+str(trace[step]["gas"]).ljust(10)+" \t "+str(trace[step]["gasCost"]).ljust(10)+" \t "+str(trace[step]["depth"])+" \t "+str(call_flow_analysis.call_stack[-1])+(" \t "+"[Error]" if "error" in trace[step] else ""))
-
-        taint_runner.propagate_taint(trace[step], call_flow_analysis.call_stack[-1])
-
-        # Def facts
-        if trace[step]["op"] in [
-            "ADD", "SUB", "MUL", "DIV",                                                 # Arithmetic opcodes
-            "AND", "OR", "XOR",                                                         # Bitwise logic opcodes
-            "ORIGIN", "CALLER", "CALLDATALOAD", "CALLDATACOPY",                         # Environmental opcodes
-            "BLOCKHASH", "COINBASE", "TIMESTAMP", "NUMBER", "DIFFICULTY", "GASLIMIT",   # Block opcodes
-            "SSTORE", "SLOAD",                                                          # Storage opcodes
-            "JUMPI",                                                                    # Flow opcodes
-            "CREATE", "CALL", "CALLCODE", "DELEGATECALL", "STATICCALL",                 # Call opcodes
-            "REVERT", "INVALID", "ASSERTFAIL",                                          # Throw opcodes
-            "SELFDESTRUCT", "SUICIDE"                                                   # Selfdestruct opcodes
-           ]:
-            taint_runner.introduce_taint(step, trace[step])
-            def_facts.write("%d\t%s\r\n" % (step, trace[step]["op"]))
-
-        # Use facts
-        values = taint_runner.check_taint(trace[step])
-        if values:
-            for i in values:
-                use_facts.write("%d\t%d\r\n" % (step, i))
-
-        # Arithmetic facts
-        if trace[step]["op"] in ["ADD", "SUB", "MUL", "DIV"]:
-            opcode = trace[step]["op"]
-            first_operand = int(trace[step]["stack"][-1], 16)
-            second_operand = int(trace[step]["stack"][-2], 16)
-            if   trace[step]["op"] == "ADD":
-                arithmetic_result = first_operand + second_operand
-            elif trace[step]["op"] == "SUB":
-                arithmetic_result = first_operand - second_operand
-            elif trace[step]["op"] == "MUL":
-                arithmetic_result = first_operand * second_operand
-            elif trace[step]["op"] == "DIV":
-                if second_operand != 0:
-                    arithmetic_result = int(first_operand / second_operand)
-                else:
-                    arithmetic_result = 0
-            evm_result = int(trace[step + 1]["stack"][-1], 16)
-            arithmetic_facts.write("%d\t%s\t%s\t%s\t%s\t%s\r\n" % (step, opcode, first_operand, second_operand, arithmetic_result, evm_result))
-
-        # Bitwise logic facts
-        elif trace[step]["op"] in ["AND", "OR", "XOR"]:
-            opcode = trace[step]["op"]
-            first_operand = int(trace[step]["stack"][-1], 16)
-            second_operand = int(trace[step]["stack"][-2], 16)
-            bitwise_logic_facts.write("%d\t%s\t%s\t%s\r\n" % (step, opcode, first_operand, second_operand))
-
-        # Storage facts
-        elif trace[step]["op"] in ["SSTORE", "SLOAD"]:
-            opcode = trace[step]["op"]
-            transaction_hash = transaction["hash"]
-            block_number = transaction["blockNumber"]
-            caller = transaction["from"]
-            contract = call_flow_analysis.call_stack[-1]
-            storage_index = trace[step]["stack"][-1]
-            storage_facts.write("%d\t%s\t%d\t%s\t%s\t%s\t%s\r\n" % (step, opcode, block_number, transaction_hash, caller, contract, storage_index))
-
-        # Call facts
-        elif trace[step]["op"] in ["CREATE", "CALL", "CALLCODE", "DELEGATECALL", "STATICCALL"]:
-            i = step + 1
-            while i < len(trace)-1 and trace[step]["depth"] < trace[i]["depth"]:
-                i += 1
-            transaction_hash = transaction["hash"]
-            opcode = trace[step]["op"]
-            caller = call_flow_analysis.call_stack[-1]
-            if trace[step]["op"] == "CREATE":
-                callee = normalize_32_byte_hex_address(trace[i]["stack"][-1])
-            else:
-                callee = normalize_32_byte_hex_address(trace[step]["stack"][-2])
-            if trace[step]["op"] == "CREATE":
-                amount = int(trace[step]["stack"][-1], 16)
-            else:
-                amount = int(trace[step]["stack"][-3], 16)
-            depth = trace[step]["depth"]
-            if trace[step]["op"] == "CREATE":
-                if callee != 0:
-                    success = 1
-                else:
-                    success = 0
-            else:
-                success = int(trace[i]["stack"][-1], 16)
-            if trace[step]["op"] == "CREATE":
-                offset = 2 * int(trace[step]["stack"][-2], 16)
-                size = 2 * int(trace[step]["stack"][-3], 16)
-            elif trace[step]["op"] in ["CALL", "CALLCODE"]:
-                offset = 2 * int(trace[step]["stack"][-4], 16)
-                size = 2 * int(trace[step]["stack"][-5], 16)
-            elif trace[step]["op"] in ["DELEGATECALL", "STATICCALL"]:
-                offset = 2 * int(trace[step]["stack"][-3], 16)
-                size = 2 * int(trace[step]["stack"][-4], 16)
-            input_data = ''.join(trace[step]["memory"])[offset:offset+size]
-            call_facts.write("%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\r\n" % (step, transaction_hash, opcode, caller, callee, input_data, amount, depth, success))
-
-        # Throw facts
-        elif trace[step]["op"] in ["REVERT", "INVALID", "ASSERTFAIL"]:
-            opcode = trace[step]["op"]
-            caller = call_flow_analysis.call_stack[-1]
-            depth = trace[step]["depth"]
-            throw_facts.write("%d\t%s\t%s\t%d\r\n" % (step, opcode, caller, depth))
-
-        # Selfdestruct facts
-        elif trace[step]["op"] in ["SELFDESTRUCT", "SUICIDE"]:
-            caller = transaction["from"]
-            destination = hex(int(trace[step]["stack"][-1], 16))
-            selfdestruct_facts.write("%d\t%s\t%s\r\n" % (step, caller, destination))
-
-        # Error facts
-        if "error" in trace[step]:
-            # Fix for https://github.com/ethereum/go-ethereum/issues/2576
-            # There are four different EVM exceptions: "out of gas", "invalid jump destination", "invalid instruction" and "stack underflow"
-            error_message = "out of gas" # Default error message in Geth is 'out of gas'
-            if trace[step]["error"]:
-                error_message = trace[step]["error"]
-            error_facts.write("%s\t%s\r\n" % (transaction["hash"], error_message))
-
-        call_flow_analysis.analyze_call_flow(step, trace)
-        step += 1
-    taint_runner.clear_machine_state()
-
-    # Block facts
-    block_facts.write("%d\t%d\t%d\r\n" % (block["number"], block["gasUsed"], block["gasLimit"]))
-
-    # Transaction facts
-    transaction_facts.write("%s\t%s\t%s\t%s\t%d\r\n" % (transaction["hash"], transaction["from"], transaction["to"], transaction["input"].replace("0x", ""), transaction["blockNumber"]))
-
-    def_facts.close()
-    use_facts.close()
-    arithmetic_facts.close()
-    bitwise_logic_facts.close()
-    storage_facts.close()
-    call_facts.close()
-    throw_facts.close()
-    selfdestruct_facts.close()
-    error_facts.close()
-    block_facts.close()
-    transaction_facts.close()
-
-    if settings.DEBUG_MODE:
-        print("-------------------------------------------------------------------------------------------------------------------")
-
-    execution_end = time.time()
-    execution_delta = execution_end - execution_begin
-    print("Extracting facts for transaction "+str(transaction["hash"])+" took %.2f second(s)." % execution_delta)
-
-    return step
-
-def extract_facts_from_transactions(connection, transactions, facts_folder):
-    step = 0
-    trace = {}
-
-    if os.path.isdir(facts_folder):
-        shutil.rmtree(facts_folder)
-    if not os.path.isdir(facts_folder):
-        os.mkdir(facts_folder)
-
-    taint_runner = TaintRunner()
-
-    for transaction in transactions:
-        retrieval_begin = time.time()
-        trace_response = request_debug_trace(connection, settings.REQUEST_TIMEOUT, settings.REQUEST_RETRY_INTERVAL, transaction["hash"])
-        if "error" in trace_response:
-            print("An error occured in retrieving the trace: "+str(trace_response["error"]))
-            raise Exception("An error occured in retrieving the trace: {}".format(trace_response["error"]))
-        else:
-            for k in range(len(trace_response["result"]["structLogs"])):
-                trace[k+step] = trace_response["result"]["structLogs"][k]
-        retrieval_end = time.time()
-        retrieval_delta = retrieval_end - retrieval_begin
-        if settings.DEBUG_MODE:
-            print("Retrieving transaction "+transaction["hash"]+" took %.2f second(s). (%d MB)" % (retrieval_delta, (deep_getsizeof(trace, set()) / 1024) / 1024))
-        else:
-            print("Retrieving transaction "+transaction["hash"]+" took %.2f second(s)." % (retrieval_delta))
-        block = format_block(settings.W3.eth.getBlock(transaction["blockNumber"]))
-        step = extract_facts_from_trace(facts_folder, trace, step, block, transaction, taint_runner)
-
-def compile_datalog_file(datalog_file):
-    if os.path.isdir(os.path.dirname(sys.argv[0])+"/analyzer/executable"):
-        shutil.rmtree(os.path.dirname(sys.argv[0])+"/analyzer/executable")
-        os.mkdir(os.path.dirname(sys.argv[0])+"/analyzer/executable")
-    else:
-        os.mkdir(os.path.dirname(sys.argv[0])+"/analyzer/executable")
-    print("Compiling datalog rules and queries into a parallel C++ executable...")
-    compilation_begin = time.time()
-    p = subprocess.Popen(shlex.split("souffle -o "+os.path.dirname(sys.argv[0])+"/analyzer/executable/analyzer "+datalog_file), stdout=subprocess.PIPE)
-    p.communicate()
-    compilation_end = time.time()
-    print("Compilation took %.2f second(s).\n" % (compilation_end - compilation_begin))
-
-def analyze_facts(facts_folder, results_folder, datalog_file):
-    # Create parallel C++ executable if not available or is out-dated
-    if not os.path.isdir(os.path.dirname(sys.argv[0])+"/analyzer/executable"):
-        compile_datalog_file(datalog_file)
-    elif not os.path.isfile(os.path.dirname(sys.argv[0])+"/analyzer/executable/analyzer"):
-        compile_datalog_file(datalog_file)
-    elif os.stat(datalog_file)[8] > os.stat(os.path.dirname(sys.argv[0])+"/analyzer/executable/analyzer")[8]:
-        compile_datalog_file(datalog_file)
-    # Run datalog analysis through executable
-    analysis_begin = time.time()
-    p = subprocess.Popen(shlex.split(os.path.dirname(sys.argv[0])+"/analyzer/executable/analyzer -D "+results_folder+" -F "+facts_folder), stdout=subprocess.PIPE)
-    p.communicate()
-    analysis_end = time.time()
-    return analysis_end - analysis_begin
+from analyzer import Analyzer
+from extractor import Extractor
 
 def main():
     execution_begin = time.time()
@@ -372,7 +134,8 @@ def main():
             except Exception as e:
                 print(e)
                 print("Error: Blockchain is not in sync with transaction: "+args.transaction_hash)
-            extract_facts_from_transactions(connection, transactions, settings.FACTS_FOLDER)
+            extractor = Extractor()
+            extractor.extract_facts_from_transactions(connection, transactions, settings.FACTS_FOLDER)
 
         if args.extract and args.block_number:
             transactions = []
@@ -385,7 +148,8 @@ def main():
             except:
                 print("Error: Blockchain is not in sync with block number: "+args.block_number[0])
             print("Retrieving "+str(len(transactions))+" transaction(s).\n")
-            extract_facts_from_transactions(connection, transactions, settings.FACTS_FOLDER)
+            extractor = Extractor()
+            extractor.extract_facts_from_transactions(connection, transactions, settings.FACTS_FOLDER)
 
         if args.extract and args.contract_address:
             transactions = []
@@ -435,17 +199,19 @@ def main():
                 else:
                     break
             # Sort the list of transactions
+            from operator import itemgetter
             transactions = sorted(transactions, key=itemgetter('blockNumber', 'transactionIndex'))"""
             print("Retrieving "+str(len(transactions))+" transaction(s).\n")
-            extract_facts_from_transactions(connection, transactions, settings.FACTS_FOLDER)
+            extractor = Extractor()
+            extractor.extract_facts_from_transactions(connection, transactions, settings.FACTS_FOLDER)
 
         if args.analyze:
             if os.path.isdir(settings.RESULTS_FOLDER):
                 shutil.rmtree(settings.RESULTS_FOLDER)
             if not os.path.isdir(settings.RESULTS_FOLDER):
                 os.mkdir(settings.RESULTS_FOLDER)
-            analysis_time = analyze_facts(settings.FACTS_FOLDER, settings.RESULTS_FOLDER, settings.DATALOG_FILE)
-            print("Analyzing facts took %.2f second(s)." % (analysis_time))
+            analyzer = Analyzer()
+            analyzer.analyze_facts(settings.FACTS_FOLDER, settings.RESULTS_FOLDER, settings.DATALOG_FILE)
 
         print("")
     except argparse.ArgumentTypeError as e:

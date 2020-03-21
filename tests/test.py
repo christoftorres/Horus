@@ -24,13 +24,15 @@ if __name__ == '__main__':
         if "Traceback" in output or "error" in output:
             print("\033[91m!!! FAILED !!!\033[0m")
         else:
-            if os.path.getsize("results/BlockStateDependence.csv") == 0 and \
+            if os.path.getsize("results/BalanceInvariant.csv") == 0 and \
+               os.path.getsize("results/BlockStateDependence.csv") == 0 and \
                os.path.getsize("results/CallStackDepth.csv") == 0 and \
                os.path.getsize("results/CreateBasedReentrancy.csv") == 0 and \
                os.path.getsize("results/CrossFunctionReentrancy.csv") == 0 and \
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
                os.path.getsize("results/ParityWalletHack1.csv") == 0 and \
@@ -41,6 +43,7 @@ if __name__ == '__main__':
                os.path.getsize("results/TransactionOrderDependency.csv") == 0 and \
                os.path.getsize("results/TransactionStateDependence.csv") == 0 and \
                os.path.getsize("results/UncheckedDelegatecall.csv") == 0 and \
+               os.path.getsize("results/UncheckedSignature.csv") == 0 and \
                os.path.getsize("results/UncheckedSuicide.csv") == 0 and \
                os.path.getsize("results/UnhandledException.csv") == 0:
                 print("\033[92mPASSED\033[0m")
@@ -59,14 +62,16 @@ if __name__ == '__main__':
         if "Traceback" in output or "error" in output:
             print("\033[91m!!! FAILED !!!\033[0m")
         else:
-            if os.path.getsize("results/BlockStateDependence.csv") == 0 and \
+            if os.path.getsize("results/BalanceInvariant.csv") == 0 and \
+               os.path.getsize("results/BlockStateDependence.csv") == 0 and \
                os.path.getsize("results/CallStackDepth.csv") == 0 and \
                os.path.getsize("results/CreateBasedReentrancy.csv") == 0 and \
                os.path.getsize("results/CrossFunctionReentrancy.csv") == 0 and \
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
-               os.path.getsize("results/IntegerOverflow.csv") != 0 and \
+               os.path.getsize("results/InsufficientGas.csv") == 0 and \
+               os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
                os.path.getsize("results/ParityWalletHack1.csv") == 0 and \
                os.path.getsize("results/ParityWalletHack2.csv") == 0 and \
@@ -76,6 +81,7 @@ if __name__ == '__main__':
                os.path.getsize("results/TransactionOrderDependency.csv") == 0 and \
                os.path.getsize("results/TransactionStateDependence.csv") != 0 and \
                os.path.getsize("results/UncheckedDelegatecall.csv") == 0 and \
+               os.path.getsize("results/UncheckedSignature.csv") == 0 and \
                os.path.getsize("results/UncheckedSuicide.csv") == 0 and \
                os.path.getsize("results/UnhandledException.csv") == 0:
                 print("\033[92mPASSED\033[0m")
@@ -94,15 +100,17 @@ if __name__ == '__main__':
         if "Traceback" in output or "error" in output:
             print("\033[91m!!! FAILED !!!\033[0m")
         else:
-            if os.path.getsize("results/BlockStateDependence.csv") == 0 and \
+            if os.path.getsize("results/BalanceInvariant.csv") == 0 and \
+               os.path.getsize("results/BlockStateDependence.csv") == 0 and \
                os.path.getsize("results/CallStackDepth.csv") == 0 and \
                os.path.getsize("results/CreateBasedReentrancy.csv") == 0 and \
                os.path.getsize("results/CrossFunctionReentrancy.csv") == 0 and \
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
-               os.path.getsize("results/IntegerUnderflow.csv") != 0 and \
+               os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
                os.path.getsize("results/ParityWalletHack1.csv") == 0 and \
                os.path.getsize("results/ParityWalletHack2.csv") == 0 and \
                os.path.getsize("results/Reentrancy.csv") != 0 and \
@@ -111,6 +119,7 @@ if __name__ == '__main__':
                os.path.getsize("results/TransactionOrderDependency.csv") == 0 and \
                os.path.getsize("results/TransactionStateDependence.csv") == 0 and \
                os.path.getsize("results/UncheckedDelegatecall.csv") == 0 and \
+               os.path.getsize("results/UncheckedSignature.csv") == 0 and \
                os.path.getsize("results/UncheckedSuicide.csv") == 0 and \
                os.path.getsize("results/UnhandledException.csv") == 0:
                 print("\033[92mPASSED\033[0m")
@@ -129,13 +138,15 @@ if __name__ == '__main__':
         if "Traceback" in output or "error" in output:
             print("\033[91m!!! FAILED !!!\033[0m")
         else:
-            if os.path.getsize("results/BlockStateDependence.csv") == 0 and \
+            if os.path.getsize("results/BalanceInvariant.csv") == 0 and \
+               os.path.getsize("results/BlockStateDependence.csv") == 0 and \
                os.path.getsize("results/CallStackDepth.csv") == 0 and \
                os.path.getsize("results/CreateBasedReentrancy.csv") == 0 and \
                os.path.getsize("results/CrossFunctionReentrancy.csv") != 0 and \
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
                os.path.getsize("results/ParityWalletHack1.csv") == 0 and \
@@ -146,6 +157,7 @@ if __name__ == '__main__':
                os.path.getsize("results/TransactionOrderDependency.csv") == 0 and \
                os.path.getsize("results/TransactionStateDependence.csv") == 0 and \
                os.path.getsize("results/UncheckedDelegatecall.csv") == 0 and \
+               os.path.getsize("results/UncheckedSignature.csv") == 0 and \
                os.path.getsize("results/UncheckedSuicide.csv") == 0 and \
                os.path.getsize("results/UnhandledException.csv") == 0:
                 print("\033[92mPASSED\033[0m")
@@ -164,13 +176,15 @@ if __name__ == '__main__':
         if "Traceback" in output or "error" in output:
             print("\033[91m!!! FAILED !!!\033[0m")
         else:
-            if os.path.getsize("results/BlockStateDependence.csv") == 0 and \
+            if os.path.getsize("results/BalanceInvariant.csv") == 0 and \
+               os.path.getsize("results/BlockStateDependence.csv") == 0 and \
                os.path.getsize("results/CallStackDepth.csv") == 0 and \
                os.path.getsize("results/CreateBasedReentrancy.csv") == 0 and \
                os.path.getsize("results/CrossFunctionReentrancy.csv") == 0 and \
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
                os.path.getsize("results/ParityWalletHack1.csv") == 0 and \
@@ -181,6 +195,7 @@ if __name__ == '__main__':
                os.path.getsize("results/TransactionOrderDependency.csv") == 0 and \
                os.path.getsize("results/TransactionStateDependence.csv") == 0 and \
                os.path.getsize("results/UncheckedDelegatecall.csv") == 0 and \
+               os.path.getsize("results/UncheckedSignature.csv") == 0 and \
                os.path.getsize("results/UncheckedSuicide.csv") == 0 and \
                os.path.getsize("results/UnhandledException.csv") == 0:
                 print("\033[92mPASSED\033[0m")
@@ -199,15 +214,17 @@ if __name__ == '__main__':
         if "Traceback" in output or "error" in output:
             print("\033[91m!!! FAILED !!!\033[0m")
         else:
-            if os.path.getsize("results/BlockStateDependence.csv") == 0 and \
+            if os.path.getsize("results/BalanceInvariant.csv") == 0 and \
+               os.path.getsize("results/BlockStateDependence.csv") == 0 and \
                os.path.getsize("results/CallStackDepth.csv") == 0 and \
                os.path.getsize("results/CreateBasedReentrancy.csv") == 0 and \
                os.path.getsize("results/CrossFunctionReentrancy.csv") == 0 and \
                os.path.getsize("results/DelegatedReentrancy.csv") != 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
-               os.path.getsize("results/IntegerUnderflow.csv") != 0 and \
+               os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
                os.path.getsize("results/ParityWalletHack1.csv") == 0 and \
                os.path.getsize("results/ParityWalletHack2.csv") == 0 and \
                os.path.getsize("results/Reentrancy.csv") != 0 and \
@@ -215,7 +232,8 @@ if __name__ == '__main__':
                os.path.getsize("results/TimestampDependence.csv") == 0 and \
                os.path.getsize("results/TransactionOrderDependency.csv") == 0 and \
                os.path.getsize("results/TransactionStateDependence.csv") == 0 and \
-               os.path.getsize("results/UncheckedDelegatecall.csv") != 0 and \
+               os.path.getsize("results/UncheckedDelegatecall.csv") == 0 and \
+               os.path.getsize("results/UncheckedSignature.csv") == 0 and \
                os.path.getsize("results/UncheckedSuicide.csv") == 0 and \
                os.path.getsize("results/UnhandledException.csv") == 0:
                 print("\033[92mPASSED\033[0m")
@@ -234,15 +252,17 @@ if __name__ == '__main__':
         if "Traceback" in output or "error" in output:
             print("\033[91m!!! FAILED !!!\033[0m")
         else:
-            if os.path.getsize("results/BlockStateDependence.csv") == 0 and \
+            if os.path.getsize("results/BalanceInvariant.csv") == 0 and \
+               os.path.getsize("results/BlockStateDependence.csv") == 0 and \
                os.path.getsize("results/CallStackDepth.csv") == 0 and \
                os.path.getsize("results/CreateBasedReentrancy.csv") != 0 and \
                os.path.getsize("results/CrossFunctionReentrancy.csv") == 0 and \
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
-               os.path.getsize("results/IntegerUnderflow.csv") != 0 and \
+               os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
                os.path.getsize("results/ParityWalletHack1.csv") == 0 and \
                os.path.getsize("results/ParityWalletHack2.csv") == 0 and \
                os.path.getsize("results/Reentrancy.csv") == 0 and \
@@ -251,6 +271,7 @@ if __name__ == '__main__':
                os.path.getsize("results/TransactionOrderDependency.csv") == 0 and \
                os.path.getsize("results/TransactionStateDependence.csv") == 0 and \
                os.path.getsize("results/UncheckedDelegatecall.csv") == 0 and \
+               os.path.getsize("results/UncheckedSignature.csv") == 0 and \
                os.path.getsize("results/UncheckedSuicide.csv") == 0 and \
                os.path.getsize("results/UnhandledException.csv") == 0:
                 print("\033[92mPASSED\033[0m")
@@ -269,13 +290,15 @@ if __name__ == '__main__':
         if "Traceback" in output or "error" in output:
             print("\033[91m!!! FAILED !!!\033[0m")
         else:
-            if os.path.getsize("results/BlockStateDependence.csv") == 0 and \
+            if os.path.getsize("results/BalanceInvariant.csv") == 0 and \
+               os.path.getsize("results/BlockStateDependence.csv") == 0 and \
                os.path.getsize("results/CallStackDepth.csv") == 0 and \
                os.path.getsize("results/CreateBasedReentrancy.csv") == 0 and \
                os.path.getsize("results/CrossFunctionReentrancy.csv") == 0 and \
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
                os.path.getsize("results/ParityWalletHack1.csv") == 0 and \
@@ -286,8 +309,9 @@ if __name__ == '__main__':
                os.path.getsize("results/TransactionOrderDependency.csv") == 0 and \
                os.path.getsize("results/TransactionStateDependence.csv") == 0 and \
                os.path.getsize("results/UncheckedDelegatecall.csv") == 0 and \
+               os.path.getsize("results/UncheckedSignature.csv") == 0 and \
                os.path.getsize("results/UncheckedSuicide.csv") == 0 and \
-               os.path.getsize("results/UnhandledException.csv") != 0:
+               os.path.getsize("results/UnhandledException.csv") == 0:
                 print("\033[92mPASSED\033[0m")
             else:
                 print("\033[91m!!! FAILED !!!\033[0m")
@@ -304,13 +328,15 @@ if __name__ == '__main__':
         if "Traceback" in output or "error" in output:
             print("\033[91m!!! FAILED !!!\033[0m")
         else:
-            if os.path.getsize("results/BlockStateDependence.csv") == 0 and \
+            if os.path.getsize("results/BalanceInvariant.csv") == 0 and \
+               os.path.getsize("results/BlockStateDependence.csv") == 0 and \
                os.path.getsize("results/CallStackDepth.csv") == 0 and \
                os.path.getsize("results/CreateBasedReentrancy.csv") == 0 and \
                os.path.getsize("results/CrossFunctionReentrancy.csv") != 0 and \
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
                os.path.getsize("results/ParityWalletHack1.csv") == 0 and \
@@ -321,6 +347,7 @@ if __name__ == '__main__':
                os.path.getsize("results/TransactionOrderDependency.csv") == 0 and \
                os.path.getsize("results/TransactionStateDependence.csv") == 0 and \
                os.path.getsize("results/UncheckedDelegatecall.csv") == 0 and \
+               os.path.getsize("results/UncheckedSignature.csv") == 0 and \
                os.path.getsize("results/UncheckedSuicide.csv") == 0 and \
                os.path.getsize("results/UnhandledException.csv") == 0:
                 print("\033[92mPASSED\033[0m")
@@ -339,13 +366,15 @@ if __name__ == '__main__':
         if "Traceback" in output or "error" in output:
             print("\033[91m!!! FAILED !!!\033[0m")
         else:
-            if os.path.getsize("results/BlockStateDependence.csv") == 0 and \
+            if os.path.getsize("results/BalanceInvariant.csv") == 0 and \
+               os.path.getsize("results/BlockStateDependence.csv") == 0 and \
                os.path.getsize("results/CallStackDepth.csv") == 0 and \
                os.path.getsize("results/CreateBasedReentrancy.csv") == 0 and \
                os.path.getsize("results/CrossFunctionReentrancy.csv") == 0 and \
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
                os.path.getsize("results/ParityWalletHack1.csv") == 0 and \
@@ -356,8 +385,9 @@ if __name__ == '__main__':
                os.path.getsize("results/TransactionOrderDependency.csv") == 0 and \
                os.path.getsize("results/TransactionStateDependence.csv") == 0 and \
                os.path.getsize("results/UncheckedDelegatecall.csv") == 0 and \
+               os.path.getsize("results/UncheckedSignature.csv") == 0 and \
                os.path.getsize("results/UncheckedSuicide.csv") == 0 and \
-               os.path.getsize("results/UnhandledException.csv") != 0:
+               os.path.getsize("results/UnhandledException.csv") == 0:
                 print("\033[92mPASSED\033[0m")
             else:
                 print("\033[91m!!! FAILED !!!\033[0m")
@@ -374,13 +404,15 @@ if __name__ == '__main__':
         if "Traceback" in output or "error" in output:
             print("\033[91m!!! FAILED !!!\033[0m")
         else:
-            if os.path.getsize("results/BlockStateDependence.csv") == 0 and \
+            if os.path.getsize("results/BalanceInvariant.csv") == 0 and \
+               os.path.getsize("results/BlockStateDependence.csv") == 0 and \
                os.path.getsize("results/CallStackDepth.csv") == 0 and \
                os.path.getsize("results/CreateBasedReentrancy.csv") == 0 and \
                os.path.getsize("results/CrossFunctionReentrancy.csv") != 0 and \
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
                os.path.getsize("results/ParityWalletHack1.csv") == 0 and \
@@ -391,6 +423,7 @@ if __name__ == '__main__':
                os.path.getsize("results/TransactionOrderDependency.csv") == 0 and \
                os.path.getsize("results/TransactionStateDependence.csv") == 0 and \
                os.path.getsize("results/UncheckedDelegatecall.csv") == 0 and \
+               os.path.getsize("results/UncheckedSignature.csv") == 0 and \
                os.path.getsize("results/UncheckedSuicide.csv") == 0 and \
                os.path.getsize("results/UnhandledException.csv") == 0:
                 print("\033[92mPASSED\033[0m")
@@ -409,13 +442,15 @@ if __name__ == '__main__':
         if "Traceback" in output or "error" in output:
             print("\033[91m!!! FAILED !!!\033[0m")
         else:
-            if os.path.getsize("results/BlockStateDependence.csv") == 0 and \
+            if os.path.getsize("results/BalanceInvariant.csv") == 0 and \
+               os.path.getsize("results/BlockStateDependence.csv") == 0 and \
                os.path.getsize("results/CallStackDepth.csv") == 0 and \
                os.path.getsize("results/CreateBasedReentrancy.csv") == 0 and \
                os.path.getsize("results/CrossFunctionReentrancy.csv") == 0 and \
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
                os.path.getsize("results/ParityWalletHack1.csv") == 0 and \
@@ -426,8 +461,9 @@ if __name__ == '__main__':
                os.path.getsize("results/TransactionOrderDependency.csv") == 0 and \
                os.path.getsize("results/TransactionStateDependence.csv") == 0 and \
                os.path.getsize("results/UncheckedDelegatecall.csv") == 0 and \
+               os.path.getsize("results/UncheckedSignature.csv") == 0 and \
                os.path.getsize("results/UncheckedSuicide.csv") == 0 and \
-               os.path.getsize("results/UnhandledException.csv") != 0:
+               os.path.getsize("results/UnhandledException.csv") == 0:
                 print("\033[92mPASSED\033[0m")
             else:
                 print("\033[91m!!! FAILED !!!\033[0m")
@@ -444,13 +480,15 @@ if __name__ == '__main__':
         if "Traceback" in output or "error" in output:
             print("\033[91m!!! FAILED !!!\033[0m")
         else:
-            if os.path.getsize("results/BlockStateDependence.csv") == 0 and \
+            if os.path.getsize("results/BalanceInvariant.csv") == 0 and \
+               os.path.getsize("results/BlockStateDependence.csv") == 0 and \
                os.path.getsize("results/CallStackDepth.csv") == 0 and \
                os.path.getsize("results/CreateBasedReentrancy.csv") == 0 and \
                os.path.getsize("results/CrossFunctionReentrancy.csv") == 0 and \
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
                os.path.getsize("results/ParityWalletHack1.csv") == 0 and \
@@ -461,8 +499,9 @@ if __name__ == '__main__':
                os.path.getsize("results/TransactionOrderDependency.csv") == 0 and \
                os.path.getsize("results/TransactionStateDependence.csv") == 0 and \
                os.path.getsize("results/UncheckedDelegatecall.csv") == 0 and \
+               os.path.getsize("results/UncheckedSignature.csv") == 0 and \
                os.path.getsize("results/UncheckedSuicide.csv") == 0 and \
-               os.path.getsize("results/UnhandledException.csv") != 0:
+               os.path.getsize("results/UnhandledException.csv") == 0:
                 print("\033[92mPASSED\033[0m")
             else:
                 print("\033[91m!!! FAILED !!!\033[0m")
@@ -479,14 +518,16 @@ if __name__ == '__main__':
         if "Traceback" in output or "error" in output:
             print("\033[91m!!! FAILED !!!\033[0m")
         else:
-            if os.path.getsize("results/BlockStateDependence.csv") == 0 and \
+            if os.path.getsize("results/BalanceInvariant.csv") == 0 and \
+               os.path.getsize("results/BlockStateDependence.csv") == 0 and \
                os.path.getsize("results/CallStackDepth.csv") == 0 and \
                os.path.getsize("results/CreateBasedReentrancy.csv") == 0 and \
                os.path.getsize("results/CrossFunctionReentrancy.csv") == 0 and \
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
-               os.path.getsize("results/IntegerOverflow.csv") != 0 and \
+               os.path.getsize("results/InsufficientGas.csv") == 0 and \
+               os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
                os.path.getsize("results/ParityWalletHack1.csv") != 0 and \
                os.path.getsize("results/ParityWalletHack2.csv") != 0 and \
@@ -495,7 +536,8 @@ if __name__ == '__main__':
                os.path.getsize("results/TimestampDependence.csv") != 0 and \
                os.path.getsize("results/TransactionOrderDependency.csv") == 0 and \
                os.path.getsize("results/TransactionStateDependence.csv") == 0 and \
-               os.path.getsize("results/UncheckedDelegatecall.csv") != 0 and \
+               os.path.getsize("results/UncheckedDelegatecall.csv") == 0 and \
+               os.path.getsize("results/UncheckedSignature.csv") == 0 and \
                os.path.getsize("results/UncheckedSuicide.csv") == 0 and \
                os.path.getsize("results/UnhandledException.csv") == 0:
                 print("\033[92mPASSED\033[0m")
@@ -514,13 +556,15 @@ if __name__ == '__main__':
         if "Traceback" in output or "error" in output:
             print("\033[91m!!! FAILED !!!\033[0m")
         else:
-            if os.path.getsize("results/BlockStateDependence.csv") == 0 and \
+            if os.path.getsize("results/BalanceInvariant.csv") == 0 and \
+               os.path.getsize("results/BlockStateDependence.csv") == 0 and \
                os.path.getsize("results/CallStackDepth.csv") == 0 and \
                os.path.getsize("results/CreateBasedReentrancy.csv") == 0 and \
                os.path.getsize("results/CrossFunctionReentrancy.csv") == 0 and \
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
                os.path.getsize("results/ParityWalletHack1.csv") == 0 and \
@@ -531,6 +575,7 @@ if __name__ == '__main__':
                os.path.getsize("results/TransactionOrderDependency.csv") == 0 and \
                os.path.getsize("results/TransactionStateDependence.csv") == 0 and \
                os.path.getsize("results/UncheckedDelegatecall.csv") == 0 and \
+               os.path.getsize("results/UncheckedSignature.csv") == 0 and \
                os.path.getsize("results/UncheckedSuicide.csv") == 0 and \
                os.path.getsize("results/UnhandledException.csv") == 0:
                 print("\033[92mPASSED\033[0m")
@@ -549,13 +594,15 @@ if __name__ == '__main__':
         if "Traceback" in output or "error" in output:
             print("\033[91m!!! FAILED !!!\033[0m")
         else:
-            if os.path.getsize("results/BlockStateDependence.csv") == 0 and \
+            if os.path.getsize("results/BalanceInvariant.csv") == 0 and \
+               os.path.getsize("results/BlockStateDependence.csv") == 0 and \
                os.path.getsize("results/CallStackDepth.csv") == 0 and \
                os.path.getsize("results/CreateBasedReentrancy.csv") == 0 and \
                os.path.getsize("results/CrossFunctionReentrancy.csv") == 0 and \
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") != 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
                os.path.getsize("results/ParityWalletHack1.csv") == 0 and \
@@ -566,6 +613,7 @@ if __name__ == '__main__':
                os.path.getsize("results/TransactionOrderDependency.csv") == 0 and \
                os.path.getsize("results/TransactionStateDependence.csv") == 0 and \
                os.path.getsize("results/UncheckedDelegatecall.csv") == 0 and \
+               os.path.getsize("results/UncheckedSignature.csv") == 0 and \
                os.path.getsize("results/UncheckedSuicide.csv") == 0 and \
                os.path.getsize("results/UnhandledException.csv") == 0:
                 print("\033[92mPASSED\033[0m")
@@ -584,13 +632,15 @@ if __name__ == '__main__':
         if "Traceback" in output or "error" in output:
             print("\033[91m!!! FAILED !!!\033[0m")
         else:
-            if os.path.getsize("results/BlockStateDependence.csv") == 0 and \
+            if os.path.getsize("results/BalanceInvariant.csv") == 0 and \
+               os.path.getsize("results/BlockStateDependence.csv") == 0 and \
                os.path.getsize("results/CallStackDepth.csv") == 0 and \
                os.path.getsize("results/CreateBasedReentrancy.csv") == 0 and \
                os.path.getsize("results/CrossFunctionReentrancy.csv") == 0 and \
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") != 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
                os.path.getsize("results/ParityWalletHack1.csv") == 0 and \
@@ -601,6 +651,7 @@ if __name__ == '__main__':
                os.path.getsize("results/TransactionOrderDependency.csv") == 0 and \
                os.path.getsize("results/TransactionStateDependence.csv") == 0 and \
                os.path.getsize("results/UncheckedDelegatecall.csv") == 0 and \
+               os.path.getsize("results/UncheckedSignature.csv") != 0 and \
                os.path.getsize("results/UncheckedSuicide.csv") == 0 and \
                os.path.getsize("results/UnhandledException.csv") == 0:
                 print("\033[92mPASSED\033[0m")
@@ -619,13 +670,15 @@ if __name__ == '__main__':
         if "Traceback" in output or "error" in output:
             print("\033[91m!!! FAILED !!!\033[0m")
         else:
-            if os.path.getsize("results/BlockStateDependence.csv") == 0 and \
+            if os.path.getsize("results/BalanceInvariant.csv") == 0 and \
+               os.path.getsize("results/BlockStateDependence.csv") == 0 and \
                os.path.getsize("results/CallStackDepth.csv") == 0 and \
                os.path.getsize("results/CreateBasedReentrancy.csv") == 0 and \
                os.path.getsize("results/CrossFunctionReentrancy.csv") == 0 and \
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") != 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
                os.path.getsize("results/ParityWalletHack1.csv") == 0 and \
@@ -636,6 +689,7 @@ if __name__ == '__main__':
                os.path.getsize("results/TransactionOrderDependency.csv") == 0 and \
                os.path.getsize("results/TransactionStateDependence.csv") == 0 and \
                os.path.getsize("results/UncheckedDelegatecall.csv") == 0 and \
+               os.path.getsize("results/UncheckedSignature.csv") != 0 and \
                os.path.getsize("results/UncheckedSuicide.csv") == 0 and \
                os.path.getsize("results/UnhandledException.csv") == 0:
                 print("\033[92mPASSED\033[0m")
@@ -654,13 +708,15 @@ if __name__ == '__main__':
         if "Traceback" in output or "error" in output:
             print("\033[91m!!! FAILED !!!\033[0m")
         else:
-            if os.path.getsize("results/BlockStateDependence.csv") == 0 and \
+            if os.path.getsize("results/BalanceInvariant.csv") == 0 and \
+               os.path.getsize("results/BlockStateDependence.csv") == 0 and \
                os.path.getsize("results/CallStackDepth.csv") == 0 and \
                os.path.getsize("results/CreateBasedReentrancy.csv") == 0 and \
                os.path.getsize("results/CrossFunctionReentrancy.csv") == 0 and \
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") != 0 and \
                os.path.getsize("results/ParityWalletHack1.csv") == 0 and \
@@ -671,6 +727,7 @@ if __name__ == '__main__':
                os.path.getsize("results/TransactionOrderDependency.csv") == 0 and \
                os.path.getsize("results/TransactionStateDependence.csv") == 0 and \
                os.path.getsize("results/UncheckedDelegatecall.csv") == 0 and \
+               os.path.getsize("results/UncheckedSignature.csv") == 0 and \
                os.path.getsize("results/UncheckedSuicide.csv") == 0 and \
                os.path.getsize("results/UnhandledException.csv") == 0:
                 print("\033[92mPASSED\033[0m")
@@ -689,13 +746,15 @@ if __name__ == '__main__':
         if "Traceback" in output or "error" in output:
             print("\033[91m!!! FAILED !!!\033[0m")
         else:
-            if os.path.getsize("results/BlockStateDependence.csv") == 0 and \
+            if os.path.getsize("results/BalanceInvariant.csv") == 0 and \
+               os.path.getsize("results/BlockStateDependence.csv") == 0 and \
                os.path.getsize("results/CallStackDepth.csv") == 0 and \
                os.path.getsize("results/CreateBasedReentrancy.csv") == 0 and \
                os.path.getsize("results/CrossFunctionReentrancy.csv") == 0 and \
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
                os.path.getsize("results/ParityWalletHack1.csv") == 0 and \
@@ -706,6 +765,7 @@ if __name__ == '__main__':
                os.path.getsize("results/TransactionOrderDependency.csv") == 0 and \
                os.path.getsize("results/TransactionStateDependence.csv") == 0 and \
                os.path.getsize("results/UncheckedDelegatecall.csv") == 0 and \
+               os.path.getsize("results/UncheckedSignature.csv") == 0 and \
                os.path.getsize("results/UncheckedSuicide.csv") == 0 and \
                os.path.getsize("results/UnhandledException.csv") != 0:
                 print("\033[92mPASSED\033[0m")
@@ -724,13 +784,15 @@ if __name__ == '__main__':
         if "Traceback" in output or "error" in output:
             print("\033[91m!!! FAILED !!!\033[0m")
         else:
-            if os.path.getsize("results/BlockStateDependence.csv") == 0 and \
+            if os.path.getsize("results/BalanceInvariant.csv") == 0 and \
+               os.path.getsize("results/BlockStateDependence.csv") == 0 and \
                os.path.getsize("results/CallStackDepth.csv") == 0 and \
                os.path.getsize("results/CreateBasedReentrancy.csv") == 0 and \
                os.path.getsize("results/CrossFunctionReentrancy.csv") == 0 and \
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") != 0 and \
+               os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
                os.path.getsize("results/ParityWalletHack1.csv") == 0 and \
@@ -741,6 +803,7 @@ if __name__ == '__main__':
                os.path.getsize("results/TransactionOrderDependency.csv") == 0 and \
                os.path.getsize("results/TransactionStateDependence.csv") == 0 and \
                os.path.getsize("results/UncheckedDelegatecall.csv") == 0 and \
+               os.path.getsize("results/UncheckedSignature.csv") == 0 and \
                os.path.getsize("results/UncheckedSuicide.csv") == 0 and \
                os.path.getsize("results/UnhandledException.csv") == 0:
                 print("\033[92mPASSED\033[0m")
@@ -759,13 +822,15 @@ if __name__ == '__main__':
         if "Traceback" in output or "error" in output:
             print("\033[91m!!! FAILED !!!\033[0m")
         else:
-            if os.path.getsize("results/BlockStateDependence.csv") == 0 and \
+            if os.path.getsize("results/BalanceInvariant.csv") == 0 and \
+               os.path.getsize("results/BlockStateDependence.csv") == 0 and \
                os.path.getsize("results/CallStackDepth.csv") == 0 and \
                os.path.getsize("results/CreateBasedReentrancy.csv") == 0 and \
                os.path.getsize("results/CrossFunctionReentrancy.csv") == 0 and \
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") != 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
                os.path.getsize("results/ParityWalletHack1.csv") == 0 and \
@@ -776,6 +841,7 @@ if __name__ == '__main__':
                os.path.getsize("results/TransactionOrderDependency.csv") == 0 and \
                os.path.getsize("results/TransactionStateDependence.csv") == 0 and \
                os.path.getsize("results/UncheckedDelegatecall.csv") == 0 and \
+               os.path.getsize("results/UncheckedSignature.csv") == 0 and \
                os.path.getsize("results/UncheckedSuicide.csv") == 0 and \
                os.path.getsize("results/UnhandledException.csv") == 0:
                 print("\033[92mPASSED\033[0m")
@@ -794,13 +860,15 @@ if __name__ == '__main__':
         if "Traceback" in output or "error" in output:
             print("\033[91m!!! FAILED !!!\033[0m")
         else:
-            if os.path.getsize("results/BlockStateDependence.csv") == 0 and \
+            if os.path.getsize("results/BalanceInvariant.csv") == 0 and \
+               os.path.getsize("results/BlockStateDependence.csv") == 0 and \
                os.path.getsize("results/CallStackDepth.csv") == 0 and \
                os.path.getsize("results/CreateBasedReentrancy.csv") == 0 and \
                os.path.getsize("results/CrossFunctionReentrancy.csv") == 0 and \
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
                os.path.getsize("results/ParityWalletHack1.csv") == 0 and \
@@ -811,6 +879,7 @@ if __name__ == '__main__':
                os.path.getsize("results/TransactionOrderDependency.csv") == 0 and \
                os.path.getsize("results/TransactionStateDependence.csv") != 0 and \
                os.path.getsize("results/UncheckedDelegatecall.csv") == 0 and \
+               os.path.getsize("results/UncheckedSignature.csv") == 0 and \
                os.path.getsize("results/UncheckedSuicide.csv") == 0 and \
                os.path.getsize("results/UnhandledException.csv") == 0:
                 print("\033[92mPASSED\033[0m")
@@ -829,13 +898,15 @@ if __name__ == '__main__':
         if "Traceback" in output or "error" in output:
             print("\033[91m!!! FAILED !!!\033[0m")
         else:
-            if os.path.getsize("results/BlockStateDependence.csv") == 0 and \
+            if os.path.getsize("results/BalanceInvariant.csv") == 0 and \
+               os.path.getsize("results/BlockStateDependence.csv") == 0 and \
                os.path.getsize("results/CallStackDepth.csv") == 0 and \
                os.path.getsize("results/CreateBasedReentrancy.csv") == 0 and \
                os.path.getsize("results/CrossFunctionReentrancy.csv") == 0 and \
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
                os.path.getsize("results/ParityWalletHack1.csv") == 0 and \
@@ -846,6 +917,7 @@ if __name__ == '__main__':
                os.path.getsize("results/TransactionOrderDependency.csv") != 0 and \
                os.path.getsize("results/TransactionStateDependence.csv") == 0 and \
                os.path.getsize("results/UncheckedDelegatecall.csv") == 0 and \
+               os.path.getsize("results/UncheckedSignature.csv") == 0 and \
                os.path.getsize("results/UncheckedSuicide.csv") == 0 and \
                os.path.getsize("results/UnhandledException.csv") == 0:
                 print("\033[92mPASSED\033[0m")
@@ -864,13 +936,15 @@ if __name__ == '__main__':
         if "Traceback" in output or "error" in output:
             print("\033[91m!!! FAILED !!!\033[0m")
         else:
-            if os.path.getsize("results/BlockStateDependence.csv") == 0 and \
+            if os.path.getsize("results/BalanceInvariant.csv") == 0 and \
+               os.path.getsize("results/BlockStateDependence.csv") == 0 and \
                os.path.getsize("results/CallStackDepth.csv") == 0 and \
                os.path.getsize("results/CreateBasedReentrancy.csv") == 0 and \
                os.path.getsize("results/CrossFunctionReentrancy.csv") == 0 and \
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
                os.path.getsize("results/ParityWalletHack1.csv") == 0 and \
@@ -881,6 +955,45 @@ if __name__ == '__main__':
                os.path.getsize("results/TransactionOrderDependency.csv") == 0 and \
                os.path.getsize("results/TransactionStateDependence.csv") == 0 and \
                os.path.getsize("results/UncheckedDelegatecall.csv") == 0 and \
+               os.path.getsize("results/UncheckedSignature.csv") == 0 and \
+               os.path.getsize("results/UncheckedSuicide.csv") == 0 and \
+               os.path.getsize("results/UnhandledException.csv") == 0:
+                print("\033[92mPASSED\033[0m")
+            else:
+                print("\033[91m!!! FAILED !!!\033[0m")
+    print("-------------------------------------------------------")
+
+    print("Testing 'Block State Dependence'")
+    p = subprocess.Popen(shlex.split("python3 ../horus/horus.py -e -t 0xc762c8699242e501100e1eafeee95347c686a6ee2a0e55c264e3588f8df966cc"), stdout=subprocess.PIPE, stderr=FNULL)
+    output = str(p.communicate()[0])
+    if "Traceback" in output or "error" in output:
+        print("\033[91m!!! FAILED !!!\033[0m")
+    else:
+        p = subprocess.Popen(shlex.split("python3 ../horus/horus.py -a -d ../horus/analyzer/datalog/attacks.dl"), stdout=subprocess.PIPE, stderr=FNULL)
+        output = str(p.communicate()[0])
+        if "Traceback" in output or "error" in output:
+            print("\033[91m!!! FAILED !!!\033[0m")
+        else:
+            if os.path.getsize("results/BalanceInvariant.csv") == 0 and \
+               os.path.getsize("results/BlockStateDependence.csv") != 0 and \
+               os.path.getsize("results/CallStackDepth.csv") == 0 and \
+               os.path.getsize("results/CreateBasedReentrancy.csv") == 0 and \
+               os.path.getsize("results/CrossFunctionReentrancy.csv") == 0 and \
+               os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
+               os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
+               os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/InsufficientGas.csv") == 0 and \
+               os.path.getsize("results/IntegerOverflow.csv") == 0 and \
+               os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
+               os.path.getsize("results/ParityWalletHack1.csv") == 0 and \
+               os.path.getsize("results/ParityWalletHack2.csv") == 0 and \
+               os.path.getsize("results/Reentrancy.csv") == 0 and \
+               os.path.getsize("results/ShortAddress.csv") == 0 and \
+               os.path.getsize("results/TimestampDependence.csv") == 0 and \
+               os.path.getsize("results/TransactionOrderDependency.csv") == 0 and \
+               os.path.getsize("results/TransactionStateDependence.csv") == 0 and \
+               os.path.getsize("results/UncheckedDelegatecall.csv") == 0 and \
+               os.path.getsize("results/UncheckedSignature.csv") == 0 and \
                os.path.getsize("results/UncheckedSuicide.csv") == 0 and \
                os.path.getsize("results/UnhandledException.csv") == 0:
                 print("\033[92mPASSED\033[0m")
@@ -899,13 +1012,15 @@ if __name__ == '__main__':
         if "Traceback" in output or "error" in output:
             print("\033[91m!!! FAILED !!!\033[0m")
         else:
-            if os.path.getsize("results/BlockStateDependence.csv") == 0 and \
+            if os.path.getsize("results/BalanceInvariant.csv") == 0 and \
+               os.path.getsize("results/BlockStateDependence.csv") == 0 and \
                os.path.getsize("results/CallStackDepth.csv") == 0 and \
                os.path.getsize("results/CreateBasedReentrancy.csv") == 0 and \
                os.path.getsize("results/CrossFunctionReentrancy.csv") == 0 and \
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
                os.path.getsize("results/ParityWalletHack1.csv") == 0 and \
@@ -916,6 +1031,7 @@ if __name__ == '__main__':
                os.path.getsize("results/TransactionOrderDependency.csv") == 0 and \
                os.path.getsize("results/TransactionStateDependence.csv") == 0 and \
                os.path.getsize("results/UncheckedDelegatecall.csv") == 0 and \
+               os.path.getsize("results/UncheckedSignature.csv") == 0 and \
                os.path.getsize("results/UncheckedSuicide.csv") == 0 and \
                os.path.getsize("results/UnhandledException.csv") == 0:
                 print("\033[92mPASSED\033[0m")
@@ -934,13 +1050,15 @@ if __name__ == '__main__':
         if "Traceback" in output or "error" in output:
             print("\033[91m!!! FAILED !!!\033[0m")
         else:
-            if os.path.getsize("results/BlockStateDependence.csv") == 0 and \
+            if os.path.getsize("results/BalanceInvariant.csv") == 0 and \
+               os.path.getsize("results/BlockStateDependence.csv") == 0 and \
                os.path.getsize("results/CallStackDepth.csv") != 0 and \
                os.path.getsize("results/CreateBasedReentrancy.csv") == 0 and \
                os.path.getsize("results/CrossFunctionReentrancy.csv") == 0 and \
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
                os.path.getsize("results/ParityWalletHack1.csv") == 0 and \
@@ -951,8 +1069,47 @@ if __name__ == '__main__':
                os.path.getsize("results/TransactionOrderDependency.csv") == 0 and \
                os.path.getsize("results/TransactionStateDependence.csv") == 0 and \
                os.path.getsize("results/UncheckedDelegatecall.csv") == 0 and \
+               os.path.getsize("results/UncheckedSignature.csv") == 0 and \
                os.path.getsize("results/UncheckedSuicide.csv") == 0 and \
                os.path.getsize("results/UnhandledException.csv") != 0:
+                print("\033[92mPASSED\033[0m")
+            else:
+                print("\033[91m!!! FAILED !!!\033[0m")
+    print("-------------------------------------------------------")
+
+    print("Testing 'Unchecked Signature'")
+    p = subprocess.Popen(shlex.split("python3 ../horus/horus.py -e -t 0x9008d8ca9a5993d060e0dc2ee7d281b7911d1b39ac3503ba3b8ec22f26d8e04f"), stdout=subprocess.PIPE, stderr=FNULL)
+    output = str(p.communicate()[0])
+    if "Traceback" in output or "error" in output:
+        print("\033[91m!!! FAILED !!!\033[0m")
+    else:
+        p = subprocess.Popen(shlex.split("python3 ../horus/horus.py -a -d ../horus/analyzer/datalog/attacks.dl"), stdout=subprocess.PIPE, stderr=FNULL)
+        output = str(p.communicate()[0])
+        if "Traceback" in output or "error" in output:
+            print("\033[91m!!! FAILED !!!\033[0m")
+        else:
+            if os.path.getsize("results/BalanceInvariant.csv") == 0 and \
+               os.path.getsize("results/BlockStateDependence.csv") == 0 and \
+               os.path.getsize("results/CallStackDepth.csv") == 0 and \
+               os.path.getsize("results/CreateBasedReentrancy.csv") == 0 and \
+               os.path.getsize("results/CrossFunctionReentrancy.csv") == 0 and \
+               os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
+               os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
+               os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/InsufficientGas.csv") == 0 and \
+               os.path.getsize("results/IntegerOverflow.csv") == 0 and \
+               os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
+               os.path.getsize("results/ParityWalletHack1.csv") == 0 and \
+               os.path.getsize("results/ParityWalletHack2.csv") == 0 and \
+               os.path.getsize("results/Reentrancy.csv") == 0 and \
+               os.path.getsize("results/ShortAddress.csv") == 0 and \
+               os.path.getsize("results/TimestampDependence.csv") == 0 and \
+               os.path.getsize("results/TransactionOrderDependency.csv") == 0 and \
+               os.path.getsize("results/TransactionStateDependence.csv") == 0 and \
+               os.path.getsize("results/UncheckedDelegatecall.csv") == 0 and \
+               os.path.getsize("results/UncheckedSignature.csv") != 0 and \
+               os.path.getsize("results/UncheckedSuicide.csv") == 0 and \
+               os.path.getsize("results/UnhandledException.csv") == 0:
                 print("\033[92mPASSED\033[0m")
             else:
                 print("\033[91m!!! FAILED !!!\033[0m")

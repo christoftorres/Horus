@@ -4,18 +4,22 @@
 .decl arithmetic(step:number, opcode:Opcode, first_operand:Value, second_operand:Value, arithmetic_result:Value, evm_result:Value)
 .decl bitwise_logic(step:number, opcode:Opcode, first_operand:Value, second_operand:Value)
 .decl storage(step:number, opcode:Opcode, block:number, transaction:Value, caller:Address, contract:Address, storage_index:Value)
-.decl call(step:number, hash:symbol, opcode:Opcode, caller:Address, callee:Address, input_data:symbol, amount:Value, depth:number, success:number)
-.decl throw(step:number, opcode:Opcode, caller:Address, depth:number)
-.decl selfdestruct(step:number, caller:Address, destination:Address)
-.decl error(hash:symbol, error_message:symbol)
-.decl block(block:number, gasUsed:number, gasLimit:number)
-.decl transaction(hash:symbol, from:Address, to:Address, input_data:symbol, block:number)
+.decl condition(step:number, transaction_hash:symbol)
+.decl transfer(step:number, transaction_hash:symbol, from:Address, to:Address, value:Value)
+.decl call(step:number, transaction_hash:symbol, opcode:Opcode, caller:Address, callee:Address, input_data:symbol, amount:Value, depth:number, success:number)
+.decl throw(step:number, transaction_hash:symbol, opcode:Opcode, caller:Address, depth:number)
+.decl selfdestruct(step:number, transaction_hash:symbol, caller:Address, destination:Address)
+.decl error(transaction_hash:symbol, error_message:symbol)
+.decl block(block:number, gas_used:number, gas_limit:number)
+.decl transaction(transaction_hash:symbol, from:Address, to:Address, input_data:symbol, block:number)
 
 .input def
 .input use
 .input arithmetic
 .input bitwise_logic
 .input storage
+.input condition
+.input transfer
 .input call
 .input throw
 .input selfdestruct

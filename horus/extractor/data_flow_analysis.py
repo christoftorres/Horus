@@ -145,12 +145,15 @@ class TaintRunner:
             stack = records[-2].stack[-mutator[0]]
             if stack:
                 values += stack
-        elif instruction["op"].startswith("LOG"):
-            for i in range(0, mutator[0]-2):
-                stack = records[-2].stack[-(i+1)]
-                if stack:
-                    values += stack
         else:
+            if instruction["op"].startswith("LOG"):
+                memory = TaintRunner.extract_taint_from_memory(records[-2].memory, int(instruction["stack"][-1], 16), int(instruction["stack"][-2], 16))
+                if memory:
+                    values += memory
+            if instruction["op"] == "CALL":
+                memory = TaintRunner.extract_taint_from_memory(records[-2].memory, int(instruction["stack"][-4], 16), int(instruction["stack"][-5], 16))
+                if memory:
+                    values += memory
             for i in range(0, mutator[0]):
                 stack = records[-2].stack[-(i+1)]
                 if stack:
@@ -188,12 +191,8 @@ class TaintRunner:
             TaintRunner.mutate_sha3(new_record, instruction)
         elif op == "CALLVALUE":
             TaintRunner.mutate_call_value(new_record, instruction)
-        elif op == "CALLDATALOAD":
-            TaintRunner.mutate_call_data_load(new_record, instruction)
         elif op in ("CALLDATACOPY", "CODECOPY", "RETURNDATACOPY", "EXTCODECOPY"):
             TaintRunner.mutate_copy(new_record, op, instruction)
-        elif op == "CREATE":
-            TaintRunner.mutate_create(new_record, instruction)
         elif op in ("CALL", "CALLCODE", "DELEGATECALL", "STATICCALL"):
             TaintRunner.mutate_call(new_record, op, instruction)
         elif op == "RETURNDATASIZE":
@@ -242,9 +241,6 @@ class TaintRunner:
     def mutate_mload(record, instruction):
         record.stack.pop()
         index = instruction["stack"][-1]
-        #print("index: "+str(index))
-        #print("value: "+str(record.memory_tainted(index)))
-        #print_memory(record.memory)
         record.stack.append(record.memory_tainted(index))
 
     @staticmethod
@@ -252,9 +248,6 @@ class TaintRunner:
         record.stack.pop()
         index, value = instruction["stack"][-1], record.stack.pop()
         record.memory[index] = value
-        #print("index: "+str(index))
-        #print("value: "+str(value))
-        #print_memory(record.memory)
 
     @staticmethod
     def mutate_sload(record, storage, instruction):
@@ -263,8 +256,6 @@ class TaintRunner:
         index = instruction["stack"][-1]
         if record.address in storage and index in storage[record.address].keys() and storage[record.address][index]:
             taint = storage[record.address][index]
-        #print("index: "+str(index))
-        #print_storage(storage)
         record.stack.append(taint)
 
     @staticmethod
@@ -290,10 +281,6 @@ class TaintRunner:
         record.stack.pop()
         size = int(instruction["stack"][-2], 16)
         value = TaintRunner.extract_taint_from_memory(record.memory, offset, size)
-        #print("offset: "+str(offset))
-        #print("size: "+str(size))
-        #print("value: "+str(value))
-        #print_memory(record.memory)
         record.stack.append(value)
 
     @staticmethod
@@ -336,98 +323,16 @@ class TaintRunner:
 
     @staticmethod
     def mutate_call(record, op, instruction):
-        taint = []
+        taint = False
         record.stack.pop()
         record.stack.pop()
-
         if op in ["CALL", "CALLCODE"]:
             record.stack.pop()
-
         record.stack.pop()
         record.stack.pop()
-        in_offset = None
-        in_size = None
-        if op in ["CALL", "CALLCODE"]:
-            in_offset = int(instruction["stack"][-4], 16)
-            in_size = int(instruction["stack"][-5], 16)
-        else:
-            in_offset = int(instruction["stack"][-3], 16)
-            in_size = int(instruction["stack"][-4], 16)
-        in_mem_taint = TaintRunner.extract_taint_from_memory(record.memory, in_offset, in_size)
-        #record.input = TaintRunner.extract_taint_from_memory_with_addresses(record.memory, in_offset, in_size)
         record.stack.pop()
         record.stack.pop()
-        out_offset = None
-        out_size = None
-        if op in ["CALL", "CALLCODE"]:
-            out_offset = int(instruction["stack"][-6], 16)
-            out_size = int(instruction["stack"][-7], 16)
-        else:
-            out_offset = int(instruction["stack"][-5], 16)
-            out_size = int(instruction["stack"][-6], 16)
-        #out_mem_taint = TaintRunner.extract_taint_from_memory(record.memory, out_offset, out_size)
-        out_mem_taint = False
-        if out_mem_taint:
-            taint += out_mem_taint
-        if not taint:
-            taint = False
         record.stack.append(taint)
-        record.value = taint
-        if record.input and taint:
-            for address in record.input:
-                for value in taint:
-                    if not value in record.input[address]:
-                        record.input[address].append(taint)
-        record.output = taint
-
-    """@staticmethod
-    def mutate_call(record, op, instruction):
-        taint = []
-        gas = record.stack.pop()
-        if gas:
-            taint += gas
-        to = record.stack.pop()
-        if to:
-            taint += to
-        value = False
-        if op in ["CALL", "CALLCODE"]:
-            value = record.stack.pop()
-        if value:
-            taint += value
-        record.stack.pop()
-        record.stack.pop()
-        in_offset = None
-        in_size = None
-        if op in ["CALL", "CALLCODE"]:
-            in_offset = int(instruction["stack"][-4], 16)
-            in_size = int(instruction["stack"][-5], 16)
-        else:
-            in_offset = int(instruction["stack"][-3], 16)
-            in_size = int(instruction["stack"][-4], 16)
-        record.input = TaintRunner.extract_taint_from_memory_with_addresses(record.memory, in_offset, in_size)
-        record.stack.pop()
-        record.stack.pop()
-        out_offset = None
-        out_size = None
-        if op in ["CALL", "CALLCODE"]:
-            out_offset = int(instruction["stack"][-6], 16)
-            out_size = int(instruction["stack"][-7], 16)
-        else:
-            out_offset = int(instruction["stack"][-5], 16)
-            out_size = int(instruction["stack"][-6], 16)
-        out_mem_taint = TaintRunner.extract_taint_from_memory(record.memory, out_offset, out_size)
-        if out_mem_taint:
-            taint += out_mem_taint
-        if not taint:
-            taint = False
-        record.stack.append(taint)
-        record.value = taint
-        if record.input and taint:
-            for address in record.input:
-                for value in taint:
-                    if not value in record.input[address]:
-                        record.input[address] += taint
-        record.output = taint"""
 
     @staticmethod
     def mutate_return_data_size(record, op, instruction):
@@ -441,52 +346,19 @@ class TaintRunner:
             index = hex(offset + i * 32).replace("0x", "").zfill(64)
             if index in memory:
                 if memory[index]:
-                    taint += memory[index]
+                    for k in memory[index]:
+                        if not k in taint:
+                            taint.append(k)
             keys = list(memory.keys())
             for j in range(len(keys)):
                 if offset < int(keys[j], 16) and int(keys[j], 16) < offset + 32:
                     if memory[keys[j]]:
-                        taint += memory[keys[j]]
+                        for k in memory[keys[j]]:
+                            if not k in taint:
+                                taint.append(k)
         if not taint:
             taint = False
         return taint
-
-    @staticmethod
-    def extract_taint_from_memory_with_addresses(memory, offset, size):
-        taint = {}
-        length = int(size / 32)
-        for i in range(length):
-            index = hex(offset + i * 32).replace("0x", "").zfill(64)
-            if index in memory:
-                address = int(index, 16) - offset
-                address = hex(address).replace("0x", "").zfill(64)
-                if memory[index]:
-                    taint[address] = memory[index]
-            keys = list(memory.keys())
-            for j in range(len(keys)):
-                if offset < int(keys[j], 16) and int(keys[j], 16) < offset + 32:
-                    if memory[keys[j]]:
-                        address = int(keys[j], 16) - offset
-                        address = hex(address).replace("0x", "").zfill(64)
-                        taint[address] = memory[keys[j]]
-        return taint
-
-    memory_access = {
-        # instruction: (memory offset, memory size)
-        'SHA3': (0, 1),
-        'LOG0': (0, 1),
-        'LOG1': (0, 1),
-        'LOG2': (0, 1),
-        'LOG3': (0, 1),
-        'LOG4': (0, 1),
-        'CREATE': (1, 2),
-        'CREATE2': (1, 2),
-        'CALL': (3, 4),
-        'CALLCODE': (3, 4),
-        'RETURN': (0, 1),
-        'DELEGATECALL': (2, 3),
-        'STATICCALL': (2, 3)
-    }
 
     stack_taint_table = {
         # instruction: (taint source, taint target)
