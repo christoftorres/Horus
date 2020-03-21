@@ -169,6 +169,14 @@ GovernMental (Mainnet)
 python3 horus.py -e -t 0x8995a4334fc1e811afcfe257b82a4eae329bda7347d09fff6b7873a7e2a63036
 ```
 
+###### Block State Dependence
+
+```
+Ethstick (Mainnet)
+
+python3 horus.py -e -t 0xc762c8699242e501100e1eafeee95347c686a6ee2a0e55c264e3588f8df966cc
+```
+
 ###### Short Address
 
 ```
@@ -183,4 +191,12 @@ python3 horus.py -e -t 0x06d83a7acf2b683323cc6900365e8515ee39e669d8c8f51d5183cc9
 Call Stack Depth (Mainnet)
 
 python3 horus.py -e -t 0x0c10fafe0cdbfff32abfe53d57ec861d09986cc1050c850481f79b1a862bb10a
+```
+
+###### Unchecked Signature
+
+```
+UGToken (Mainnet)
+
+python3 horus.py -e -t 0x9008d8ca9a5993d060e0dc2ee7d281b7911d1b39ac3503ba3b8ec22f26d8e04f
 ```
