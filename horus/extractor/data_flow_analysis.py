@@ -138,26 +138,30 @@ class TaintRunner:
             traceback.print_exc()
 
     def check_taint(self, instruction):
-        records = self.call_stack[instruction["depth"]-1]
         values = []
-        mutator = TaintRunner.stack_taint_table[instruction["op"]]
-        if instruction["op"].startswith("DUP") or instruction["op"].startswith("SWAP"):
-            stack = records[-2].stack[-mutator[0]]
-            if stack:
-                values += stack
-        else:
-            if instruction["op"].startswith("LOG"):
-                memory = TaintRunner.extract_taint_from_memory(records[-2].memory, int(instruction["stack"][-1], 16), int(instruction["stack"][-2], 16))
-                if memory:
-                    values += memory
-            if instruction["op"] == "CALL":
-                memory = TaintRunner.extract_taint_from_memory(records[-2].memory, int(instruction["stack"][-4], 16), int(instruction["stack"][-5], 16))
-                if memory:
-                    values += memory
-            for i in range(0, mutator[0]):
-                stack = records[-2].stack[-(i+1)]
-                if stack:
-                    values += stack
+        try:
+            if not "error" in instruction:
+                records = self.call_stack[instruction["depth"]-1]
+                mutator = TaintRunner.stack_taint_table[instruction["op"]]
+                if instruction["op"].startswith("DUP") or instruction["op"].startswith("SWAP"):
+                    stack = records[-2].stack[-mutator[0]]
+                    if stack:
+                        values += stack
+                else:
+                    if instruction["op"].startswith("LOG"):
+                        memory = TaintRunner.extract_taint_from_memory(records[-2].memory, int(instruction["stack"][-1], 16), int(instruction["stack"][-2], 16))
+                        if memory:
+                            values += memory
+                    if instruction["op"] == "CALL":
+                        memory = TaintRunner.extract_taint_from_memory(records[-2].memory, int(instruction["stack"][-4], 16), int(instruction["stack"][-5], 16))
+                        if memory:
+                            values += memory
+                    for i in range(0, mutator[0]):
+                        stack = records[-2].stack[-(i+1)]
+                        if stack:
+                            values += stack
+        except:
+            traceback.print_exc()
         return values
 
     def clear_machine_state(self):

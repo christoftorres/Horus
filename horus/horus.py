@@ -42,9 +42,9 @@ def main():
 
         group1 = parser.add_mutually_exclusive_group(required=True)
         group1.add_argument(
-            "-e", "--extract", action="store_true", help="extract datalog facts for a transaction, block or contract")
+            "-e", "--extract", action="store_true", help="extract Datalog facts for a transaction, block or contract")
         group1.add_argument(
-            "-a", "--analyze", action="store_true", help="analyze datalog facts")
+            "-a", "--analyze", action="store_true", help="analyze Datalog facts")
 
         group2 = parser.add_mutually_exclusive_group()
         group2.add_argument(
@@ -52,14 +52,14 @@ def main():
         group2.add_argument(
             "-b", "--block-number", type=int, help="block number to be extracted")
         group2.add_argument(
-            "-c", "--contract-address", type=str, help="contract address to be extracted")
+            "-c", "--contract-address", type=str, help="contract address or CSV file with transactions to be extracted")
 
         parser.add_argument(
-            "-f", "--facts-folder", type=str, help="folder where datalog facts should be extracted/analyzed (default: '"+settings.FACTS_FOLDER+"')")
+            "-f", "--facts-folder", type=str, help="folder where Datalog facts should be extracted/analyzed (default: '"+settings.FACTS_FOLDER+"')")
         parser.add_argument(
             "-r", "--results-folder", type=str, help="folder where results should be saved (default: '"+settings.RESULTS_FOLDER+"')")
         parser.add_argument(
-            "-d", "--datalog-file", type=str, help="file with datalog rules and queries to be analyzed (default: '"+settings.DATALOG_FILE+"')")
+            "-d", "--datalog-file", type=str, help="file with Datalog rules and queries to be analyzed (default: '"+settings.DATALOG_FILE+"')")
 
         parser.add_argument(
             "--debug", action="store_true", help="print debug information to the console")

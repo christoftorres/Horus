@@ -142,8 +142,10 @@ class Extractor:
                         _success = 1
                     else:
                         _success = 0
-                else:
+                elif not "error" in trace[step]:
                     _success = int(trace[i]["stack"][-1], 16)
+                else:
+                    _success = 0
                 if trace[step]["op"] == "CREATE":
                     offset = 2 * int(trace[step]["stack"][-2], 16)
                     size = 2 * int(trace[step]["stack"][-3], 16)

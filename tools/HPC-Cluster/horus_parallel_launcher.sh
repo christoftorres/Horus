@@ -1,17 +1,17 @@
 #!/bin/bash -l
 #SBATCH --mail-type=end,fail
 #SBATCH --mail-user=christof.torres@uni.lu
-#SBATCH --time=0-08:00:00 # 8 hours
+#SBATCH --time=0-08:00:00 # Execution time
 #SBATCH --partition=batch # Use the batch partition reserved for passive jobs
 #SBATCH --qos=qos-batch
-#SBATCH -J Horus_17        # Set the job name
+#SBATCH -J Horus          # Set the job name
 #SBATCH -N 1              # Number of nodes
 #SBATCH -n 28             # Number of tasks (cores)
 #SBATCH -c 1              # 1 core per task
 
 set -x
-module load lang/Python/3.6.4-intel-2018a-bare
+module load lang/Python/3.7.2-GCCcore-8.2.0
 cd /home/users/cferreira/Horus/horus
 
-parallel="parallel -j $SLURM_NTASKS --joblog runtask_$SLURM_JOBID.log --resume"
-cat $HOME/Horus/arguments/parallel_launcher_arguments_17 | $parallel "python3 horus.py -c {} -l /work/projects/horus/contracts/{}.json -r ../new_results"
+parallel="parallel -j $SLURM_NTASKS"
+cat $HOME/Horus/arguments/parallel_launcher_arguments | $parallel --colsep ' ' "python3 horus.py -e -c {1} -f {2}"
