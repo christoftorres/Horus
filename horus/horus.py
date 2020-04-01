@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import csv
 import time
 import http
 import shutil
@@ -137,6 +138,7 @@ def main():
 
         if args.extract and args.transaction_hash:
             transactions = []
+            blocks = {}
             try:
                 transaction = format_transaction(settings.W3.eth.getTransaction(args.transaction_hash))
                 if transaction["to"] and transaction["gas"] > 21000:
@@ -145,10 +147,11 @@ def main():
                 print(e)
                 print("Error: Blockchain is not in sync with transaction: "+args.transaction_hash)
             extractor = Extractor()
-            extractor.extract_facts_from_transactions(connection, transactions, settings.FACTS_FOLDER)
+            extractor.extract_facts_from_transactions(connection, transactions, blocks, settings.FACTS_FOLDER)
 
         if args.extract and args.block_number:
             transactions = []
+            blocks = {}
             try:
                 block = settings.W3.eth.getBlock(args.block_number)
                 for i in block["transactions"]:
@@ -159,61 +162,83 @@ def main():
                 print("Error: Blockchain is not in sync with block number: "+args.block_number[0])
             print("Retrieving "+str(len(transactions))+" transaction(s).\n")
             extractor = Extractor()
-            extractor.extract_facts_from_transactions(connection, transactions, settings.FACTS_FOLDER)
+            extractor.extract_facts_from_transactions(connection, transactions, blocks, settings.FACTS_FOLDER)
 
         if args.extract and args.contract_address:
             transactions = []
-            api_network = "api" if network == "mainnet" else "api-"+network
-            # Get the list of "normal" transactions for the given contract address
-            page = 1
-            while True:
-                api_response = requests.get("https://"+api_network+".etherscan.io/api?module=account&action=txlist&address="+args.contract_address+"&startblock=0&endblock="+str(settings.MAX_BLOCK_HEIGHT)+"&page="+str(page)+"&offset=10000&sort=asc&apikey="+settings.ETHERSCAN_API_TOKEN).json()
-                if not api_response or "error" in api_response:
-                    if "error" in api_response:
-                        print("An error occured in retrieving the list of transactions: "+str(api_response["error"]))
+            blocks = {}
+            if args.contract_address.startswith("0x"):
+                api_network = "api" if network == "mainnet" else "api-"+network
+                # Get the list of "normal" transactions for the given contract address
+                page = 1
+                while True:
+                    api_response = requests.get("https://"+api_network+".etherscan.io/api?module=account&action=txlist&address="+args.contract_address+"&startblock=0&endblock="+str(settings.MAX_BLOCK_HEIGHT)+"&page="+str(page)+"&offset=10000&sort=asc&apikey="+settings.ETHERSCAN_API_TOKEN).json()
+                    if not api_response or "error" in api_response:
+                        if "error" in api_response:
+                            print("An error occured in retrieving the list of transactions: "+str(api_response["error"]))
+                        else:
+                            print("An unknown error ocurred in retrieving the list of transactions!")
+                    elif "result" in api_response:
+                        if not api_response["result"] or len(api_response["result"]) == 0:
+                            break
+                        else:
+                            page += 1
+                            for result in api_response["result"]:
+                                transaction = format_transaction(settings.W3.eth.getTransaction(result["hash"]))
+                                if transaction["to"] and transaction["gas"] > 21000:
+                                    if not is_block_within_ranges(transaction["blockNumber"], settings.DOS_ATTACK_BLOCK_RANGES):
+                                        if not transaction in transactions:
+                                            transactions.append(transaction)
                     else:
-                        print("An unknown error ocurred in retrieving the list of transactions!")
-                elif "result" in api_response:
-                    if not api_response["result"] or len(api_response["result"]) == 0:
                         break
+                """# Get the list of "internal" transactions for the given contract address
+                page = 1
+                while True:
+                    api_response = requests.get("https://"+api_network+".etherscan.io/api?module=account&action=txlistinternal&address="+args.contract_address+"&startblock=0&endblock="+str(settings.MAX_BLOCK_HEIGHT)+"&page="+str(page)+"&offset=10000&sort=asc&apikey="+settings.ETHERSCAN_API_TOKEN).json()
+                    if not api_response or "error" in api_response:
+                        if "error" in api_response:
+                            print("An error occured in retrieving the list of transactions: "+str(api_response["error"]))
+                        else:
+                            print("An unknown error ocurred in retrieving the list of transactions!")
+                    elif "result" in api_response:
+                        if len(api_response["result"]) == 0:
+                            break
+                        else:
+                            page += 1
+                            for result in api_response["result"]:
+                                transaction = format_transaction(settings.W3.eth.getTransaction(result["hash"]))
+                                if transaction["to"] and transaction["gas"] > 21000:
+                                    if not is_block_within_ranges(transaction["blockNumber"], settings.DOS_ATTACK_BLOCK_RANGES):
+                                        if not transaction in transactions:
+                                            transactions.append(transaction)
                     else:
-                        page += 1
-                        for result in api_response["result"]:
-                            transaction = format_transaction(settings.W3.eth.getTransaction(result["hash"]))
-                            if transaction["to"] and transaction["gas"] > 21000:
-                                if not is_block_within_ranges(transaction["blockNumber"], settings.DOS_ATTACK_BLOCK_RANGES):
-                                    if not transaction in transactions:
-                                        transactions.append(transaction)
-                else:
-                    break
-            """# Get the list of "internal" transactions for the given contract address
-            page = 1
-            while True:
-                api_response = requests.get("https://"+api_network+".etherscan.io/api?module=account&action=txlistinternal&address="+args.contract_address+"&startblock=0&endblock="+str(settings.MAX_BLOCK_HEIGHT)+"&page="+str(page)+"&offset=10000&sort=asc&apikey="+settings.ETHERSCAN_API_TOKEN).json()
-                if not api_response or "error" in api_response:
-                    if "error" in api_response:
-                        print("An error occured in retrieving the list of transactions: "+str(api_response["error"]))
-                    else:
-                        print("An unknown error ocurred in retrieving the list of transactions!")
-                elif "result" in api_response:
-                    if len(api_response["result"]) == 0:
                         break
-                    else:
-                        page += 1
-                        for result in api_response["result"]:
-                            transaction = format_transaction(settings.W3.eth.getTransaction(result["hash"]))
-                            if transaction["to"] and transaction["gas"] > 21000:
-                                if not is_block_within_ranges(transaction["blockNumber"], settings.DOS_ATTACK_BLOCK_RANGES):
-                                    if not transaction in transactions:
-                                        transactions.append(transaction)
-                else:
-                    break
-            # Sort the list of transactions
-            from operator import itemgetter
-            transactions = sorted(transactions, key=itemgetter('blockNumber', 'transactionIndex'))"""
+                # Sort the list of transactions
+                from operator import itemgetter
+                transactions = sorted(transactions, key=itemgetter('blockNumber', 'transactionIndex'))"""
+            elif args.contract_address.endswith(".csv"):
+                with open(args.contract_address) as csvfile:
+                    reader = csv.reader(csvfile)
+                    for row in reader:
+                        transaction = {}
+                        transaction['hash'] = row[0]
+                        transaction['from'] = row[1]
+                        transaction['to'] = row[2]
+                        transaction['input'] = row[3]
+                        transaction['blockNumber'] = int(row[4])
+                        transactions.append(transaction)
+                        if row[4] not in blocks:
+                            block = {}
+                            block['number'] = int(row[4])
+                            block['gasUsed'] = int(row[5])
+                            block['gasLimit'] = int(row[6])
+                            blocks[transaction['blockNumber']] = block
+            else:
+                print("Contract requires to be either an address or a CSV file")
+                return
             print("Retrieving "+str(len(transactions))+" transaction(s).\n")
             extractor = Extractor()
-            extractor.extract_facts_from_transactions(connection, transactions, settings.FACTS_FOLDER)
+            extractor.extract_facts_from_transactions(connection, transactions, blocks, settings.FACTS_FOLDER)
 
         if args.analyze:
             if os.path.isdir(settings.RESULTS_FOLDER):
@@ -222,7 +247,7 @@ def main():
                 os.mkdir(settings.RESULTS_FOLDER)
             analyzer = Analyzer()
             analyzer.analyze_facts(settings.FACTS_FOLDER, settings.RESULTS_FOLDER, settings.DATALOG_FILE)
-        
+
         print("")
     except argparse.ArgumentTypeError as e:
         print(e)
