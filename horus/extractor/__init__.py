@@ -213,7 +213,7 @@ class Extractor:
 
         return step
 
-    def extract_facts_from_transactions(self, connection, transactions, facts_folder):
+    def extract_facts_from_transactions(self, connection, transactions, blocks, facts_folder):
         step = 0
         trace = {}
 
@@ -239,5 +239,8 @@ class Extractor:
                 print("Retrieving transaction "+transaction["hash"]+" took %.2f second(s). (%d MB)" % (retrieval_delta, (deep_getsizeof(trace, set()) / 1024) / 1024))
             else:
                 print("Retrieving transaction "+transaction["hash"]+" took %.2f second(s)." % (retrieval_delta))
-            block = format_block(settings.W3.eth.getBlock(transaction["blockNumber"]))
+            if blocks:
+                block = blocks[transaction["blockNumber"]]
+            else:
+                block = format_block(settings.W3.eth.getBlock(transaction["blockNumber"]))
             step = self.extract_facts_from_trace(facts_folder, trace, step, block, transaction, taint_runner)

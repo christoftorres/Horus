@@ -1,7 +1,7 @@
 #!/bin/bash -l
 #SBATCH --mail-type=end,fail
 #SBATCH --mail-user=christof.torres@uni.lu
-#SBATCH --time=4-00:00:00 # 4 days
+#SBATCH --time=0-24:00:00 # 24 hours
 #SBATCH --partition=bigmem # Use the batch partition reserved for passive jobs
 #SBATCH --qos=qos-bigmem
 #SBATCH -n 1              # Number of tasks (cores)
