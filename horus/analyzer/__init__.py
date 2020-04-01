@@ -5,10 +5,11 @@ import os
 import sys
 import time
 import shlex
+import shutil
 import subprocess
 
 class Analyzer:
-    def compile_datalog_file(self, atalog_file):
+    def compile_datalog_file(self, datalog_file):
         execution_path = os.path.dirname(sys.argv[0]) if os.path.dirname(sys.argv[0]) else "."
         if os.path.isdir(execution_path+"/analyzer/executable"):
             shutil.rmtree(execution_path+"/analyzer/executable")
@@ -26,11 +27,11 @@ class Analyzer:
         # Create parallel C++ executable if not available or is out-dated
         execution_path = os.path.dirname(sys.argv[0]) if os.path.dirname(sys.argv[0]) else "."
         if not os.path.isdir(execution_path+"/analyzer/executable"):
-            compile_datalog_file(datalog_file)
+            self.compile_datalog_file(datalog_file)
         elif not os.path.isfile(execution_path+"/analyzer/executable/analyzer"):
-            compile_datalog_file(datalog_file)
+            self.compile_datalog_file(datalog_file)
         elif os.stat(datalog_file)[8] > os.stat(execution_path+"/analyzer/executable/analyzer")[8]:
-            compile_datalog_file(datalog_file)
+            self.compile_datalog_file(datalog_file)
         # Run datalog analysis through executable
         analysis_begin = time.time()
         p = subprocess.Popen(shlex.split(execution_path+"/analyzer/executable/analyzer -D "+results_folder+" -F "+facts_folder), stdout=subprocess.PIPE)

@@ -1,11 +1,39 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
+import os
+import re
 import http
 import json
 import time
+import shlex
 import eth_utils
+import subprocess
 
 from sys import getsizeof
 from collections import Mapping, Container
+
+def command_exists(cmd):
+    return subprocess.call(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE) == 0
+
+def run_command(cmd):
+    FNULL = open(os.devnull, 'w')
+    solc_p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=FNULL)
+    return solc_p.communicate()[0]
+
+def has_dependencies_installed():
+    if not command_exists("souffle --version"):
+        print("souffle is missing. Please install souffle and make sure souffle is in the path.")
+        return False
+    else:
+        cmd = "souffle --version"
+        out = run_command(cmd).strip()
+        version = re.findall(r"Souffle: (\d*.\d*.\d*)", str(out))[0]
+        supported_version = '1.7.1'
+        if version != supported_version:
+            print("You are using souffle version %s. The supported version is %s." % (version, supported_version))
+            return False
+    return True
 
 def serialize_web3_object(object):
     if object.__class__.__name__ == "str":

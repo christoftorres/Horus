@@ -88,6 +88,9 @@ def main():
         if args.port:
             settings.RPC_PORT = args.port
 
+        if not has_dependencies_installed():
+            return
+
         if args.extract and (args.transaction_hash or args.block_number or args.contract_address):
             tries = 0
             network = ""
@@ -96,16 +99,22 @@ def main():
                     tries += 1
                     settings.W3 = Web3(Web3.HTTPProvider("http://"+settings.RPC_HOST+":"+str(settings.RPC_PORT)))
                     if settings.W3.isConnected():
+                        if int(settings.W3.api.split(".")[0]) <= 3:
+                            chain_id = settings.W3.version.network
+                            client_info = settings.W3.version.node
+                        else:
+                            chain_id = str(settings.W3.eth.chainId)
+                            client_info = settings.W3.clientVersion
                         network = ""
-                        if settings.W3.version.network   == "1":
+                        if   chain_id == "1":
                             network = "mainnet"
-                        elif settings.W3.version.network == "2":
+                        elif chain_id == "2":
                             network = "morden"
-                        elif settings.W3.version.network == "3":
+                        elif chain_id == "3":
                             network = "ropsten"
                         else:
                             network = "unknown"
-                        print("Connected to "+str(settings.W3.version.node)+" ("+network+")")
+                        print("Connected to "+str(client_info)+" ("+network+")")
                     else:
                         print("Error: Could not connect to Ethereum client. Please make sure the client is running and settings are correct.")
                     if not settings.W3.eth.syncing:
@@ -118,6 +127,7 @@ def main():
                         print("")
                     connection = http.client.HTTPConnection(settings.RPC_HOST, settings.RPC_PORT)
                 except Exception as e:
+                    print(e)
                     if tries < settings.CONNECTION_RETRIES:
                         print("Retrying to connect to http://"+settings.RPC_HOST+":"+str(settings.RPC_PORT))
                         time.sleep(settings.CONNECTION_RETRY_INTERVAL)
@@ -212,7 +222,7 @@ def main():
                 os.mkdir(settings.RESULTS_FOLDER)
             analyzer = Analyzer()
             analyzer.analyze_facts(settings.FACTS_FOLDER, settings.RESULTS_FOLDER, settings.DATALOG_FILE)
-
+        
         print("")
     except argparse.ArgumentTypeError as e:
         print(e)
