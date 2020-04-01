@@ -26,7 +26,7 @@ pip install -r requirements.txt
 
 # Running Instructions
 
-1. Run the <b>extractor</b> on a transaction (-t), block (-b) or contract (-c):
+1. Run the <b>extractor</b> on a transaction (```-t```), block (```-b```) or contract (```-c```):
 
 ``` shell
 cd horus
