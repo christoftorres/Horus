@@ -2,19 +2,12 @@
 #include "edb.dl"
 
 .decl data_flow(x:number, y:number)
-data_flow(x, x) :-
-  use(x, _).
-
-data_flow(x, x) :-
-  def(x, _).
-
 data_flow(x, y) :-
-  def(x, _),
   use(y, x).
 
 data_flow(x, y) :-
-  data_flow(x, z),
-  data_flow(z, y).
+  use(y, z),
+  use(z, x).
 
 .decl caller_check(step:number, hash:symbol)
 caller_check(step3, hash) :-

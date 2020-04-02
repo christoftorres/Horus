@@ -8,7 +8,7 @@ import shutil
 CONTRACTS      = "/Users/Christof/Downloads/contracts/"
 ARGUMENTS      = "arguments"
 LAUNCHERS      = "launchers"
-MAX_ARGUMENTS  = 1000
+MAX_ARGUMENTS  = 3000
 WALLTIME       = "0-08:00:00"
 CORES          = 28
 NODES          = 1

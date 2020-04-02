@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
 import csv
 import time
 import http
@@ -60,6 +61,10 @@ def main():
             "-r", "--results-folder", type=str, help="folder where results should be saved (default: '"+settings.RESULTS_FOLDER+"')")
         parser.add_argument(
             "-d", "--datalog-file", type=str, help="file with Datalog rules and queries to be analyzed (default: '"+settings.DATALOG_FILE+"')")
+        parser.add_argument(
+            "-n", "--number-of-threads", type=int, help="number of threads available to the Datalog program to run in parallel")
+        parser.add_argument(
+            "-p", "--profile", action="store_true", help="run the Souffle profiler during the execution of the Datalog program")
 
         parser.add_argument(
             "--debug", action="store_true", help="print debug information to the console")
@@ -167,7 +172,7 @@ def main():
         if args.extract and args.contract_address:
             transactions = []
             blocks = {}
-            if args.contract_address.startswith("0x"):
+            if args.contract_address.startswith("0x") and not args.contract_address.endswith(".csv") :
                 api_network = "api" if network == "mainnet" else "api-"+network
                 # Get the list of "normal" transactions for the given contract address
                 page = 1
@@ -217,6 +222,7 @@ def main():
                 from operator import itemgetter
                 transactions = sorted(transactions, key=itemgetter('blockNumber', 'transactionIndex'))"""
             elif args.contract_address.endswith(".csv"):
+                csv.field_size_limit(sys.maxsize) #https://stackoverflow.com/questions/15063936/csv-error-field-larger-than-field-limit-131072
                 with open(args.contract_address) as csvfile:
                     reader = csv.reader(csvfile)
                     for row in reader:
@@ -246,7 +252,7 @@ def main():
             if not os.path.isdir(settings.RESULTS_FOLDER):
                 os.mkdir(settings.RESULTS_FOLDER)
             analyzer = Analyzer()
-            analyzer.analyze_facts(settings.FACTS_FOLDER, settings.RESULTS_FOLDER, settings.DATALOG_FILE)
+            analyzer.analyze_facts(args.number_of_threads, args.profile, settings.FACTS_FOLDER, settings.RESULTS_FOLDER, settings.DATALOG_FILE)
 
         print("")
     except argparse.ArgumentTypeError as e:

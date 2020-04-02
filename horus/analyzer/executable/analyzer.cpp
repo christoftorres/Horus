@@ -357,133 +357,6 @@ o << prefix << "Lower-bound: " << stats_1.lower_bound.getHits() << "/" << stats_
 o << prefix << "Upper-bound: " << stats_1.upper_bound.getHits() << "/" << stats_1.upper_bound.getMisses() << "/" << stats_1.upper_bound.getAccesses() << "\n";
 }
 };
-struct t_btree_2__1_0__0_1__1__2__3 {
-using t_tuple = Tuple<RamDomain, 2>;
-using t_ind_0 = btree_set<t_tuple, index_utils::comparator<1,0>>;
-t_ind_0 ind_0;
-using t_ind_1 = btree_set<t_tuple, index_utils::comparator<0,1>>;
-t_ind_1 ind_1;
-using iterator = t_ind_0::iterator;
-struct context {
-t_ind_0::operation_hints hints_0;
-t_ind_1::operation_hints hints_1;
-};
-context createContext() { return context(); }
-bool insert(const t_tuple& t) {
-context h;
-return insert(t, h);
-}
-bool insert(const t_tuple& t, context& h) {
-if (ind_0.insert(t, h.hints_0)) {
-ind_1.insert(t, h.hints_1);
-return true;
-} else return false;
-}
-bool insert(const RamDomain* ramDomain) {
-RamDomain data[2];
-std::copy(ramDomain, ramDomain + 2, data);
-const t_tuple& tuple = reinterpret_cast<const t_tuple&>(data);
-context h;
-return insert(tuple, h);
-}
-bool insert(RamDomain a0,RamDomain a1) {
-RamDomain data[2] = {a0,a1};
-return insert(data);
-}
-template <typename T>
-void insertAll(T& other) {
-for (auto const& cur : other) {
-insert(cur);
-}
-}
-void insertAll(t_btree_2__1_0__0_1__1__2__3& other) {
-ind_0.insertAll(other.ind_0);
-ind_1.insertAll(other.ind_1);
-}
-bool contains(const t_tuple& t, context& h) const {
-return ind_0.contains(t, h.hints_0);
-}
-bool contains(const t_tuple& t) const {
-context h;
-return contains(t, h);
-}
-std::size_t size() const {
-return ind_0.size();
-}
-iterator find(const t_tuple& t, context& h) const {
-return ind_0.find(t, h.hints_0);
-}
-iterator find(const t_tuple& t) const {
-context h;
-return find(t, h);
-}
-range<iterator> equalRange_0(const t_tuple& t, context& h) const {
-return range<iterator>(ind_0.begin(),ind_0.end());
-}
-range<iterator> equalRange_0(const t_tuple& t) const {
-return range<iterator>(ind_0.begin(),ind_0.end());
-}
-range<t_ind_1::iterator> equalRange_1(const t_tuple& t, context& h) const {
-t_tuple low(t); t_tuple high(t);
-low[1] = MIN_RAM_DOMAIN;
-high[1] = MAX_RAM_DOMAIN;
-return make_range(ind_1.lower_bound(low, h.hints_1), ind_1.upper_bound(high, h.hints_1));
-}
-range<t_ind_1::iterator> equalRange_1(const t_tuple& t) const {
-context h;
-return equalRange_1(t, h);
-}
-range<t_ind_0::iterator> equalRange_2(const t_tuple& t, context& h) const {
-t_tuple low(t); t_tuple high(t);
-low[0] = MIN_RAM_DOMAIN;
-high[0] = MAX_RAM_DOMAIN;
-return make_range(ind_0.lower_bound(low, h.hints_0), ind_0.upper_bound(high, h.hints_0));
-}
-range<t_ind_0::iterator> equalRange_2(const t_tuple& t) const {
-context h;
-return equalRange_2(t, h);
-}
-range<t_ind_1::iterator> equalRange_3(const t_tuple& t, context& h) const {
-auto pos = ind_1.find(t, h.hints_1);
-auto fin = ind_1.end();
-if (pos != fin) {fin = pos; ++fin;}
-return make_range(pos, fin);
-}
-range<t_ind_1::iterator> equalRange_3(const t_tuple& t) const {
-context h;
-return equalRange_3(t, h);
-}
-bool empty() const {
-return ind_0.empty();
-}
-std::vector<range<iterator>> partition() const {
-return ind_0.getChunks(400);
-}
-void purge() {
-ind_0.clear();
-ind_1.clear();
-}
-iterator begin() const {
-return ind_0.begin();
-}
-iterator end() const {
-return ind_0.end();
-}
-void printHintStatistics(std::ostream& o, const std::string prefix) const {
-const auto& stats_0 = ind_0.getHintStatistics();
-o << prefix << "arity 2 direct b-tree index [1,0]: (hits/misses/total)\n";
-o << prefix << "Insert: " << stats_0.inserts.getHits() << "/" << stats_0.inserts.getMisses() << "/" << stats_0.inserts.getAccesses() << "\n";
-o << prefix << "Contains: " << stats_0.contains.getHits() << "/" << stats_0.contains.getMisses() << "/" << stats_0.contains.getAccesses() << "\n";
-o << prefix << "Lower-bound: " << stats_0.lower_bound.getHits() << "/" << stats_0.lower_bound.getMisses() << "/" << stats_0.lower_bound.getAccesses() << "\n";
-o << prefix << "Upper-bound: " << stats_0.upper_bound.getHits() << "/" << stats_0.upper_bound.getMisses() << "/" << stats_0.upper_bound.getAccesses() << "\n";
-const auto& stats_1 = ind_1.getHintStatistics();
-o << prefix << "arity 2 direct b-tree index [0,1]: (hits/misses/total)\n";
-o << prefix << "Insert: " << stats_1.inserts.getHits() << "/" << stats_1.inserts.getMisses() << "/" << stats_1.inserts.getAccesses() << "\n";
-o << prefix << "Contains: " << stats_1.contains.getHits() << "/" << stats_1.contains.getMisses() << "/" << stats_1.contains.getAccesses() << "\n";
-o << prefix << "Lower-bound: " << stats_1.lower_bound.getHits() << "/" << stats_1.lower_bound.getMisses() << "/" << stats_1.lower_bound.getAccesses() << "\n";
-o << prefix << "Upper-bound: " << stats_1.upper_bound.getHits() << "/" << stats_1.upper_bound.getMisses() << "/" << stats_1.upper_bound.getAccesses() << "\n";
-}
-};
 struct t_btree_2__0_1__1__3 {
 using t_tuple = Tuple<RamDomain, 2>;
 using t_ind_0 = btree_set<t_tuple, index_utils::comparator<0,1>>;
@@ -2212,114 +2085,110 @@ souffle::RelationWrapper<1,t_btree_2__1_0__2__3,Tuple<RamDomain,2>,2,1> wrapper_
 std::unique_ptr<t_btree_5__1_4_0_2_3__1_0_2_3_4__2__3__18__31> rel_3_throw = std::make_unique<t_btree_5__1_4_0_2_3__1_0_2_3_4__2__3__18__31>();
 souffle::RelationWrapper<2,t_btree_5__1_4_0_2_3__1_0_2_3_4__2__3__18__31,Tuple<RamDomain,5>,5,1> wrapper_rel_3_throw;
 // -- Table: use
-std::unique_ptr<t_btree_2__1_0__2__3> rel_4_use = std::make_unique<t_btree_2__1_0__2__3>();
-souffle::RelationWrapper<3,t_btree_2__1_0__2__3,Tuple<RamDomain,2>,2,1> wrapper_rel_4_use;
+std::unique_ptr<t_btree_2__0_1__1__3> rel_4_use = std::make_unique<t_btree_2__0_1__1__3>();
+souffle::RelationWrapper<3,t_btree_2__0_1__1__3,Tuple<RamDomain,2>,2,1> wrapper_rel_4_use;
 // -- Table: BalanceInvariant
 std::unique_ptr<t_btree_2__0_1__3> rel_5_BalanceInvariant = std::make_unique<t_btree_2__0_1__3>();
 souffle::RelationWrapper<4,t_btree_2__0_1__3,Tuple<RamDomain,2>,2,1> wrapper_rel_5_BalanceInvariant;
 // -- Table: data_flow
-std::unique_ptr<t_btree_2__1_0__0_1__1__2__3> rel_6_data_flow = std::make_unique<t_btree_2__1_0__0_1__1__2__3>();
-souffle::RelationWrapper<5,t_btree_2__1_0__0_1__1__2__3,Tuple<RamDomain,2>,2,1> wrapper_rel_6_data_flow;
-// -- Table: @delta_data_flow
-std::unique_ptr<t_btree_2__0_1__1__3> rel_7_delta_data_flow = std::make_unique<t_btree_2__0_1__1__3>();
-// -- Table: @new_data_flow
-std::unique_ptr<t_btree_2__0_1__1__3> rel_8_new_data_flow = std::make_unique<t_btree_2__0_1__1__3>();
+std::unique_ptr<t_btree_2__1_0__2__3> rel_6_data_flow = std::make_unique<t_btree_2__1_0__2__3>();
+souffle::RelationWrapper<5,t_btree_2__1_0__2__3,Tuple<RamDomain,2>,2,1> wrapper_rel_6_data_flow;
 // -- Table: used_in_condition
-std::unique_ptr<t_btree_2__0_1__1__3> rel_9_used_in_condition = std::make_unique<t_btree_2__0_1__1__3>();
-souffle::RelationWrapper<6,t_btree_2__0_1__1__3,Tuple<RamDomain,2>,2,1> wrapper_rel_9_used_in_condition;
+std::unique_ptr<t_btree_2__0_1__1__3> rel_7_used_in_condition = std::make_unique<t_btree_2__0_1__1__3>();
+souffle::RelationWrapper<6,t_btree_2__0_1__1__3,Tuple<RamDomain,2>,2,1> wrapper_rel_7_used_in_condition;
 // -- Table: caller_check
-std::unique_ptr<t_btree_2__1_0__2__3> rel_10_caller_check = std::make_unique<t_btree_2__1_0__2__3>();
-souffle::RelationWrapper<7,t_btree_2__1_0__2__3,Tuple<RamDomain,2>,2,1> wrapper_rel_10_caller_check;
+std::unique_ptr<t_btree_2__1_0__2__3> rel_8_caller_check = std::make_unique<t_btree_2__1_0__2__3>();
+souffle::RelationWrapper<7,t_btree_2__1_0__2__3,Tuple<RamDomain,2>,2,1> wrapper_rel_8_caller_check;
 // -- Table: call
-std::unique_ptr<t_btree_9__2_8_1_3_5_6_4__2_7_8_1_3_4__2_4_8_1_3_6_0_5_7__4__260__262__270__276__286__350__366__382__388__414__511> rel_11_call = std::make_unique<t_btree_9__2_8_1_3_5_6_4__2_7_8_1_3_4__2_4_8_1_3_6_0_5_7__4__260__262__270__276__286__350__366__382__388__414__511>();
-souffle::RelationWrapper<8,t_btree_9__2_8_1_3_5_6_4__2_7_8_1_3_4__2_4_8_1_3_6_0_5_7__4__260__262__270__276__286__350__366__382__388__414__511,Tuple<RamDomain,9>,9,1> wrapper_rel_11_call;
+std::unique_ptr<t_btree_9__2_8_1_3_5_6_4__2_7_8_1_3_4__2_4_8_1_3_6_0_5_7__4__260__262__270__276__286__350__366__382__388__414__511> rel_9_call = std::make_unique<t_btree_9__2_8_1_3_5_6_4__2_7_8_1_3_4__2_4_8_1_3_6_0_5_7__4__260__262__270__276__286__350__366__382__388__414__511>();
+souffle::RelationWrapper<8,t_btree_9__2_8_1_3_5_6_4__2_7_8_1_3_4__2_4_8_1_3_6_0_5_7__4__260__262__270__276__286__350__366__382__388__414__511,Tuple<RamDomain,9>,9,1> wrapper_rel_9_call;
 // -- Table: BlockStateDependence
-std::unique_ptr<t_btree_5__0_1_2_3_4__31> rel_12_BlockStateDependence = std::make_unique<t_btree_5__0_1_2_3_4__31>();
-souffle::RelationWrapper<9,t_btree_5__0_1_2_3_4__31,Tuple<RamDomain,5>,5,1> wrapper_rel_12_BlockStateDependence;
+std::unique_ptr<t_btree_5__0_1_2_3_4__31> rel_10_BlockStateDependence = std::make_unique<t_btree_5__0_1_2_3_4__31>();
+souffle::RelationWrapper<9,t_btree_5__0_1_2_3_4__31,Tuple<RamDomain,5>,5,1> wrapper_rel_10_BlockStateDependence;
 // -- Table: CallStackDepth
-std::unique_ptr<t_btree_5__0_1_2_3_4__31> rel_13_CallStackDepth = std::make_unique<t_btree_5__0_1_2_3_4__31>();
-souffle::RelationWrapper<10,t_btree_5__0_1_2_3_4__31,Tuple<RamDomain,5>,5,1> wrapper_rel_13_CallStackDepth;
+std::unique_ptr<t_btree_5__0_1_2_3_4__31> rel_11_CallStackDepth = std::make_unique<t_btree_5__0_1_2_3_4__31>();
+souffle::RelationWrapper<10,t_btree_5__0_1_2_3_4__31,Tuple<RamDomain,5>,5,1> wrapper_rel_11_CallStackDepth;
 // -- Table: CreateBasedReentrancy
-std::unique_ptr<t_btree_5__0_1_2_3_4__31> rel_14_CreateBasedReentrancy = std::make_unique<t_btree_5__0_1_2_3_4__31>();
-souffle::RelationWrapper<11,t_btree_5__0_1_2_3_4__31,Tuple<RamDomain,5>,5,1> wrapper_rel_14_CreateBasedReentrancy;
+std::unique_ptr<t_btree_5__0_1_2_3_4__31> rel_12_CreateBasedReentrancy = std::make_unique<t_btree_5__0_1_2_3_4__31>();
+souffle::RelationWrapper<11,t_btree_5__0_1_2_3_4__31,Tuple<RamDomain,5>,5,1> wrapper_rel_12_CreateBasedReentrancy;
 // -- Table: CrossFunctionReentrancy
-std::unique_ptr<t_btree_5__0_1_2_3_4__31> rel_15_CrossFunctionReentrancy = std::make_unique<t_btree_5__0_1_2_3_4__31>();
-souffle::RelationWrapper<12,t_btree_5__0_1_2_3_4__31,Tuple<RamDomain,5>,5,1> wrapper_rel_15_CrossFunctionReentrancy;
+std::unique_ptr<t_btree_5__0_1_2_3_4__31> rel_13_CrossFunctionReentrancy = std::make_unique<t_btree_5__0_1_2_3_4__31>();
+souffle::RelationWrapper<12,t_btree_5__0_1_2_3_4__31,Tuple<RamDomain,5>,5,1> wrapper_rel_13_CrossFunctionReentrancy;
 // -- Table: DelegatedReentrancy
-std::unique_ptr<t_btree_5__0_1_2_3_4__31> rel_16_DelegatedReentrancy = std::make_unique<t_btree_5__0_1_2_3_4__31>();
-souffle::RelationWrapper<13,t_btree_5__0_1_2_3_4__31,Tuple<RamDomain,5>,5,1> wrapper_rel_16_DelegatedReentrancy;
+std::unique_ptr<t_btree_5__0_1_2_3_4__31> rel_14_DelegatedReentrancy = std::make_unique<t_btree_5__0_1_2_3_4__31>();
+souffle::RelationWrapper<13,t_btree_5__0_1_2_3_4__31,Tuple<RamDomain,5>,5,1> wrapper_rel_14_DelegatedReentrancy;
 // -- Table: DoSWithUnexpectedThrow
-std::unique_ptr<t_btree_5__0_1_2_3_4__31> rel_17_DoSWithUnexpectedThrow = std::make_unique<t_btree_5__0_1_2_3_4__31>();
-souffle::RelationWrapper<14,t_btree_5__0_1_2_3_4__31,Tuple<RamDomain,5>,5,1> wrapper_rel_17_DoSWithUnexpectedThrow;
+std::unique_ptr<t_btree_5__0_1_2_3_4__31> rel_15_DoSWithUnexpectedThrow = std::make_unique<t_btree_5__0_1_2_3_4__31>();
+souffle::RelationWrapper<14,t_btree_5__0_1_2_3_4__31,Tuple<RamDomain,5>,5,1> wrapper_rel_15_DoSWithUnexpectedThrow;
 // -- Table: Reentrancy
-std::unique_ptr<t_btree_5__0_1_2_3_4__31> rel_18_Reentrancy = std::make_unique<t_btree_5__0_1_2_3_4__31>();
-souffle::RelationWrapper<15,t_btree_5__0_1_2_3_4__31,Tuple<RamDomain,5>,5,1> wrapper_rel_18_Reentrancy;
+std::unique_ptr<t_btree_5__0_1_2_3_4__31> rel_16_Reentrancy = std::make_unique<t_btree_5__0_1_2_3_4__31>();
+souffle::RelationWrapper<15,t_btree_5__0_1_2_3_4__31,Tuple<RamDomain,5>,5,1> wrapper_rel_16_Reentrancy;
 // -- Table: TimestampDependence
-std::unique_ptr<t_btree_5__0_1_2_3_4__31> rel_19_TimestampDependence = std::make_unique<t_btree_5__0_1_2_3_4__31>();
-souffle::RelationWrapper<16,t_btree_5__0_1_2_3_4__31,Tuple<RamDomain,5>,5,1> wrapper_rel_19_TimestampDependence;
+std::unique_ptr<t_btree_5__0_1_2_3_4__31> rel_17_TimestampDependence = std::make_unique<t_btree_5__0_1_2_3_4__31>();
+souffle::RelationWrapper<16,t_btree_5__0_1_2_3_4__31,Tuple<RamDomain,5>,5,1> wrapper_rel_17_TimestampDependence;
 // -- Table: UncheckedDelegatecall
-std::unique_ptr<t_btree_4__0_1_2_3__15> rel_20_UncheckedDelegatecall = std::make_unique<t_btree_4__0_1_2_3__15>();
-souffle::RelationWrapper<17,t_btree_4__0_1_2_3__15,Tuple<RamDomain,4>,4,1> wrapper_rel_20_UncheckedDelegatecall;
+std::unique_ptr<t_btree_4__0_1_2_3__15> rel_18_UncheckedDelegatecall = std::make_unique<t_btree_4__0_1_2_3__15>();
+souffle::RelationWrapper<17,t_btree_4__0_1_2_3__15,Tuple<RamDomain,4>,4,1> wrapper_rel_18_UncheckedDelegatecall;
 // -- Table: UnhandledException
-std::unique_ptr<t_btree_5__0_1_2_3_4__31> rel_21_UnhandledException = std::make_unique<t_btree_5__0_1_2_3_4__31>();
-souffle::RelationWrapper<18,t_btree_5__0_1_2_3_4__31,Tuple<RamDomain,5>,5,1> wrapper_rel_21_UnhandledException;
+std::unique_ptr<t_btree_5__0_1_2_3_4__31> rel_19_UnhandledException = std::make_unique<t_btree_5__0_1_2_3_4__31>();
+souffle::RelationWrapper<18,t_btree_5__0_1_2_3_4__31,Tuple<RamDomain,5>,5,1> wrapper_rel_19_UnhandledException;
 // -- Table: block
-std::unique_ptr<t_btree_3__0_1_2__7> rel_22_block = std::make_unique<t_btree_3__0_1_2__7>();
-souffle::RelationWrapper<19,t_btree_3__0_1_2__7,Tuple<RamDomain,3>,3,1> wrapper_rel_22_block;
+std::unique_ptr<t_btree_3__0_1_2__7> rel_20_block = std::make_unique<t_btree_3__0_1_2__7>();
+souffle::RelationWrapper<19,t_btree_3__0_1_2__7,Tuple<RamDomain,3>,3,1> wrapper_rel_20_block;
 // -- Table: error
-std::unique_ptr<t_btree_2__0_1__3> rel_23_error = std::make_unique<t_btree_2__0_1__3>();
-souffle::RelationWrapper<20,t_btree_2__0_1__3,Tuple<RamDomain,2>,2,1> wrapper_rel_23_error;
+std::unique_ptr<t_btree_2__0_1__3> rel_21_error = std::make_unique<t_btree_2__0_1__3>();
+souffle::RelationWrapper<20,t_btree_2__0_1__3,Tuple<RamDomain,2>,2,1> wrapper_rel_21_error;
 // -- Table: InsufficientGas
-std::unique_ptr<t_btree_4__0_1_2_3__15> rel_24_InsufficientGas = std::make_unique<t_btree_4__0_1_2_3__15>();
-souffle::RelationWrapper<21,t_btree_4__0_1_2_3__15,Tuple<RamDomain,4>,4,1> wrapper_rel_24_InsufficientGas;
+std::unique_ptr<t_btree_4__0_1_2_3__15> rel_22_InsufficientGas = std::make_unique<t_btree_4__0_1_2_3__15>();
+souffle::RelationWrapper<21,t_btree_4__0_1_2_3__15,Tuple<RamDomain,4>,4,1> wrapper_rel_22_InsufficientGas;
 // -- Table: transaction
-std::unique_ptr<t_btree_5__0_4_1_2_3__1__17__31> rel_25_transaction = std::make_unique<t_btree_5__0_4_1_2_3__1__17__31>();
-souffle::RelationWrapper<22,t_btree_5__0_4_1_2_3__1__17__31,Tuple<RamDomain,5>,5,1> wrapper_rel_25_transaction;
+std::unique_ptr<t_btree_5__0_4_1_2_3__1__17__31> rel_23_transaction = std::make_unique<t_btree_5__0_4_1_2_3__1__17__31>();
+souffle::RelationWrapper<22,t_btree_5__0_4_1_2_3__1__17__31,Tuple<RamDomain,5>,5,1> wrapper_rel_23_transaction;
 // -- Table: DoSWithBlockGasLimit
-std::unique_ptr<t_btree_6__0_1_2_3_4_5__63> rel_26_DoSWithBlockGasLimit = std::make_unique<t_btree_6__0_1_2_3_4_5__63>();
-souffle::RelationWrapper<23,t_btree_6__0_1_2_3_4_5__63,Tuple<RamDomain,6>,6,1> wrapper_rel_26_DoSWithBlockGasLimit;
+std::unique_ptr<t_btree_6__0_1_2_3_4_5__63> rel_24_DoSWithBlockGasLimit = std::make_unique<t_btree_6__0_1_2_3_4_5__63>();
+souffle::RelationWrapper<23,t_btree_6__0_1_2_3_4_5__63,Tuple<RamDomain,6>,6,1> wrapper_rel_24_DoSWithBlockGasLimit;
 // -- Table: TransactionStateDependence
-std::unique_ptr<t_btree_5__0_1_2_3_4__31> rel_27_TransactionStateDependence = std::make_unique<t_btree_5__0_1_2_3_4__31>();
-souffle::RelationWrapper<24,t_btree_5__0_1_2_3_4__31,Tuple<RamDomain,5>,5,1> wrapper_rel_27_TransactionStateDependence;
+std::unique_ptr<t_btree_5__0_1_2_3_4__31> rel_25_TransactionStateDependence = std::make_unique<t_btree_5__0_1_2_3_4__31>();
+souffle::RelationWrapper<24,t_btree_5__0_1_2_3_4__31,Tuple<RamDomain,5>,5,1> wrapper_rel_25_TransactionStateDependence;
 // -- Table: arithmetic
-std::unique_ptr<t_btree_6__1_0_2_3_4_5__2__63> rel_28_arithmetic = std::make_unique<t_btree_6__1_0_2_3_4_5__2__63>();
-souffle::RelationWrapper<25,t_btree_6__1_0_2_3_4_5__2__63,Tuple<RamDomain,6>,6,1> wrapper_rel_28_arithmetic;
+std::unique_ptr<t_btree_6__1_0_2_3_4_5__2__63> rel_26_arithmetic = std::make_unique<t_btree_6__1_0_2_3_4_5__2__63>();
+souffle::RelationWrapper<25,t_btree_6__1_0_2_3_4_5__2__63,Tuple<RamDomain,6>,6,1> wrapper_rel_26_arithmetic;
 // -- Table: storage
-std::unique_ptr<t_btree_7__1_4_5_6__1_3_4_5_6__1_2_5_6_0_3_4__2__10__102__114__122__127> rel_29_storage = std::make_unique<t_btree_7__1_4_5_6__1_3_4_5_6__1_2_5_6_0_3_4__2__10__102__114__122__127>();
-souffle::RelationWrapper<26,t_btree_7__1_4_5_6__1_3_4_5_6__1_2_5_6_0_3_4__2__10__102__114__122__127,Tuple<RamDomain,7>,7,1> wrapper_rel_29_storage;
+std::unique_ptr<t_btree_7__1_4_5_6__1_3_4_5_6__1_2_5_6_0_3_4__2__10__102__114__122__127> rel_27_storage = std::make_unique<t_btree_7__1_4_5_6__1_3_4_5_6__1_2_5_6_0_3_4__2__10__102__114__122__127>();
+souffle::RelationWrapper<26,t_btree_7__1_4_5_6__1_3_4_5_6__1_2_5_6_0_3_4__2__10__102__114__122__127,Tuple<RamDomain,7>,7,1> wrapper_rel_27_storage;
 // -- Table: ParityWalletHack1
-std::unique_ptr<t_btree_5__0_1_2_3_4__31> rel_30_ParityWalletHack1 = std::make_unique<t_btree_5__0_1_2_3_4__31>();
-souffle::RelationWrapper<27,t_btree_5__0_1_2_3_4__31,Tuple<RamDomain,5>,5,1> wrapper_rel_30_ParityWalletHack1;
+std::unique_ptr<t_btree_5__0_1_2_3_4__31> rel_28_ParityWalletHack1 = std::make_unique<t_btree_5__0_1_2_3_4__31>();
+souffle::RelationWrapper<27,t_btree_5__0_1_2_3_4__31,Tuple<RamDomain,5>,5,1> wrapper_rel_28_ParityWalletHack1;
 // -- Table: TransactionOrderDependency
-std::unique_ptr<t_btree_4__0_1_2_3__15> rel_31_TransactionOrderDependency = std::make_unique<t_btree_4__0_1_2_3__15>();
-souffle::RelationWrapper<28,t_btree_4__0_1_2_3__15,Tuple<RamDomain,4>,4,1> wrapper_rel_31_TransactionOrderDependency;
+std::unique_ptr<t_btree_4__0_1_2_3__15> rel_29_TransactionOrderDependency = std::make_unique<t_btree_4__0_1_2_3__15>();
+souffle::RelationWrapper<28,t_btree_4__0_1_2_3__15,Tuple<RamDomain,4>,4,1> wrapper_rel_29_TransactionOrderDependency;
 // -- Table: transfer
-std::unique_ptr<t_btree_5__1_0_2_3_4__2__31> rel_32_transfer = std::make_unique<t_btree_5__1_0_2_3_4__2__31>();
-souffle::RelationWrapper<29,t_btree_5__1_0_2_3_4__2__31,Tuple<RamDomain,5>,5,1> wrapper_rel_32_transfer;
+std::unique_ptr<t_btree_5__1_0_2_3_4__2__31> rel_30_transfer = std::make_unique<t_btree_5__1_0_2_3_4__2__31>();
+souffle::RelationWrapper<29,t_btree_5__1_0_2_3_4__2__31,Tuple<RamDomain,5>,5,1> wrapper_rel_30_transfer;
 // -- Table: IntegerOverflow
-std::unique_ptr<t_btree_10__0_1_2_3_4_5_6_7_8_9__1023> rel_33_IntegerOverflow = std::make_unique<t_btree_10__0_1_2_3_4_5_6_7_8_9__1023>();
-souffle::RelationWrapper<30,t_btree_10__0_1_2_3_4_5_6_7_8_9__1023,Tuple<RamDomain,10>,10,1> wrapper_rel_33_IntegerOverflow;
+std::unique_ptr<t_btree_10__0_1_2_3_4_5_6_7_8_9__1023> rel_31_IntegerOverflow = std::make_unique<t_btree_10__0_1_2_3_4_5_6_7_8_9__1023>();
+souffle::RelationWrapper<30,t_btree_10__0_1_2_3_4_5_6_7_8_9__1023,Tuple<RamDomain,10>,10,1> wrapper_rel_31_IntegerOverflow;
 // -- Table: IntegerUnderflow
-std::unique_ptr<t_btree_9__0_1_2_3_4_5_6_7_8__511> rel_34_IntegerUnderflow = std::make_unique<t_btree_9__0_1_2_3_4_5_6_7_8__511>();
-souffle::RelationWrapper<31,t_btree_9__0_1_2_3_4_5_6_7_8__511,Tuple<RamDomain,9>,9,1> wrapper_rel_34_IntegerUnderflow;
+std::unique_ptr<t_btree_9__0_1_2_3_4_5_6_7_8__511> rel_32_IntegerUnderflow = std::make_unique<t_btree_9__0_1_2_3_4_5_6_7_8__511>();
+souffle::RelationWrapper<31,t_btree_9__0_1_2_3_4_5_6_7_8__511,Tuple<RamDomain,9>,9,1> wrapper_rel_32_IntegerUnderflow;
 // -- Table: UncheckedSignature
-std::unique_ptr<t_btree_6__0_1_2_3_4_5__63> rel_35_UncheckedSignature = std::make_unique<t_btree_6__0_1_2_3_4_5__63>();
-souffle::RelationWrapper<32,t_btree_6__0_1_2_3_4_5__63,Tuple<RamDomain,6>,6,1> wrapper_rel_35_UncheckedSignature;
+std::unique_ptr<t_btree_6__0_1_2_3_4_5__63> rel_33_UncheckedSignature = std::make_unique<t_btree_6__0_1_2_3_4_5__63>();
+souffle::RelationWrapper<32,t_btree_6__0_1_2_3_4_5__63,Tuple<RamDomain,6>,6,1> wrapper_rel_33_UncheckedSignature;
 // -- Table: selfdestruct
-std::unique_ptr<t_btree_4__1_0_2_3__2__15> rel_36_selfdestruct = std::make_unique<t_btree_4__1_0_2_3__2__15>();
-souffle::RelationWrapper<33,t_btree_4__1_0_2_3__2__15,Tuple<RamDomain,4>,4,1> wrapper_rel_36_selfdestruct;
+std::unique_ptr<t_btree_4__1_0_2_3__2__15> rel_34_selfdestruct = std::make_unique<t_btree_4__1_0_2_3__2__15>();
+souffle::RelationWrapper<33,t_btree_4__1_0_2_3__2__15,Tuple<RamDomain,4>,4,1> wrapper_rel_34_selfdestruct;
 // -- Table: ParityWalletHack2
-std::unique_ptr<t_btree_4__0_1_2_3__15> rel_37_ParityWalletHack2 = std::make_unique<t_btree_4__0_1_2_3__15>();
-souffle::RelationWrapper<34,t_btree_4__0_1_2_3__15,Tuple<RamDomain,4>,4,1> wrapper_rel_37_ParityWalletHack2;
+std::unique_ptr<t_btree_4__0_1_2_3__15> rel_35_ParityWalletHack2 = std::make_unique<t_btree_4__0_1_2_3__15>();
+souffle::RelationWrapper<34,t_btree_4__0_1_2_3__15,Tuple<RamDomain,4>,4,1> wrapper_rel_35_ParityWalletHack2;
 // -- Table: UncheckedSuicide
-std::unique_ptr<t_btree_4__0_1_2_3__15> rel_38_UncheckedSuicide = std::make_unique<t_btree_4__0_1_2_3__15>();
-souffle::RelationWrapper<35,t_btree_4__0_1_2_3__15,Tuple<RamDomain,4>,4,1> wrapper_rel_38_UncheckedSuicide;
+std::unique_ptr<t_btree_4__0_1_2_3__15> rel_36_UncheckedSuicide = std::make_unique<t_btree_4__0_1_2_3__15>();
+souffle::RelationWrapper<35,t_btree_4__0_1_2_3__15,Tuple<RamDomain,4>,4,1> wrapper_rel_36_UncheckedSuicide;
 // -- Table: bitwise_logic
-std::unique_ptr<t_btree_4__1_0_2_3__2__15> rel_39_bitwise_logic = std::make_unique<t_btree_4__1_0_2_3__2__15>();
-souffle::RelationWrapper<36,t_btree_4__1_0_2_3__2__15,Tuple<RamDomain,4>,4,1> wrapper_rel_39_bitwise_logic;
+std::unique_ptr<t_btree_4__1_0_2_3__2__15> rel_37_bitwise_logic = std::make_unique<t_btree_4__1_0_2_3__2__15>();
+souffle::RelationWrapper<36,t_btree_4__1_0_2_3__2__15,Tuple<RamDomain,4>,4,1> wrapper_rel_37_bitwise_logic;
 // -- Table: ShortAddress
-std::unique_ptr<t_btree_5__0_1_2_3_4__31> rel_40_ShortAddress = std::make_unique<t_btree_5__0_1_2_3_4__31>();
-souffle::RelationWrapper<37,t_btree_5__0_1_2_3_4__31,Tuple<RamDomain,5>,5,1> wrapper_rel_40_ShortAddress;
+std::unique_ptr<t_btree_5__0_1_2_3_4__31> rel_38_ShortAddress = std::make_unique<t_btree_5__0_1_2_3_4__31>();
+souffle::RelationWrapper<37,t_btree_5__0_1_2_3_4__31,Tuple<RamDomain,5>,5,1> wrapper_rel_38_ShortAddress;
 public:
 Sf_analyzer() : 
 wrapper_rel_1_condition(*rel_1_condition,symTable,"condition",std::array<const char *,2>{{"i:number","s:symbol"}},std::array<const char *,2>{{"step","transaction_hash"}}),
@@ -2334,107 +2203,107 @@ wrapper_rel_5_BalanceInvariant(*rel_5_BalanceInvariant,symTable,"BalanceInvarian
 
 wrapper_rel_6_data_flow(*rel_6_data_flow,symTable,"data_flow",std::array<const char *,2>{{"i:number","i:number"}},std::array<const char *,2>{{"x","y"}}),
 
-wrapper_rel_9_used_in_condition(*rel_9_used_in_condition,symTable,"used_in_condition",std::array<const char *,2>{{"i:number","s:symbol"}},std::array<const char *,2>{{"step","hash"}}),
+wrapper_rel_7_used_in_condition(*rel_7_used_in_condition,symTable,"used_in_condition",std::array<const char *,2>{{"i:number","s:symbol"}},std::array<const char *,2>{{"step","hash"}}),
 
-wrapper_rel_10_caller_check(*rel_10_caller_check,symTable,"caller_check",std::array<const char *,2>{{"i:number","s:symbol"}},std::array<const char *,2>{{"step","hash"}}),
+wrapper_rel_8_caller_check(*rel_8_caller_check,symTable,"caller_check",std::array<const char *,2>{{"i:number","s:symbol"}},std::array<const char *,2>{{"step","hash"}}),
 
-wrapper_rel_11_call(*rel_11_call,symTable,"call",std::array<const char *,9>{{"i:number","s:symbol","s:Opcode","s:Address","s:Address","s:symbol","s:Value","i:number","i:number"}},std::array<const char *,9>{{"step","transaction_hash","opcode","caller","callee","input_data","amount","depth","success"}}),
+wrapper_rel_9_call(*rel_9_call,symTable,"call",std::array<const char *,9>{{"i:number","s:symbol","s:Opcode","s:Address","s:Address","s:symbol","s:Value","i:number","i:number"}},std::array<const char *,9>{{"step","transaction_hash","opcode","caller","callee","input_data","amount","depth","success"}}),
 
-wrapper_rel_12_BlockStateDependence(*rel_12_BlockStateDependence,symTable,"BlockStateDependence",std::array<const char *,5>{{"s:symbol","i:number","s:Address","s:Address","s:Value"}},std::array<const char *,5>{{"hash","step","caller","callee","amount"}}),
+wrapper_rel_10_BlockStateDependence(*rel_10_BlockStateDependence,symTable,"BlockStateDependence",std::array<const char *,5>{{"s:symbol","i:number","s:Address","s:Address","s:Value"}},std::array<const char *,5>{{"hash","step","caller","callee","amount"}}),
 
-wrapper_rel_13_CallStackDepth(*rel_13_CallStackDepth,symTable,"CallStackDepth",std::array<const char *,5>{{"s:symbol","i:number","s:Address","s:Address","s:Value"}},std::array<const char *,5>{{"hash","step","caller","callee","amount"}}),
+wrapper_rel_11_CallStackDepth(*rel_11_CallStackDepth,symTable,"CallStackDepth",std::array<const char *,5>{{"s:symbol","i:number","s:Address","s:Address","s:Value"}},std::array<const char *,5>{{"hash","step","caller","callee","amount"}}),
 
-wrapper_rel_14_CreateBasedReentrancy(*rel_14_CreateBasedReentrancy,symTable,"CreateBasedReentrancy",std::array<const char *,5>{{"s:symbol","s:Address","s:Address","s:Value","i:number"}},std::array<const char *,5>{{"hash","caller","callee","amount","depth"}}),
+wrapper_rel_12_CreateBasedReentrancy(*rel_12_CreateBasedReentrancy,symTable,"CreateBasedReentrancy",std::array<const char *,5>{{"s:symbol","s:Address","s:Address","s:Value","i:number"}},std::array<const char *,5>{{"hash","caller","callee","amount","depth"}}),
 
-wrapper_rel_15_CrossFunctionReentrancy(*rel_15_CrossFunctionReentrancy,symTable,"CrossFunctionReentrancy",std::array<const char *,5>{{"s:symbol","s:Address","s:Address","s:Value","i:number"}},std::array<const char *,5>{{"hash","caller","callee","amount","depth"}}),
+wrapper_rel_13_CrossFunctionReentrancy(*rel_13_CrossFunctionReentrancy,symTable,"CrossFunctionReentrancy",std::array<const char *,5>{{"s:symbol","s:Address","s:Address","s:Value","i:number"}},std::array<const char *,5>{{"hash","caller","callee","amount","depth"}}),
 
-wrapper_rel_16_DelegatedReentrancy(*rel_16_DelegatedReentrancy,symTable,"DelegatedReentrancy",std::array<const char *,5>{{"s:symbol","s:Address","s:Address","s:Value","i:number"}},std::array<const char *,5>{{"hash","caller","callee","amount","depth"}}),
+wrapper_rel_14_DelegatedReentrancy(*rel_14_DelegatedReentrancy,symTable,"DelegatedReentrancy",std::array<const char *,5>{{"s:symbol","s:Address","s:Address","s:Value","i:number"}},std::array<const char *,5>{{"hash","caller","callee","amount","depth"}}),
 
-wrapper_rel_17_DoSWithUnexpectedThrow(*rel_17_DoSWithUnexpectedThrow,symTable,"DoSWithUnexpectedThrow",std::array<const char *,5>{{"s:symbol","i:number","s:Address","s:Address","s:Value"}},std::array<const char *,5>{{"hash","step","caller","callee","amount"}}),
+wrapper_rel_15_DoSWithUnexpectedThrow(*rel_15_DoSWithUnexpectedThrow,symTable,"DoSWithUnexpectedThrow",std::array<const char *,5>{{"s:symbol","i:number","s:Address","s:Address","s:Value"}},std::array<const char *,5>{{"hash","step","caller","callee","amount"}}),
 
-wrapper_rel_18_Reentrancy(*rel_18_Reentrancy,symTable,"Reentrancy",std::array<const char *,5>{{"s:symbol","s:Address","s:Address","s:Value","i:number"}},std::array<const char *,5>{{"hash","caller","callee","amount","depth"}}),
+wrapper_rel_16_Reentrancy(*rel_16_Reentrancy,symTable,"Reentrancy",std::array<const char *,5>{{"s:symbol","s:Address","s:Address","s:Value","i:number"}},std::array<const char *,5>{{"hash","caller","callee","amount","depth"}}),
 
-wrapper_rel_19_TimestampDependence(*rel_19_TimestampDependence,symTable,"TimestampDependence",std::array<const char *,5>{{"s:symbol","i:number","s:Address","s:Address","s:Value"}},std::array<const char *,5>{{"hash","step","caller","callee","amount"}}),
+wrapper_rel_17_TimestampDependence(*rel_17_TimestampDependence,symTable,"TimestampDependence",std::array<const char *,5>{{"s:symbol","i:number","s:Address","s:Address","s:Value"}},std::array<const char *,5>{{"hash","step","caller","callee","amount"}}),
 
-wrapper_rel_20_UncheckedDelegatecall(*rel_20_UncheckedDelegatecall,symTable,"UncheckedDelegatecall",std::array<const char *,4>{{"s:symbol","i:number","s:Address","s:Address"}},std::array<const char *,4>{{"hash","step","caller","callee"}}),
+wrapper_rel_18_UncheckedDelegatecall(*rel_18_UncheckedDelegatecall,symTable,"UncheckedDelegatecall",std::array<const char *,4>{{"s:symbol","i:number","s:Address","s:Address"}},std::array<const char *,4>{{"hash","step","caller","callee"}}),
 
-wrapper_rel_21_UnhandledException(*rel_21_UnhandledException,symTable,"UnhandledException",std::array<const char *,5>{{"s:symbol","i:number","s:Address","s:Address","s:Value"}},std::array<const char *,5>{{"hash","step","caller","callee","amount"}}),
+wrapper_rel_19_UnhandledException(*rel_19_UnhandledException,symTable,"UnhandledException",std::array<const char *,5>{{"s:symbol","i:number","s:Address","s:Address","s:Value"}},std::array<const char *,5>{{"hash","step","caller","callee","amount"}}),
 
-wrapper_rel_22_block(*rel_22_block,symTable,"block",std::array<const char *,3>{{"i:number","i:number","i:number"}},std::array<const char *,3>{{"block","gas_used","gas_limit"}}),
+wrapper_rel_20_block(*rel_20_block,symTable,"block",std::array<const char *,3>{{"i:number","i:number","i:number"}},std::array<const char *,3>{{"block","gas_used","gas_limit"}}),
 
-wrapper_rel_23_error(*rel_23_error,symTable,"error",std::array<const char *,2>{{"s:symbol","s:symbol"}},std::array<const char *,2>{{"transaction_hash","error_message"}}),
+wrapper_rel_21_error(*rel_21_error,symTable,"error",std::array<const char *,2>{{"s:symbol","s:symbol"}},std::array<const char *,2>{{"transaction_hash","error_message"}}),
 
-wrapper_rel_24_InsufficientGas(*rel_24_InsufficientGas,symTable,"InsufficientGas",std::array<const char *,4>{{"s:symbol","i:number","s:Address","s:Address"}},std::array<const char *,4>{{"hash","step","caller","callee"}}),
+wrapper_rel_22_InsufficientGas(*rel_22_InsufficientGas,symTable,"InsufficientGas",std::array<const char *,4>{{"s:symbol","i:number","s:Address","s:Address"}},std::array<const char *,4>{{"hash","step","caller","callee"}}),
 
-wrapper_rel_25_transaction(*rel_25_transaction,symTable,"transaction",std::array<const char *,5>{{"s:symbol","s:Address","s:Address","s:symbol","i:number"}},std::array<const char *,5>{{"transaction_hash","from","to","input_data","block"}}),
+wrapper_rel_23_transaction(*rel_23_transaction,symTable,"transaction",std::array<const char *,5>{{"s:symbol","s:Address","s:Address","s:symbol","i:number"}},std::array<const char *,5>{{"transaction_hash","from","to","input_data","block"}}),
 
-wrapper_rel_26_DoSWithBlockGasLimit(*rel_26_DoSWithBlockGasLimit,symTable,"DoSWithBlockGasLimit",std::array<const char *,6>{{"s:symbol","i:number","i:number","s:Address","s:Address","s:Value"}},std::array<const char *,6>{{"hash","step","gas_limit","caller","callee","amount"}}),
+wrapper_rel_24_DoSWithBlockGasLimit(*rel_24_DoSWithBlockGasLimit,symTable,"DoSWithBlockGasLimit",std::array<const char *,6>{{"s:symbol","i:number","i:number","s:Address","s:Address","s:Value"}},std::array<const char *,6>{{"hash","step","gas_limit","caller","callee","amount"}}),
 
-wrapper_rel_27_TransactionStateDependence(*rel_27_TransactionStateDependence,symTable,"TransactionStateDependence",std::array<const char *,5>{{"s:symbol","i:number","s:Address","s:Address","s:Value"}},std::array<const char *,5>{{"hash","step","caller","callee","amount"}}),
+wrapper_rel_25_TransactionStateDependence(*rel_25_TransactionStateDependence,symTable,"TransactionStateDependence",std::array<const char *,5>{{"s:symbol","i:number","s:Address","s:Address","s:Value"}},std::array<const char *,5>{{"hash","step","caller","callee","amount"}}),
 
-wrapper_rel_28_arithmetic(*rel_28_arithmetic,symTable,"arithmetic",std::array<const char *,6>{{"i:number","s:Opcode","s:Value","s:Value","s:Value","s:Value"}},std::array<const char *,6>{{"step","opcode","first_operand","second_operand","arithmetic_result","evm_result"}}),
+wrapper_rel_26_arithmetic(*rel_26_arithmetic,symTable,"arithmetic",std::array<const char *,6>{{"i:number","s:Opcode","s:Value","s:Value","s:Value","s:Value"}},std::array<const char *,6>{{"step","opcode","first_operand","second_operand","arithmetic_result","evm_result"}}),
 
-wrapper_rel_29_storage(*rel_29_storage,symTable,"storage",std::array<const char *,7>{{"i:number","s:Opcode","i:number","s:Value","s:Address","s:Address","s:Value"}},std::array<const char *,7>{{"step","opcode","block","transaction","caller","contract","storage_index"}}),
+wrapper_rel_27_storage(*rel_27_storage,symTable,"storage",std::array<const char *,7>{{"i:number","s:Opcode","i:number","s:Value","s:Address","s:Address","s:Value"}},std::array<const char *,7>{{"step","opcode","block","transaction","caller","contract","storage_index"}}),
 
-wrapper_rel_30_ParityWalletHack1(*rel_30_ParityWalletHack1,symTable,"ParityWalletHack1",std::array<const char *,5>{{"s:symbol","i:number","s:Address","s:Address","s:Value"}},std::array<const char *,5>{{"hash","step","caller","callee","amount"}}),
+wrapper_rel_28_ParityWalletHack1(*rel_28_ParityWalletHack1,symTable,"ParityWalletHack1",std::array<const char *,5>{{"s:symbol","i:number","s:Address","s:Address","s:Value"}},std::array<const char *,5>{{"hash","step","caller","callee","amount"}}),
 
-wrapper_rel_31_TransactionOrderDependency(*rel_31_TransactionOrderDependency,symTable,"TransactionOrderDependency",std::array<const char *,4>{{"s:symbol","s:symbol","i:number","s:Value"}},std::array<const char *,4>{{"transaction1","transaction2","block","storage_index"}}),
+wrapper_rel_29_TransactionOrderDependency(*rel_29_TransactionOrderDependency,symTable,"TransactionOrderDependency",std::array<const char *,4>{{"s:symbol","s:symbol","i:number","s:Value"}},std::array<const char *,4>{{"transaction1","transaction2","block","storage_index"}}),
 
-wrapper_rel_32_transfer(*rel_32_transfer,symTable,"transfer",std::array<const char *,5>{{"i:number","s:symbol","s:Address","s:Address","s:Value"}},std::array<const char *,5>{{"step","transaction_hash","from","to","value"}}),
+wrapper_rel_30_transfer(*rel_30_transfer,symTable,"transfer",std::array<const char *,5>{{"i:number","s:symbol","s:Address","s:Address","s:Value"}},std::array<const char *,5>{{"step","transaction_hash","from","to","value"}}),
 
-wrapper_rel_33_IntegerOverflow(*rel_33_IntegerOverflow,symTable,"IntegerOverflow",std::array<const char *,10>{{"s:symbol","i:number","s:Opcode","s:Value","s:Value","s:Value","s:Value","s:Address","s:Address","s:Value"}},std::array<const char *,10>{{"hash","step","opcode","first_operand","second_operand","arithmetic_result","evm_result","from","to","value"}}),
+wrapper_rel_31_IntegerOverflow(*rel_31_IntegerOverflow,symTable,"IntegerOverflow",std::array<const char *,10>{{"s:symbol","i:number","s:Opcode","s:Value","s:Value","s:Value","s:Value","s:Address","s:Address","s:Value"}},std::array<const char *,10>{{"hash","step","opcode","first_operand","second_operand","arithmetic_result","evm_result","from","to","value"}}),
 
-wrapper_rel_34_IntegerUnderflow(*rel_34_IntegerUnderflow,symTable,"IntegerUnderflow",std::array<const char *,9>{{"s:symbol","i:number","s:Value","s:Value","s:Value","s:Value","s:Address","s:Address","s:Value"}},std::array<const char *,9>{{"hash","step","first_operand","second_operand","arithmetic_result","evm_result","from","to","value"}}),
+wrapper_rel_32_IntegerUnderflow(*rel_32_IntegerUnderflow,symTable,"IntegerUnderflow",std::array<const char *,9>{{"s:symbol","i:number","s:Value","s:Value","s:Value","s:Value","s:Address","s:Address","s:Value"}},std::array<const char *,9>{{"hash","step","first_operand","second_operand","arithmetic_result","evm_result","from","to","value"}}),
 
-wrapper_rel_35_UncheckedSignature(*rel_35_UncheckedSignature,symTable,"UncheckedSignature",std::array<const char *,6>{{"s:symbol","i:number","s:symbol","s:Address","s:Address","s:Value"}},std::array<const char *,6>{{"hash","step","input_data","from","to","value"}}),
+wrapper_rel_33_UncheckedSignature(*rel_33_UncheckedSignature,symTable,"UncheckedSignature",std::array<const char *,6>{{"s:symbol","i:number","s:symbol","s:Address","s:Address","s:Value"}},std::array<const char *,6>{{"hash","step","input_data","from","to","value"}}),
 
-wrapper_rel_36_selfdestruct(*rel_36_selfdestruct,symTable,"selfdestruct",std::array<const char *,4>{{"i:number","s:symbol","s:Address","s:Address"}},std::array<const char *,4>{{"step","transaction_hash","caller","destination"}}),
+wrapper_rel_34_selfdestruct(*rel_34_selfdestruct,symTable,"selfdestruct",std::array<const char *,4>{{"i:number","s:symbol","s:Address","s:Address"}},std::array<const char *,4>{{"step","transaction_hash","caller","destination"}}),
 
-wrapper_rel_37_ParityWalletHack2(*rel_37_ParityWalletHack2,symTable,"ParityWalletHack2",std::array<const char *,4>{{"s:symbol","i:number","s:Address","s:Address"}},std::array<const char *,4>{{"hash","step","caller","destination"}}),
+wrapper_rel_35_ParityWalletHack2(*rel_35_ParityWalletHack2,symTable,"ParityWalletHack2",std::array<const char *,4>{{"s:symbol","i:number","s:Address","s:Address"}},std::array<const char *,4>{{"hash","step","caller","destination"}}),
 
-wrapper_rel_38_UncheckedSuicide(*rel_38_UncheckedSuicide,symTable,"UncheckedSuicide",std::array<const char *,4>{{"s:symbol","i:number","s:Address","s:Address"}},std::array<const char *,4>{{"hash","step","caller","destination"}}),
+wrapper_rel_36_UncheckedSuicide(*rel_36_UncheckedSuicide,symTable,"UncheckedSuicide",std::array<const char *,4>{{"s:symbol","i:number","s:Address","s:Address"}},std::array<const char *,4>{{"hash","step","caller","destination"}}),
 
-wrapper_rel_39_bitwise_logic(*rel_39_bitwise_logic,symTable,"bitwise_logic",std::array<const char *,4>{{"i:number","s:Opcode","s:Value","s:Value"}},std::array<const char *,4>{{"step","opcode","first_operand","second_operand"}}),
+wrapper_rel_37_bitwise_logic(*rel_37_bitwise_logic,symTable,"bitwise_logic",std::array<const char *,4>{{"i:number","s:Opcode","s:Value","s:Value"}},std::array<const char *,4>{{"step","opcode","first_operand","second_operand"}}),
 
-wrapper_rel_40_ShortAddress(*rel_40_ShortAddress,symTable,"ShortAddress",std::array<const char *,5>{{"s:symbol","i:number","s:Address","s:Address","s:Value"}},std::array<const char *,5>{{"hash","step","from","to","value"}}){
+wrapper_rel_38_ShortAddress(*rel_38_ShortAddress,symTable,"ShortAddress",std::array<const char *,5>{{"s:symbol","i:number","s:Address","s:Address","s:Value"}},std::array<const char *,5>{{"hash","step","from","to","value"}}){
 addRelation("condition",&wrapper_rel_1_condition,true,false);
 addRelation("def",&wrapper_rel_2_def,true,false);
 addRelation("throw",&wrapper_rel_3_throw,true,false);
 addRelation("use",&wrapper_rel_4_use,true,false);
 addRelation("BalanceInvariant",&wrapper_rel_5_BalanceInvariant,false,true);
 addRelation("data_flow",&wrapper_rel_6_data_flow,false,false);
-addRelation("used_in_condition",&wrapper_rel_9_used_in_condition,false,false);
-addRelation("caller_check",&wrapper_rel_10_caller_check,false,false);
-addRelation("call",&wrapper_rel_11_call,true,false);
-addRelation("BlockStateDependence",&wrapper_rel_12_BlockStateDependence,false,true);
-addRelation("CallStackDepth",&wrapper_rel_13_CallStackDepth,false,true);
-addRelation("CreateBasedReentrancy",&wrapper_rel_14_CreateBasedReentrancy,false,true);
-addRelation("CrossFunctionReentrancy",&wrapper_rel_15_CrossFunctionReentrancy,false,true);
-addRelation("DelegatedReentrancy",&wrapper_rel_16_DelegatedReentrancy,false,true);
-addRelation("DoSWithUnexpectedThrow",&wrapper_rel_17_DoSWithUnexpectedThrow,false,true);
-addRelation("Reentrancy",&wrapper_rel_18_Reentrancy,false,true);
-addRelation("TimestampDependence",&wrapper_rel_19_TimestampDependence,false,true);
-addRelation("UncheckedDelegatecall",&wrapper_rel_20_UncheckedDelegatecall,false,true);
-addRelation("UnhandledException",&wrapper_rel_21_UnhandledException,false,true);
-addRelation("block",&wrapper_rel_22_block,true,false);
-addRelation("error",&wrapper_rel_23_error,true,false);
-addRelation("InsufficientGas",&wrapper_rel_24_InsufficientGas,false,true);
-addRelation("transaction",&wrapper_rel_25_transaction,true,false);
-addRelation("DoSWithBlockGasLimit",&wrapper_rel_26_DoSWithBlockGasLimit,false,true);
-addRelation("TransactionStateDependence",&wrapper_rel_27_TransactionStateDependence,false,true);
-addRelation("arithmetic",&wrapper_rel_28_arithmetic,true,false);
-addRelation("storage",&wrapper_rel_29_storage,true,false);
-addRelation("ParityWalletHack1",&wrapper_rel_30_ParityWalletHack1,false,true);
-addRelation("TransactionOrderDependency",&wrapper_rel_31_TransactionOrderDependency,false,true);
-addRelation("transfer",&wrapper_rel_32_transfer,true,false);
-addRelation("IntegerOverflow",&wrapper_rel_33_IntegerOverflow,false,true);
-addRelation("IntegerUnderflow",&wrapper_rel_34_IntegerUnderflow,false,true);
-addRelation("UncheckedSignature",&wrapper_rel_35_UncheckedSignature,false,true);
-addRelation("selfdestruct",&wrapper_rel_36_selfdestruct,true,false);
-addRelation("ParityWalletHack2",&wrapper_rel_37_ParityWalletHack2,false,true);
-addRelation("UncheckedSuicide",&wrapper_rel_38_UncheckedSuicide,false,true);
-addRelation("bitwise_logic",&wrapper_rel_39_bitwise_logic,true,false);
-addRelation("ShortAddress",&wrapper_rel_40_ShortAddress,false,true);
+addRelation("used_in_condition",&wrapper_rel_7_used_in_condition,false,false);
+addRelation("caller_check",&wrapper_rel_8_caller_check,false,false);
+addRelation("call",&wrapper_rel_9_call,true,false);
+addRelation("BlockStateDependence",&wrapper_rel_10_BlockStateDependence,false,true);
+addRelation("CallStackDepth",&wrapper_rel_11_CallStackDepth,false,true);
+addRelation("CreateBasedReentrancy",&wrapper_rel_12_CreateBasedReentrancy,false,true);
+addRelation("CrossFunctionReentrancy",&wrapper_rel_13_CrossFunctionReentrancy,false,true);
+addRelation("DelegatedReentrancy",&wrapper_rel_14_DelegatedReentrancy,false,true);
+addRelation("DoSWithUnexpectedThrow",&wrapper_rel_15_DoSWithUnexpectedThrow,false,true);
+addRelation("Reentrancy",&wrapper_rel_16_Reentrancy,false,true);
+addRelation("TimestampDependence",&wrapper_rel_17_TimestampDependence,false,true);
+addRelation("UncheckedDelegatecall",&wrapper_rel_18_UncheckedDelegatecall,false,true);
+addRelation("UnhandledException",&wrapper_rel_19_UnhandledException,false,true);
+addRelation("block",&wrapper_rel_20_block,true,false);
+addRelation("error",&wrapper_rel_21_error,true,false);
+addRelation("InsufficientGas",&wrapper_rel_22_InsufficientGas,false,true);
+addRelation("transaction",&wrapper_rel_23_transaction,true,false);
+addRelation("DoSWithBlockGasLimit",&wrapper_rel_24_DoSWithBlockGasLimit,false,true);
+addRelation("TransactionStateDependence",&wrapper_rel_25_TransactionStateDependence,false,true);
+addRelation("arithmetic",&wrapper_rel_26_arithmetic,true,false);
+addRelation("storage",&wrapper_rel_27_storage,true,false);
+addRelation("ParityWalletHack1",&wrapper_rel_28_ParityWalletHack1,false,true);
+addRelation("TransactionOrderDependency",&wrapper_rel_29_TransactionOrderDependency,false,true);
+addRelation("transfer",&wrapper_rel_30_transfer,true,false);
+addRelation("IntegerOverflow",&wrapper_rel_31_IntegerOverflow,false,true);
+addRelation("IntegerUnderflow",&wrapper_rel_32_IntegerUnderflow,false,true);
+addRelation("UncheckedSignature",&wrapper_rel_33_UncheckedSignature,false,true);
+addRelation("selfdestruct",&wrapper_rel_34_selfdestruct,true,false);
+addRelation("ParityWalletHack2",&wrapper_rel_35_ParityWalletHack2,false,true);
+addRelation("UncheckedSuicide",&wrapper_rel_36_UncheckedSuicide,false,true);
+addRelation("bitwise_logic",&wrapper_rel_37_bitwise_logic,true,false);
+addRelation("ShortAddress",&wrapper_rel_38_ShortAddress,false,true);
 }
 ~Sf_analyzer() {
 }
@@ -2502,11 +2371,11 @@ SignalHandler::instance()->setMsg(R"_(BalanceInvariant(hash,step2) :-
 in file /Users/Christof/Git/Horus/horus/analyzer/datalog/attacks.dl [272:1-276:31])_");
 if(!(rel_3_throw->empty()) && !(rel_4_use->empty()) && !(rel_1_condition->empty()) && !(rel_2_def->empty())) {
 [&](){
-CREATE_OP_CONTEXT(rel_5_BalanceInvariant_op_ctxt,rel_5_BalanceInvariant->createContext());
 CREATE_OP_CONTEXT(rel_1_condition_op_ctxt,rel_1_condition->createContext());
 CREATE_OP_CONTEXT(rel_2_def_op_ctxt,rel_2_def->createContext());
 CREATE_OP_CONTEXT(rel_4_use_op_ctxt,rel_4_use->createContext());
 CREATE_OP_CONTEXT(rel_3_throw_op_ctxt,rel_3_throw->createContext());
+CREATE_OP_CONTEXT(rel_5_BalanceInvariant_op_ctxt,rel_5_BalanceInvariant->createContext());
 const Tuple<RamDomain,2> key{{0,RamDomain(23)}};
 auto range = rel_2_def->equalRange_2(key,READ_OP_CONTEXT(rel_2_def_op_ctxt));
 for(const auto& env0 : range) {
@@ -2530,105 +2399,37 @@ IOSystem::getInstance().getWriter(std::vector<bool>({1,0}), symTable, ioDirectiv
 /* END STRATUM 4 */
 /* BEGIN STRATUM 5 */
 [&]() {
-SignalHandler::instance()->setMsg(R"_(data_flow(x,x) :- 
-   use(x,_).
+SignalHandler::instance()->setMsg(R"_(data_flow(x,y) :- 
+   use(y,x).
 in file lib/horus.dl [5:1-6:13])_");
 if(!(rel_4_use->empty())) {
 [&](){
-CREATE_OP_CONTEXT(rel_4_use_op_ctxt,rel_4_use->createContext());
 CREATE_OP_CONTEXT(rel_6_data_flow_op_ctxt,rel_6_data_flow->createContext());
+CREATE_OP_CONTEXT(rel_4_use_op_ctxt,rel_4_use->createContext());
 for(const auto& env0 : *rel_4_use) {
-Tuple<RamDomain,2> tuple{{static_cast<RamDomain>(env0[0]),static_cast<RamDomain>(env0[0])}};
-rel_6_data_flow->insert(tuple,READ_OP_CONTEXT(rel_6_data_flow_op_ctxt));
-}
-}
-();}
-SignalHandler::instance()->setMsg(R"_(data_flow(x,x) :- 
-   def(x,_).
-in file lib/horus.dl [8:1-9:13])_");
-if(!(rel_2_def->empty())) {
-[&](){
-CREATE_OP_CONTEXT(rel_2_def_op_ctxt,rel_2_def->createContext());
-CREATE_OP_CONTEXT(rel_6_data_flow_op_ctxt,rel_6_data_flow->createContext());
-for(const auto& env0 : *rel_2_def) {
-Tuple<RamDomain,2> tuple{{static_cast<RamDomain>(env0[0]),static_cast<RamDomain>(env0[0])}};
+Tuple<RamDomain,2> tuple{{static_cast<RamDomain>(env0[1]),static_cast<RamDomain>(env0[0])}};
 rel_6_data_flow->insert(tuple,READ_OP_CONTEXT(rel_6_data_flow_op_ctxt));
 }
 }
 ();}
 SignalHandler::instance()->setMsg(R"_(data_flow(x,y) :- 
-   def(x,_),
-   use(y,x).
-in file lib/horus.dl [11:1-13:13])_");
-if(!(rel_4_use->empty()) && !(rel_2_def->empty())) {
+   use(y,z),
+   use(z,x).
+in file lib/horus.dl [8:1-10:13])_");
+if(!(rel_4_use->empty())) {
 [&](){
-CREATE_OP_CONTEXT(rel_2_def_op_ctxt,rel_2_def->createContext());
+CREATE_OP_CONTEXT(rel_6_data_flow_op_ctxt,rel_6_data_flow->createContext());
 CREATE_OP_CONTEXT(rel_4_use_op_ctxt,rel_4_use->createContext());
-CREATE_OP_CONTEXT(rel_6_data_flow_op_ctxt,rel_6_data_flow->createContext());
-for(const auto& env0 : *rel_2_def) {
-const Tuple<RamDomain,2> key{{0,env0[0]}};
-auto range = rel_4_use->equalRange_2(key,READ_OP_CONTEXT(rel_4_use_op_ctxt));
+for(const auto& env0 : *rel_4_use) {
+const Tuple<RamDomain,2> key{{env0[1],0}};
+auto range = rel_4_use->equalRange_1(key,READ_OP_CONTEXT(rel_4_use_op_ctxt));
 for(const auto& env1 : range) {
-Tuple<RamDomain,2> tuple{{static_cast<RamDomain>(env0[0]),static_cast<RamDomain>(env1[0])}};
+Tuple<RamDomain,2> tuple{{static_cast<RamDomain>(env1[1]),static_cast<RamDomain>(env0[0])}};
 rel_6_data_flow->insert(tuple,READ_OP_CONTEXT(rel_6_data_flow_op_ctxt));
 }
 }
 }
 ();}
-rel_7_delta_data_flow->insertAll(*rel_6_data_flow);
-iter = 0;
-for(;;) {
-SignalHandler::instance()->setMsg(R"_(data_flow(x,y) :- 
-   data_flow(x,z),
-   data_flow(z,y).
-in file lib/horus.dl [15:1-17:19])_");
-if(!(rel_6_data_flow->empty()) && !(rel_7_delta_data_flow->empty())) {
-[&](){
-CREATE_OP_CONTEXT(rel_6_data_flow_op_ctxt,rel_6_data_flow->createContext());
-CREATE_OP_CONTEXT(rel_7_delta_data_flow_op_ctxt,rel_7_delta_data_flow->createContext());
-CREATE_OP_CONTEXT(rel_8_new_data_flow_op_ctxt,rel_8_new_data_flow->createContext());
-for(const auto& env0 : *rel_7_delta_data_flow) {
-const Tuple<RamDomain,2> key{{env0[1],0}};
-auto range = rel_6_data_flow->equalRange_1(key,READ_OP_CONTEXT(rel_6_data_flow_op_ctxt));
-for(const auto& env1 : range) {
-if( !(rel_6_data_flow->contains(Tuple<RamDomain,2>{{env0[0],env1[1]}},READ_OP_CONTEXT(rel_6_data_flow_op_ctxt))) && !(rel_7_delta_data_flow->contains(Tuple<RamDomain,2>{{env0[1],env1[1]}},READ_OP_CONTEXT(rel_7_delta_data_flow_op_ctxt)))) {
-Tuple<RamDomain,2> tuple{{static_cast<RamDomain>(env0[0]),static_cast<RamDomain>(env1[1])}};
-rel_8_new_data_flow->insert(tuple,READ_OP_CONTEXT(rel_8_new_data_flow_op_ctxt));
-}
-}
-}
-}
-();}
-SignalHandler::instance()->setMsg(R"_(data_flow(x,y) :- 
-   data_flow(x,z),
-   data_flow(z,y).
-in file lib/horus.dl [15:1-17:19])_");
-if(!(rel_7_delta_data_flow->empty()) && !(rel_6_data_flow->empty())) {
-[&](){
-CREATE_OP_CONTEXT(rel_6_data_flow_op_ctxt,rel_6_data_flow->createContext());
-CREATE_OP_CONTEXT(rel_7_delta_data_flow_op_ctxt,rel_7_delta_data_flow->createContext());
-CREATE_OP_CONTEXT(rel_8_new_data_flow_op_ctxt,rel_8_new_data_flow->createContext());
-for(const auto& env0 : *rel_6_data_flow) {
-const Tuple<RamDomain,2> key{{env0[1],0}};
-auto range = rel_7_delta_data_flow->equalRange_1(key,READ_OP_CONTEXT(rel_7_delta_data_flow_op_ctxt));
-for(const auto& env1 : range) {
-if( !(rel_6_data_flow->contains(Tuple<RamDomain,2>{{env0[0],env1[1]}},READ_OP_CONTEXT(rel_6_data_flow_op_ctxt)))) {
-Tuple<RamDomain,2> tuple{{static_cast<RamDomain>(env0[0]),static_cast<RamDomain>(env1[1])}};
-rel_8_new_data_flow->insert(tuple,READ_OP_CONTEXT(rel_8_new_data_flow_op_ctxt));
-}
-}
-}
-}
-();}
-if(rel_8_new_data_flow->empty()) break;
-rel_6_data_flow->insertAll(*rel_8_new_data_flow);
-std::swap(rel_7_delta_data_flow, rel_8_new_data_flow);
-rel_8_new_data_flow->purge();
-iter++;
-}
-iter = 0;
-if (!isHintsProfilingEnabled()) rel_7_delta_data_flow->purge();
-if (!isHintsProfilingEnabled()) rel_8_new_data_flow->purge();
 if (!isHintsProfilingEnabled()&& performIO) rel_4_use->purge();
 }();
 /* END STRATUM 5 */
@@ -2637,18 +2438,18 @@ if (!isHintsProfilingEnabled()&& performIO) rel_4_use->purge();
 SignalHandler::instance()->setMsg(R"_(used_in_condition(step1,hash) :- 
    condition(step2,hash),
    data_flow(step1,step2).
-in file lib/horus.dl [28:1-30:27])_");
+in file lib/horus.dl [21:1-23:27])_");
 if(!(rel_6_data_flow->empty()) && !(rel_1_condition->empty())) {
 [&](){
-CREATE_OP_CONTEXT(rel_1_condition_op_ctxt,rel_1_condition->createContext());
 CREATE_OP_CONTEXT(rel_6_data_flow_op_ctxt,rel_6_data_flow->createContext());
-CREATE_OP_CONTEXT(rel_9_used_in_condition_op_ctxt,rel_9_used_in_condition->createContext());
+CREATE_OP_CONTEXT(rel_7_used_in_condition_op_ctxt,rel_7_used_in_condition->createContext());
+CREATE_OP_CONTEXT(rel_1_condition_op_ctxt,rel_1_condition->createContext());
 for(const auto& env0 : *rel_1_condition) {
 const Tuple<RamDomain,2> key{{0,env0[0]}};
 auto range = rel_6_data_flow->equalRange_2(key,READ_OP_CONTEXT(rel_6_data_flow_op_ctxt));
 for(const auto& env1 : range) {
 Tuple<RamDomain,2> tuple{{static_cast<RamDomain>(env1[0]),static_cast<RamDomain>(env0[1])}};
-rel_9_used_in_condition->insert(tuple,READ_OP_CONTEXT(rel_9_used_in_condition_op_ctxt));
+rel_7_used_in_condition->insert(tuple,READ_OP_CONTEXT(rel_7_used_in_condition_op_ctxt));
 }
 }
 }
@@ -2663,13 +2464,13 @@ SignalHandler::instance()->setMsg(R"_(caller_check(step3,hash) :-
    condition(step3,hash),
    data_flow(step1,step3),
    data_flow(step2,step3).
-in file lib/horus.dl [20:1-25:27])_");
+in file lib/horus.dl [13:1-18:27])_");
 if(!(rel_2_def->empty()) && !(rel_1_condition->empty()) && !(rel_6_data_flow->empty())) {
 [&](){
+CREATE_OP_CONTEXT(rel_6_data_flow_op_ctxt,rel_6_data_flow->createContext());
+CREATE_OP_CONTEXT(rel_8_caller_check_op_ctxt,rel_8_caller_check->createContext());
 CREATE_OP_CONTEXT(rel_1_condition_op_ctxt,rel_1_condition->createContext());
 CREATE_OP_CONTEXT(rel_2_def_op_ctxt,rel_2_def->createContext());
-CREATE_OP_CONTEXT(rel_6_data_flow_op_ctxt,rel_6_data_flow->createContext());
-CREATE_OP_CONTEXT(rel_10_caller_check_op_ctxt,rel_10_caller_check->createContext());
 const Tuple<RamDomain,2> key{{0,RamDomain(0)}};
 auto range = rel_2_def->equalRange_2(key,READ_OP_CONTEXT(rel_2_def_op_ctxt));
 for(const auto& env0 : range) {
@@ -2679,7 +2480,7 @@ for(const auto& env1 : range) {
 for(const auto& env2 : *rel_1_condition) {
 if( rel_6_data_flow->contains(Tuple<RamDomain,2>{{env0[0],env2[0]}},READ_OP_CONTEXT(rel_6_data_flow_op_ctxt)) && rel_6_data_flow->contains(Tuple<RamDomain,2>{{env1[0],env2[0]}},READ_OP_CONTEXT(rel_6_data_flow_op_ctxt))) {
 Tuple<RamDomain,2> tuple{{static_cast<RamDomain>(env2[0]),static_cast<RamDomain>(env2[1])}};
-rel_10_caller_check->insert(tuple,READ_OP_CONTEXT(rel_10_caller_check_op_ctxt));
+rel_8_caller_check->insert(tuple,READ_OP_CONTEXT(rel_8_caller_check_op_ctxt));
 }
 }
 }
@@ -2695,7 +2496,7 @@ if (performIO) {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"filename","./call.facts"},{"name","call"}});
 if (!inputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = inputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getReader(std::vector<bool>({0,1,1,1,1,1,1,0,0}), symTable, ioDirectives, false, 1)->readAll(*rel_11_call);
+IOSystem::getInstance().getReader(std::vector<bool>({0,1,1,1,1,1,1,0,0}), symTable, ioDirectives, false, 1)->readAll(*rel_9_call);
 } catch (std::exception& e) {std::cerr << "Error loading data: " << e.what() << '\n';}
 }
 }();
@@ -2709,24 +2510,24 @@ SignalHandler::instance()->setMsg(R"_(BlockStateDependence(hash,step3,caller,cal
    "0" not_match amount,
    step1 < step3.
 in file /Users/Christof/Git/Horus/horus/analyzer/datalog/attacks.dl [233:1-258:17])_");
-if(!(rel_11_call->empty()) && !(rel_9_used_in_condition->empty()) && !(rel_2_def->empty())) {
+if(!(rel_9_call->empty()) && !(rel_7_used_in_condition->empty()) && !(rel_2_def->empty())) {
 [&](){
+CREATE_OP_CONTEXT(rel_7_used_in_condition_op_ctxt,rel_7_used_in_condition->createContext());
+CREATE_OP_CONTEXT(rel_9_call_op_ctxt,rel_9_call->createContext());
+CREATE_OP_CONTEXT(rel_10_BlockStateDependence_op_ctxt,rel_10_BlockStateDependence->createContext());
 CREATE_OP_CONTEXT(rel_2_def_op_ctxt,rel_2_def->createContext());
-CREATE_OP_CONTEXT(rel_9_used_in_condition_op_ctxt,rel_9_used_in_condition->createContext());
-CREATE_OP_CONTEXT(rel_11_call_op_ctxt,rel_11_call->createContext());
-CREATE_OP_CONTEXT(rel_12_BlockStateDependence_op_ctxt,rel_12_BlockStateDependence->createContext());
 const Tuple<RamDomain,2> key{{0,RamDomain(16)}};
 auto range = rel_2_def->equalRange_2(key,READ_OP_CONTEXT(rel_2_def_op_ctxt));
 for(const auto& env0 : range) {
 const Tuple<RamDomain,2> key{{env0[0],0}};
-auto range = rel_9_used_in_condition->equalRange_1(key,READ_OP_CONTEXT(rel_9_used_in_condition_op_ctxt));
+auto range = rel_7_used_in_condition->equalRange_1(key,READ_OP_CONTEXT(rel_7_used_in_condition_op_ctxt));
 for(const auto& env1 : range) {
 const Tuple<RamDomain,9> key{{0,env1[1],RamDomain(2),0,0,0,0,0,RamDomain(1)}};
-auto range = rel_11_call->equalRange_262(key,READ_OP_CONTEXT(rel_11_call_op_ctxt));
+auto range = rel_9_call->equalRange_262(key,READ_OP_CONTEXT(rel_9_call_op_ctxt));
 for(const auto& env2 : range) {
 if( !regex_wrapper(symTable.resolve(RamDomain(3)),symTable.resolve(env2[6])) && ((env0[0]) < (env2[0]))) {
 Tuple<RamDomain,5> tuple{{static_cast<RamDomain>(env1[1]),static_cast<RamDomain>(env2[0]),static_cast<RamDomain>(env2[3]),static_cast<RamDomain>(env2[4]),static_cast<RamDomain>(env2[6])}};
-rel_12_BlockStateDependence->insert(tuple,READ_OP_CONTEXT(rel_12_BlockStateDependence_op_ctxt));
+rel_10_BlockStateDependence->insert(tuple,READ_OP_CONTEXT(rel_10_BlockStateDependence_op_ctxt));
 }
 }
 }
@@ -2740,24 +2541,24 @@ SignalHandler::instance()->setMsg(R"_(BlockStateDependence(hash,step3,caller,cal
    "0" not_match amount,
    step1 < step3.
 in file /Users/Christof/Git/Horus/horus/analyzer/datalog/attacks.dl [233:1-258:17])_");
-if(!(rel_11_call->empty()) && !(rel_9_used_in_condition->empty()) && !(rel_2_def->empty())) {
+if(!(rel_9_call->empty()) && !(rel_7_used_in_condition->empty()) && !(rel_2_def->empty())) {
 [&](){
+CREATE_OP_CONTEXT(rel_7_used_in_condition_op_ctxt,rel_7_used_in_condition->createContext());
+CREATE_OP_CONTEXT(rel_9_call_op_ctxt,rel_9_call->createContext());
+CREATE_OP_CONTEXT(rel_10_BlockStateDependence_op_ctxt,rel_10_BlockStateDependence->createContext());
 CREATE_OP_CONTEXT(rel_2_def_op_ctxt,rel_2_def->createContext());
-CREATE_OP_CONTEXT(rel_9_used_in_condition_op_ctxt,rel_9_used_in_condition->createContext());
-CREATE_OP_CONTEXT(rel_11_call_op_ctxt,rel_11_call->createContext());
-CREATE_OP_CONTEXT(rel_12_BlockStateDependence_op_ctxt,rel_12_BlockStateDependence->createContext());
 const Tuple<RamDomain,2> key{{0,RamDomain(17)}};
 auto range = rel_2_def->equalRange_2(key,READ_OP_CONTEXT(rel_2_def_op_ctxt));
 for(const auto& env0 : range) {
 const Tuple<RamDomain,2> key{{env0[0],0}};
-auto range = rel_9_used_in_condition->equalRange_1(key,READ_OP_CONTEXT(rel_9_used_in_condition_op_ctxt));
+auto range = rel_7_used_in_condition->equalRange_1(key,READ_OP_CONTEXT(rel_7_used_in_condition_op_ctxt));
 for(const auto& env1 : range) {
 const Tuple<RamDomain,9> key{{0,env1[1],RamDomain(2),0,0,0,0,0,RamDomain(1)}};
-auto range = rel_11_call->equalRange_262(key,READ_OP_CONTEXT(rel_11_call_op_ctxt));
+auto range = rel_9_call->equalRange_262(key,READ_OP_CONTEXT(rel_9_call_op_ctxt));
 for(const auto& env2 : range) {
 if( !regex_wrapper(symTable.resolve(RamDomain(3)),symTable.resolve(env2[6])) && ((env0[0]) < (env2[0]))) {
 Tuple<RamDomain,5> tuple{{static_cast<RamDomain>(env1[1]),static_cast<RamDomain>(env2[0]),static_cast<RamDomain>(env2[3]),static_cast<RamDomain>(env2[4]),static_cast<RamDomain>(env2[6])}};
-rel_12_BlockStateDependence->insert(tuple,READ_OP_CONTEXT(rel_12_BlockStateDependence_op_ctxt));
+rel_10_BlockStateDependence->insert(tuple,READ_OP_CONTEXT(rel_10_BlockStateDependence_op_ctxt));
 }
 }
 }
@@ -2771,24 +2572,24 @@ SignalHandler::instance()->setMsg(R"_(BlockStateDependence(hash,step3,caller,cal
    "0" not_match amount,
    step1 < step3.
 in file /Users/Christof/Git/Horus/horus/analyzer/datalog/attacks.dl [233:1-258:17])_");
-if(!(rel_11_call->empty()) && !(rel_9_used_in_condition->empty()) && !(rel_2_def->empty())) {
+if(!(rel_9_call->empty()) && !(rel_7_used_in_condition->empty()) && !(rel_2_def->empty())) {
 [&](){
+CREATE_OP_CONTEXT(rel_7_used_in_condition_op_ctxt,rel_7_used_in_condition->createContext());
+CREATE_OP_CONTEXT(rel_9_call_op_ctxt,rel_9_call->createContext());
+CREATE_OP_CONTEXT(rel_10_BlockStateDependence_op_ctxt,rel_10_BlockStateDependence->createContext());
 CREATE_OP_CONTEXT(rel_2_def_op_ctxt,rel_2_def->createContext());
-CREATE_OP_CONTEXT(rel_9_used_in_condition_op_ctxt,rel_9_used_in_condition->createContext());
-CREATE_OP_CONTEXT(rel_11_call_op_ctxt,rel_11_call->createContext());
-CREATE_OP_CONTEXT(rel_12_BlockStateDependence_op_ctxt,rel_12_BlockStateDependence->createContext());
 const Tuple<RamDomain,2> key{{0,RamDomain(18)}};
 auto range = rel_2_def->equalRange_2(key,READ_OP_CONTEXT(rel_2_def_op_ctxt));
 for(const auto& env0 : range) {
 const Tuple<RamDomain,2> key{{env0[0],0}};
-auto range = rel_9_used_in_condition->equalRange_1(key,READ_OP_CONTEXT(rel_9_used_in_condition_op_ctxt));
+auto range = rel_7_used_in_condition->equalRange_1(key,READ_OP_CONTEXT(rel_7_used_in_condition_op_ctxt));
 for(const auto& env1 : range) {
 const Tuple<RamDomain,9> key{{0,env1[1],RamDomain(2),0,0,0,0,0,RamDomain(1)}};
-auto range = rel_11_call->equalRange_262(key,READ_OP_CONTEXT(rel_11_call_op_ctxt));
+auto range = rel_9_call->equalRange_262(key,READ_OP_CONTEXT(rel_9_call_op_ctxt));
 for(const auto& env2 : range) {
 if( !regex_wrapper(symTable.resolve(RamDomain(3)),symTable.resolve(env2[6])) && ((env0[0]) < (env2[0]))) {
 Tuple<RamDomain,5> tuple{{static_cast<RamDomain>(env1[1]),static_cast<RamDomain>(env2[0]),static_cast<RamDomain>(env2[3]),static_cast<RamDomain>(env2[4]),static_cast<RamDomain>(env2[6])}};
-rel_12_BlockStateDependence->insert(tuple,READ_OP_CONTEXT(rel_12_BlockStateDependence_op_ctxt));
+rel_10_BlockStateDependence->insert(tuple,READ_OP_CONTEXT(rel_10_BlockStateDependence_op_ctxt));
 }
 }
 }
@@ -2802,24 +2603,24 @@ SignalHandler::instance()->setMsg(R"_(BlockStateDependence(hash,step3,caller,cal
    "0" not_match amount,
    step1 < step3.
 in file /Users/Christof/Git/Horus/horus/analyzer/datalog/attacks.dl [233:1-258:17])_");
-if(!(rel_11_call->empty()) && !(rel_9_used_in_condition->empty()) && !(rel_2_def->empty())) {
+if(!(rel_9_call->empty()) && !(rel_7_used_in_condition->empty()) && !(rel_2_def->empty())) {
 [&](){
+CREATE_OP_CONTEXT(rel_7_used_in_condition_op_ctxt,rel_7_used_in_condition->createContext());
+CREATE_OP_CONTEXT(rel_9_call_op_ctxt,rel_9_call->createContext());
+CREATE_OP_CONTEXT(rel_10_BlockStateDependence_op_ctxt,rel_10_BlockStateDependence->createContext());
 CREATE_OP_CONTEXT(rel_2_def_op_ctxt,rel_2_def->createContext());
-CREATE_OP_CONTEXT(rel_9_used_in_condition_op_ctxt,rel_9_used_in_condition->createContext());
-CREATE_OP_CONTEXT(rel_11_call_op_ctxt,rel_11_call->createContext());
-CREATE_OP_CONTEXT(rel_12_BlockStateDependence_op_ctxt,rel_12_BlockStateDependence->createContext());
 const Tuple<RamDomain,2> key{{0,RamDomain(19)}};
 auto range = rel_2_def->equalRange_2(key,READ_OP_CONTEXT(rel_2_def_op_ctxt));
 for(const auto& env0 : range) {
 const Tuple<RamDomain,2> key{{env0[0],0}};
-auto range = rel_9_used_in_condition->equalRange_1(key,READ_OP_CONTEXT(rel_9_used_in_condition_op_ctxt));
+auto range = rel_7_used_in_condition->equalRange_1(key,READ_OP_CONTEXT(rel_7_used_in_condition_op_ctxt));
 for(const auto& env1 : range) {
 const Tuple<RamDomain,9> key{{0,env1[1],RamDomain(2),0,0,0,0,0,RamDomain(1)}};
-auto range = rel_11_call->equalRange_262(key,READ_OP_CONTEXT(rel_11_call_op_ctxt));
+auto range = rel_9_call->equalRange_262(key,READ_OP_CONTEXT(rel_9_call_op_ctxt));
 for(const auto& env2 : range) {
 if( !regex_wrapper(symTable.resolve(RamDomain(3)),symTable.resolve(env2[6])) && ((env0[0]) < (env2[0]))) {
 Tuple<RamDomain,5> tuple{{static_cast<RamDomain>(env1[1]),static_cast<RamDomain>(env2[0]),static_cast<RamDomain>(env2[3]),static_cast<RamDomain>(env2[4]),static_cast<RamDomain>(env2[6])}};
-rel_12_BlockStateDependence->insert(tuple,READ_OP_CONTEXT(rel_12_BlockStateDependence_op_ctxt));
+rel_10_BlockStateDependence->insert(tuple,READ_OP_CONTEXT(rel_10_BlockStateDependence_op_ctxt));
 }
 }
 }
@@ -2833,24 +2634,24 @@ SignalHandler::instance()->setMsg(R"_(BlockStateDependence(hash,step3,caller,cal
    "0" not_match amount,
    step1 < step3.
 in file /Users/Christof/Git/Horus/horus/analyzer/datalog/attacks.dl [233:1-258:17])_");
-if(!(rel_11_call->empty()) && !(rel_9_used_in_condition->empty()) && !(rel_2_def->empty())) {
+if(!(rel_9_call->empty()) && !(rel_7_used_in_condition->empty()) && !(rel_2_def->empty())) {
 [&](){
+CREATE_OP_CONTEXT(rel_7_used_in_condition_op_ctxt,rel_7_used_in_condition->createContext());
+CREATE_OP_CONTEXT(rel_9_call_op_ctxt,rel_9_call->createContext());
+CREATE_OP_CONTEXT(rel_10_BlockStateDependence_op_ctxt,rel_10_BlockStateDependence->createContext());
 CREATE_OP_CONTEXT(rel_2_def_op_ctxt,rel_2_def->createContext());
-CREATE_OP_CONTEXT(rel_9_used_in_condition_op_ctxt,rel_9_used_in_condition->createContext());
-CREATE_OP_CONTEXT(rel_11_call_op_ctxt,rel_11_call->createContext());
-CREATE_OP_CONTEXT(rel_12_BlockStateDependence_op_ctxt,rel_12_BlockStateDependence->createContext());
 const Tuple<RamDomain,2> key{{0,RamDomain(20)}};
 auto range = rel_2_def->equalRange_2(key,READ_OP_CONTEXT(rel_2_def_op_ctxt));
 for(const auto& env0 : range) {
 const Tuple<RamDomain,2> key{{env0[0],0}};
-auto range = rel_9_used_in_condition->equalRange_1(key,READ_OP_CONTEXT(rel_9_used_in_condition_op_ctxt));
+auto range = rel_7_used_in_condition->equalRange_1(key,READ_OP_CONTEXT(rel_7_used_in_condition_op_ctxt));
 for(const auto& env1 : range) {
 const Tuple<RamDomain,9> key{{0,env1[1],RamDomain(2),0,0,0,0,0,RamDomain(1)}};
-auto range = rel_11_call->equalRange_262(key,READ_OP_CONTEXT(rel_11_call_op_ctxt));
+auto range = rel_9_call->equalRange_262(key,READ_OP_CONTEXT(rel_9_call_op_ctxt));
 for(const auto& env2 : range) {
 if( !regex_wrapper(symTable.resolve(RamDomain(3)),symTable.resolve(env2[6])) && ((env0[0]) < (env2[0]))) {
 Tuple<RamDomain,5> tuple{{static_cast<RamDomain>(env1[1]),static_cast<RamDomain>(env2[0]),static_cast<RamDomain>(env2[3]),static_cast<RamDomain>(env2[4]),static_cast<RamDomain>(env2[6])}};
-rel_12_BlockStateDependence->insert(tuple,READ_OP_CONTEXT(rel_12_BlockStateDependence_op_ctxt));
+rel_10_BlockStateDependence->insert(tuple,READ_OP_CONTEXT(rel_10_BlockStateDependence_op_ctxt));
 }
 }
 }
@@ -2861,7 +2662,7 @@ if (performIO) {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tstep\tcaller\tcallee\tamount"},{"filename","./BlockStateDependence.csv"},{"name","BlockStateDependence"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_12_BlockStateDependence);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_10_BlockStateDependence);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 }
 }();
@@ -2872,16 +2673,16 @@ SignalHandler::instance()->setMsg(R"_(CallStackDepth(hash,step,caller,callee,amo
    call(step,hash,"CALL",caller,callee,_,amount,depth,_),
    depth > 1024.
 in file /Users/Christof/Git/Horus/horus/analyzer/datalog/attacks.dl [5:1-7:16])_");
-if(!(rel_11_call->empty())) {
+if(!(rel_9_call->empty())) {
 [&](){
-CREATE_OP_CONTEXT(rel_11_call_op_ctxt,rel_11_call->createContext());
-CREATE_OP_CONTEXT(rel_13_CallStackDepth_op_ctxt,rel_13_CallStackDepth->createContext());
+CREATE_OP_CONTEXT(rel_9_call_op_ctxt,rel_9_call->createContext());
+CREATE_OP_CONTEXT(rel_11_CallStackDepth_op_ctxt,rel_11_CallStackDepth->createContext());
 const Tuple<RamDomain,9> key{{0,0,RamDomain(2),0,0,0,0,0,0}};
-auto range = rel_11_call->equalRange_4(key,READ_OP_CONTEXT(rel_11_call_op_ctxt));
+auto range = rel_9_call->equalRange_4(key,READ_OP_CONTEXT(rel_9_call_op_ctxt));
 for(const auto& env0 : range) {
 if( ((env0[7]) > (RamDomain(1024)))) {
 Tuple<RamDomain,5> tuple{{static_cast<RamDomain>(env0[1]),static_cast<RamDomain>(env0[0]),static_cast<RamDomain>(env0[3]),static_cast<RamDomain>(env0[4]),static_cast<RamDomain>(env0[6])}};
-rel_13_CallStackDepth->insert(tuple,READ_OP_CONTEXT(rel_13_CallStackDepth_op_ctxt));
+rel_11_CallStackDepth->insert(tuple,READ_OP_CONTEXT(rel_11_CallStackDepth_op_ctxt));
 }
 }
 }
@@ -2890,7 +2691,7 @@ if (performIO) {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tstep\tcaller\tcallee\tamount"},{"filename","./CallStackDepth.csv"},{"name","CallStackDepth"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_13_CallStackDepth);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_11_CallStackDepth);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 }
 }();
@@ -2903,22 +2704,22 @@ SignalHandler::instance()->setMsg(R"_(CreateBasedReentrancy(hash,caller,callee,a
    call(_,hash,"CALL",caller,callee,_,amount2,depth3,1),
    depth1 < depth3.
 in file /Users/Christof/Git/Horus/horus/analyzer/datalog/attacks.dl [44:1-49:19])_");
-if(!(rel_11_call->empty())) {
+if(!(rel_9_call->empty())) {
 [&](){
-CREATE_OP_CONTEXT(rel_11_call_op_ctxt,rel_11_call->createContext());
-CREATE_OP_CONTEXT(rel_14_CreateBasedReentrancy_op_ctxt,rel_14_CreateBasedReentrancy->createContext());
+CREATE_OP_CONTEXT(rel_9_call_op_ctxt,rel_9_call->createContext());
+CREATE_OP_CONTEXT(rel_12_CreateBasedReentrancy_op_ctxt,rel_12_CreateBasedReentrancy->createContext());
 const Tuple<RamDomain,9> key{{0,0,RamDomain(5),0,0,0,0,0,RamDomain(1)}};
-auto range = rel_11_call->equalRange_260(key,READ_OP_CONTEXT(rel_11_call_op_ctxt));
+auto range = rel_9_call->equalRange_260(key,READ_OP_CONTEXT(rel_9_call_op_ctxt));
 for(const auto& env0 : range) {
 const Tuple<RamDomain,9> key{{0,env0[1],RamDomain(5),env0[3],0,env0[5],env0[6],0,RamDomain(1)}};
-auto range = rel_11_call->equalRange_366(key,READ_OP_CONTEXT(rel_11_call_op_ctxt));
+auto range = rel_9_call->equalRange_366(key,READ_OP_CONTEXT(rel_9_call_op_ctxt));
 for(const auto& env1 : range) {
 if( ((env0[7]) < (env1[7]))) {
 const Tuple<RamDomain,9> key{{0,env0[1],RamDomain(2),env0[3],env1[4],0,0,env1[7],RamDomain(1)}};
-auto range = rel_11_call->equalRange_414(key,READ_OP_CONTEXT(rel_11_call_op_ctxt));
+auto range = rel_9_call->equalRange_414(key,READ_OP_CONTEXT(rel_9_call_op_ctxt));
 for(const auto& env2 : range) {
 Tuple<RamDomain,5> tuple{{static_cast<RamDomain>(env0[1]),static_cast<RamDomain>(env0[3]),static_cast<RamDomain>(env1[4]),static_cast<RamDomain>(env2[6]),static_cast<RamDomain>(env1[7])}};
-rel_14_CreateBasedReentrancy->insert(tuple,READ_OP_CONTEXT(rel_14_CreateBasedReentrancy_op_ctxt));
+rel_12_CreateBasedReentrancy->insert(tuple,READ_OP_CONTEXT(rel_12_CreateBasedReentrancy_op_ctxt));
 }
 }
 }
@@ -2929,7 +2730,7 @@ if (performIO) {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tcaller\tcallee\tamount\tdepth"},{"filename","./CreateBasedReentrancy.csv"},{"name","CreateBasedReentrancy"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,1,1,1,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_14_CreateBasedReentrancy);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,1,1,1,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_12_CreateBasedReentrancy);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 }
 }();
@@ -2945,23 +2746,23 @@ SignalHandler::instance()->setMsg(R"_(CrossFunctionReentrancy(hash,callee,caller
    input_data1 != input_data3,
    "0" not_match amount2.
 in file /Users/Christof/Git/Horus/horus/analyzer/datalog/attacks.dl [21:1-28:24])_");
-if(!(rel_11_call->empty())) {
+if(!(rel_9_call->empty())) {
 [&](){
-CREATE_OP_CONTEXT(rel_11_call_op_ctxt,rel_11_call->createContext());
-CREATE_OP_CONTEXT(rel_15_CrossFunctionReentrancy_op_ctxt,rel_15_CrossFunctionReentrancy->createContext());
+CREATE_OP_CONTEXT(rel_9_call_op_ctxt,rel_9_call->createContext());
+CREATE_OP_CONTEXT(rel_13_CrossFunctionReentrancy_op_ctxt,rel_13_CrossFunctionReentrancy->createContext());
 const Tuple<RamDomain,9> key{{0,0,RamDomain(2),0,0,0,0,0,RamDomain(1)}};
-auto range = rel_11_call->equalRange_260(key,READ_OP_CONTEXT(rel_11_call_op_ctxt));
+auto range = rel_9_call->equalRange_260(key,READ_OP_CONTEXT(rel_9_call_op_ctxt));
 for(const auto& env0 : range) {
 const Tuple<RamDomain,9> key{{0,env0[1],RamDomain(2),env0[4],env0[3],0,0,0,RamDomain(1)}};
-auto range = rel_11_call->equalRange_286(key,READ_OP_CONTEXT(rel_11_call_op_ctxt));
+auto range = rel_9_call->equalRange_286(key,READ_OP_CONTEXT(rel_9_call_op_ctxt));
 for(const auto& env1 : range) {
 if( ((env0[7]) < (env1[7])) && !regex_wrapper(symTable.resolve(RamDomain(3)),symTable.resolve(env1[6]))) {
 const Tuple<RamDomain,9> key{{0,env0[1],RamDomain(2),env0[3],env0[4],0,env0[6],0,RamDomain(1)}};
-auto range = rel_11_call->equalRange_350(key,READ_OP_CONTEXT(rel_11_call_op_ctxt));
+auto range = rel_9_call->equalRange_350(key,READ_OP_CONTEXT(rel_9_call_op_ctxt));
 for(const auto& env2 : range) {
 if( ((env1[7]) < (env2[7])) && ((env0[5]) != (env2[5]))) {
 Tuple<RamDomain,5> tuple{{static_cast<RamDomain>(env0[1]),static_cast<RamDomain>(env0[4]),static_cast<RamDomain>(env0[3]),static_cast<RamDomain>(env1[6]),static_cast<RamDomain>(env1[7])}};
-rel_15_CrossFunctionReentrancy->insert(tuple,READ_OP_CONTEXT(rel_15_CrossFunctionReentrancy_op_ctxt));
+rel_13_CrossFunctionReentrancy->insert(tuple,READ_OP_CONTEXT(rel_13_CrossFunctionReentrancy_op_ctxt));
 break;
 }
 }
@@ -2974,7 +2775,7 @@ if (performIO) {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tcaller\tcallee\tamount\tdepth"},{"filename","./CrossFunctionReentrancy.csv"},{"name","CrossFunctionReentrancy"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,1,1,1,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_15_CrossFunctionReentrancy);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,1,1,1,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_13_CrossFunctionReentrancy);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 }
 }();
@@ -2989,23 +2790,23 @@ SignalHandler::instance()->setMsg(R"_(DelegatedReentrancy(hash,caller,callee1,am
    depth2 < depth3,
    "0" not_match amount2.
 in file /Users/Christof/Git/Horus/horus/analyzer/datalog/attacks.dl [33:1-39:24])_");
-if(!(rel_11_call->empty())) {
+if(!(rel_9_call->empty())) {
 [&](){
-CREATE_OP_CONTEXT(rel_11_call_op_ctxt,rel_11_call->createContext());
-CREATE_OP_CONTEXT(rel_16_DelegatedReentrancy_op_ctxt,rel_16_DelegatedReentrancy->createContext());
+CREATE_OP_CONTEXT(rel_9_call_op_ctxt,rel_9_call->createContext());
+CREATE_OP_CONTEXT(rel_14_DelegatedReentrancy_op_ctxt,rel_14_DelegatedReentrancy->createContext());
 const Tuple<RamDomain,9> key{{0,0,RamDomain(4),0,0,0,0,0,RamDomain(1)}};
-auto range = rel_11_call->equalRange_260(key,READ_OP_CONTEXT(rel_11_call_op_ctxt));
+auto range = rel_9_call->equalRange_260(key,READ_OP_CONTEXT(rel_9_call_op_ctxt));
 for(const auto& env0 : range) {
 const Tuple<RamDomain,9> key{{0,env0[1],RamDomain(2),env0[4],0,0,0,0,RamDomain(1)}};
-auto range = rel_11_call->equalRange_270(key,READ_OP_CONTEXT(rel_11_call_op_ctxt));
+auto range = rel_9_call->equalRange_270(key,READ_OP_CONTEXT(rel_9_call_op_ctxt));
 for(const auto& env1 : range) {
 if( ((env0[7]) < (env1[7])) && !regex_wrapper(symTable.resolve(RamDomain(3)),symTable.resolve(env1[6]))) {
 const Tuple<RamDomain,9> key{{0,env0[1],RamDomain(4),env0[3],env0[4],env0[5],env0[6],0,RamDomain(1)}};
-auto range = rel_11_call->equalRange_382(key,READ_OP_CONTEXT(rel_11_call_op_ctxt));
+auto range = rel_9_call->equalRange_382(key,READ_OP_CONTEXT(rel_9_call_op_ctxt));
 for(const auto& env2 : range) {
 if( ((env1[7]) < (env2[7]))) {
 Tuple<RamDomain,5> tuple{{static_cast<RamDomain>(env0[1]),static_cast<RamDomain>(env0[3]),static_cast<RamDomain>(env0[4]),static_cast<RamDomain>(env1[6]),static_cast<RamDomain>(env1[7])}};
-rel_16_DelegatedReentrancy->insert(tuple,READ_OP_CONTEXT(rel_16_DelegatedReentrancy_op_ctxt));
+rel_14_DelegatedReentrancy->insert(tuple,READ_OP_CONTEXT(rel_14_DelegatedReentrancy_op_ctxt));
 break;
 }
 }
@@ -3018,7 +2819,7 @@ if (performIO) {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tcaller\tcallee\tamount\tdepth"},{"filename","./DelegatedReentrancy.csv"},{"name","DelegatedReentrancy"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,1,1,1,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_16_DelegatedReentrancy);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,1,1,1,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_14_DelegatedReentrancy);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 }
 }();
@@ -3034,13 +2835,13 @@ SignalHandler::instance()->setMsg(R"_(DoSWithUnexpectedThrow(hash,step3,caller,c
    depth3 < depth2,
    step1 < step3.
 in file /Users/Christof/Git/Horus/horus/analyzer/datalog/attacks.dl [187:1-195:19])_");
-if(!(rel_11_call->empty()) && !(rel_3_throw->empty())) {
+if(!(rel_9_call->empty()) && !(rel_3_throw->empty())) {
 [&](){
+CREATE_OP_CONTEXT(rel_9_call_op_ctxt,rel_9_call->createContext());
+CREATE_OP_CONTEXT(rel_15_DoSWithUnexpectedThrow_op_ctxt,rel_15_DoSWithUnexpectedThrow->createContext());
 CREATE_OP_CONTEXT(rel_3_throw_op_ctxt,rel_3_throw->createContext());
-CREATE_OP_CONTEXT(rel_11_call_op_ctxt,rel_11_call->createContext());
-CREATE_OP_CONTEXT(rel_17_DoSWithUnexpectedThrow_op_ctxt,rel_17_DoSWithUnexpectedThrow->createContext());
 const Tuple<RamDomain,9> key{{0,0,RamDomain(2),0,0,0,0,0,RamDomain(0)}};
-auto range = rel_11_call->equalRange_260(key,READ_OP_CONTEXT(rel_11_call_op_ctxt));
+auto range = rel_9_call->equalRange_260(key,READ_OP_CONTEXT(rel_9_call_op_ctxt));
 for(const auto& env0 : range) {
 if( !regex_wrapper(symTable.resolve(RamDomain(3)),symTable.resolve(env0[6]))) {
 const Tuple<RamDomain,5> key{{0,env0[1],0,0,0}};
@@ -3052,7 +2853,7 @@ auto range = rel_3_throw->equalRange_18(key,READ_OP_CONTEXT(rel_3_throw_op_ctxt)
 for(const auto& env2 : range) {
 if( ((env0[0]) < (env2[0]))) {
 Tuple<RamDomain,5> tuple{{static_cast<RamDomain>(env0[1]),static_cast<RamDomain>(env2[0]),static_cast<RamDomain>(env0[3]),static_cast<RamDomain>(env0[4]),static_cast<RamDomain>(env0[6])}};
-rel_17_DoSWithUnexpectedThrow->insert(tuple,READ_OP_CONTEXT(rel_17_DoSWithUnexpectedThrow_op_ctxt));
+rel_15_DoSWithUnexpectedThrow->insert(tuple,READ_OP_CONTEXT(rel_15_DoSWithUnexpectedThrow_op_ctxt));
 }
 }
 break;
@@ -3066,7 +2867,7 @@ if (performIO) {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tstep\tcaller\tcallee\tamount"},{"filename","./DoSWithUnexpectedThrow.csv"},{"name","DoSWithUnexpectedThrow"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_17_DoSWithUnexpectedThrow);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_15_DoSWithUnexpectedThrow);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 }
 if (!isHintsProfilingEnabled()&& performIO) rel_3_throw->purge();
@@ -3080,20 +2881,20 @@ SignalHandler::instance()->setMsg(R"_(Reentrancy(hash,caller,callee,amount,depth
    depth1 < depth2,
    "0" not_match amount.
 in file /Users/Christof/Git/Horus/horus/analyzer/datalog/attacks.dl [12:1-16:23])_");
-if(!(rel_11_call->empty())) {
+if(!(rel_9_call->empty())) {
 [&](){
-CREATE_OP_CONTEXT(rel_11_call_op_ctxt,rel_11_call->createContext());
-CREATE_OP_CONTEXT(rel_18_Reentrancy_op_ctxt,rel_18_Reentrancy->createContext());
+CREATE_OP_CONTEXT(rel_9_call_op_ctxt,rel_9_call->createContext());
+CREATE_OP_CONTEXT(rel_16_Reentrancy_op_ctxt,rel_16_Reentrancy->createContext());
 const Tuple<RamDomain,9> key{{0,0,RamDomain(2),0,0,0,0,0,RamDomain(1)}};
-auto range = rel_11_call->equalRange_260(key,READ_OP_CONTEXT(rel_11_call_op_ctxt));
+auto range = rel_9_call->equalRange_260(key,READ_OP_CONTEXT(rel_9_call_op_ctxt));
 for(const auto& env0 : range) {
 if( !regex_wrapper(symTable.resolve(RamDomain(3)),symTable.resolve(env0[6]))) {
 const Tuple<RamDomain,9> key{{0,env0[1],RamDomain(2),env0[3],env0[4],0,env0[6],0,RamDomain(1)}};
-auto range = rel_11_call->equalRange_350(key,READ_OP_CONTEXT(rel_11_call_op_ctxt));
+auto range = rel_9_call->equalRange_350(key,READ_OP_CONTEXT(rel_9_call_op_ctxt));
 for(const auto& env1 : range) {
 if( ((env0[7]) < (env1[7]))) {
 Tuple<RamDomain,5> tuple{{static_cast<RamDomain>(env0[1]),static_cast<RamDomain>(env0[3]),static_cast<RamDomain>(env0[4]),static_cast<RamDomain>(env0[6]),static_cast<RamDomain>(env0[7])}};
-rel_18_Reentrancy->insert(tuple,READ_OP_CONTEXT(rel_18_Reentrancy_op_ctxt));
+rel_16_Reentrancy->insert(tuple,READ_OP_CONTEXT(rel_16_Reentrancy_op_ctxt));
 break;
 }
 }
@@ -3105,7 +2906,7 @@ if (performIO) {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tcaller\tcallee\tamount\tdepth"},{"filename","./Reentrancy.csv"},{"name","Reentrancy"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,1,1,1,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_18_Reentrancy);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,1,1,1,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_16_Reentrancy);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 }
 }();
@@ -3119,24 +2920,24 @@ SignalHandler::instance()->setMsg(R"_(TimestampDependence(hash,step3,caller,call
    "0" not_match amount,
    step1 < step3.
 in file /Users/Christof/Git/Horus/horus/analyzer/datalog/attacks.dl [211:1-216:17])_");
-if(!(rel_11_call->empty()) && !(rel_9_used_in_condition->empty()) && !(rel_2_def->empty())) {
+if(!(rel_9_call->empty()) && !(rel_7_used_in_condition->empty()) && !(rel_2_def->empty())) {
 [&](){
+CREATE_OP_CONTEXT(rel_7_used_in_condition_op_ctxt,rel_7_used_in_condition->createContext());
+CREATE_OP_CONTEXT(rel_9_call_op_ctxt,rel_9_call->createContext());
+CREATE_OP_CONTEXT(rel_17_TimestampDependence_op_ctxt,rel_17_TimestampDependence->createContext());
 CREATE_OP_CONTEXT(rel_2_def_op_ctxt,rel_2_def->createContext());
-CREATE_OP_CONTEXT(rel_9_used_in_condition_op_ctxt,rel_9_used_in_condition->createContext());
-CREATE_OP_CONTEXT(rel_11_call_op_ctxt,rel_11_call->createContext());
-CREATE_OP_CONTEXT(rel_19_TimestampDependence_op_ctxt,rel_19_TimestampDependence->createContext());
 const Tuple<RamDomain,2> key{{0,RamDomain(14)}};
 auto range = rel_2_def->equalRange_2(key,READ_OP_CONTEXT(rel_2_def_op_ctxt));
 for(const auto& env0 : range) {
 const Tuple<RamDomain,2> key{{env0[0],0}};
-auto range = rel_9_used_in_condition->equalRange_1(key,READ_OP_CONTEXT(rel_9_used_in_condition_op_ctxt));
+auto range = rel_7_used_in_condition->equalRange_1(key,READ_OP_CONTEXT(rel_7_used_in_condition_op_ctxt));
 for(const auto& env1 : range) {
 const Tuple<RamDomain,9> key{{0,env1[1],RamDomain(2),0,0,0,0,0,RamDomain(1)}};
-auto range = rel_11_call->equalRange_262(key,READ_OP_CONTEXT(rel_11_call_op_ctxt));
+auto range = rel_9_call->equalRange_262(key,READ_OP_CONTEXT(rel_9_call_op_ctxt));
 for(const auto& env2 : range) {
 if( !regex_wrapper(symTable.resolve(RamDomain(3)),symTable.resolve(env2[6])) && ((env0[0]) < (env2[0]))) {
 Tuple<RamDomain,5> tuple{{static_cast<RamDomain>(env1[1]),static_cast<RamDomain>(env2[0]),static_cast<RamDomain>(env2[3]),static_cast<RamDomain>(env2[4]),static_cast<RamDomain>(env2[6])}};
-rel_19_TimestampDependence->insert(tuple,READ_OP_CONTEXT(rel_19_TimestampDependence_op_ctxt));
+rel_17_TimestampDependence->insert(tuple,READ_OP_CONTEXT(rel_17_TimestampDependence_op_ctxt));
 }
 }
 }
@@ -3147,7 +2948,7 @@ if (performIO) {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tstep\tcaller\tcallee\tamount"},{"filename","./TimestampDependence.csv"},{"name","TimestampDependence"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_19_TimestampDependence);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_17_TimestampDependence);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 }
 }();
@@ -3160,22 +2961,22 @@ SignalHandler::instance()->setMsg(R"_(UncheckedDelegatecall(hash,step2,caller,ca
    data_flow(step1,step2),
    !caller_check(_,hash).
 in file /Users/Christof/Git/Horus/horus/analyzer/datalog/attacks.dl [121:1-130:17])_");
-if(!(rel_6_data_flow->empty()) && !(rel_11_call->empty()) && !(rel_2_def->empty())) {
+if(!(rel_6_data_flow->empty()) && !(rel_9_call->empty()) && !(rel_2_def->empty())) {
 [&](){
-CREATE_OP_CONTEXT(rel_2_def_op_ctxt,rel_2_def->createContext());
 CREATE_OP_CONTEXT(rel_6_data_flow_op_ctxt,rel_6_data_flow->createContext());
-CREATE_OP_CONTEXT(rel_10_caller_check_op_ctxt,rel_10_caller_check->createContext());
-CREATE_OP_CONTEXT(rel_11_call_op_ctxt,rel_11_call->createContext());
-CREATE_OP_CONTEXT(rel_20_UncheckedDelegatecall_op_ctxt,rel_20_UncheckedDelegatecall->createContext());
+CREATE_OP_CONTEXT(rel_8_caller_check_op_ctxt,rel_8_caller_check->createContext());
+CREATE_OP_CONTEXT(rel_9_call_op_ctxt,rel_9_call->createContext());
+CREATE_OP_CONTEXT(rel_18_UncheckedDelegatecall_op_ctxt,rel_18_UncheckedDelegatecall->createContext());
+CREATE_OP_CONTEXT(rel_2_def_op_ctxt,rel_2_def->createContext());
 const Tuple<RamDomain,2> key{{0,RamDomain(6)}};
 auto range = rel_2_def->equalRange_2(key,READ_OP_CONTEXT(rel_2_def_op_ctxt));
 for(const auto& env0 : range) {
 const Tuple<RamDomain,9> key{{0,0,RamDomain(4),0,0,0,0,0,RamDomain(1)}};
-auto range = rel_11_call->equalRange_260(key,READ_OP_CONTEXT(rel_11_call_op_ctxt));
+auto range = rel_9_call->equalRange_260(key,READ_OP_CONTEXT(rel_9_call_op_ctxt));
 for(const auto& env1 : range) {
-if( !(!rel_10_caller_check->equalRange_2(Tuple<RamDomain,2>{{0,env1[1]}},READ_OP_CONTEXT(rel_10_caller_check_op_ctxt)).empty()) && rel_6_data_flow->contains(Tuple<RamDomain,2>{{env0[0],env1[0]}},READ_OP_CONTEXT(rel_6_data_flow_op_ctxt))) {
+if( !(!rel_8_caller_check->equalRange_2(Tuple<RamDomain,2>{{0,env1[1]}},READ_OP_CONTEXT(rel_8_caller_check_op_ctxt)).empty()) && rel_6_data_flow->contains(Tuple<RamDomain,2>{{env0[0],env1[0]}},READ_OP_CONTEXT(rel_6_data_flow_op_ctxt))) {
 Tuple<RamDomain,4> tuple{{static_cast<RamDomain>(env1[1]),static_cast<RamDomain>(env1[0]),static_cast<RamDomain>(env1[3]),static_cast<RamDomain>(env1[4])}};
-rel_20_UncheckedDelegatecall->insert(tuple,READ_OP_CONTEXT(rel_20_UncheckedDelegatecall_op_ctxt));
+rel_18_UncheckedDelegatecall->insert(tuple,READ_OP_CONTEXT(rel_18_UncheckedDelegatecall_op_ctxt));
 }
 }
 }
@@ -3188,26 +2989,26 @@ SignalHandler::instance()->setMsg(R"_(UncheckedDelegatecall(hash,step2,caller,ca
    caller_check(step3,hash),
    step2 < step3.
 in file /Users/Christof/Git/Horus/horus/analyzer/datalog/attacks.dl [121:1-130:17])_");
-if(!(rel_10_caller_check->empty()) && !(rel_6_data_flow->empty()) && !(rel_11_call->empty()) && !(rel_2_def->empty())) {
+if(!(rel_8_caller_check->empty()) && !(rel_6_data_flow->empty()) && !(rel_9_call->empty()) && !(rel_2_def->empty())) {
 [&](){
-CREATE_OP_CONTEXT(rel_2_def_op_ctxt,rel_2_def->createContext());
 CREATE_OP_CONTEXT(rel_6_data_flow_op_ctxt,rel_6_data_flow->createContext());
-CREATE_OP_CONTEXT(rel_10_caller_check_op_ctxt,rel_10_caller_check->createContext());
-CREATE_OP_CONTEXT(rel_11_call_op_ctxt,rel_11_call->createContext());
-CREATE_OP_CONTEXT(rel_20_UncheckedDelegatecall_op_ctxt,rel_20_UncheckedDelegatecall->createContext());
+CREATE_OP_CONTEXT(rel_8_caller_check_op_ctxt,rel_8_caller_check->createContext());
+CREATE_OP_CONTEXT(rel_9_call_op_ctxt,rel_9_call->createContext());
+CREATE_OP_CONTEXT(rel_18_UncheckedDelegatecall_op_ctxt,rel_18_UncheckedDelegatecall->createContext());
+CREATE_OP_CONTEXT(rel_2_def_op_ctxt,rel_2_def->createContext());
 const Tuple<RamDomain,2> key{{0,RamDomain(6)}};
 auto range = rel_2_def->equalRange_2(key,READ_OP_CONTEXT(rel_2_def_op_ctxt));
 for(const auto& env0 : range) {
 const Tuple<RamDomain,9> key{{0,0,RamDomain(4),0,0,0,0,0,RamDomain(1)}};
-auto range = rel_11_call->equalRange_260(key,READ_OP_CONTEXT(rel_11_call_op_ctxt));
+auto range = rel_9_call->equalRange_260(key,READ_OP_CONTEXT(rel_9_call_op_ctxt));
 for(const auto& env1 : range) {
 if( rel_6_data_flow->contains(Tuple<RamDomain,2>{{env0[0],env1[0]}},READ_OP_CONTEXT(rel_6_data_flow_op_ctxt))) {
 const Tuple<RamDomain,2> key{{0,env1[1]}};
-auto range = rel_10_caller_check->equalRange_2(key,READ_OP_CONTEXT(rel_10_caller_check_op_ctxt));
+auto range = rel_8_caller_check->equalRange_2(key,READ_OP_CONTEXT(rel_8_caller_check_op_ctxt));
 for(const auto& env2 : range) {
 if( ((env1[0]) < (env2[0]))) {
 Tuple<RamDomain,4> tuple{{static_cast<RamDomain>(env1[1]),static_cast<RamDomain>(env1[0]),static_cast<RamDomain>(env1[3]),static_cast<RamDomain>(env1[4])}};
-rel_20_UncheckedDelegatecall->insert(tuple,READ_OP_CONTEXT(rel_20_UncheckedDelegatecall_op_ctxt));
+rel_18_UncheckedDelegatecall->insert(tuple,READ_OP_CONTEXT(rel_18_UncheckedDelegatecall_op_ctxt));
 break;
 }
 }
@@ -3220,7 +3021,7 @@ if (performIO) {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tstep\tcaller\tcallee"},{"filename","./UncheckedDelegatecall.csv"},{"name","UncheckedDelegatecall"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_20_UncheckedDelegatecall);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_18_UncheckedDelegatecall);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 }
 }();
@@ -3232,17 +3033,17 @@ SignalHandler::instance()->setMsg(R"_(UnhandledException(hash,step1,caller,calle
    !used_in_condition(step1,hash),
    "0" not_match amount.
 in file /Users/Christof/Git/Horus/horus/analyzer/datalog/attacks.dl [54:1-57:35])_");
-if(!(rel_11_call->empty())) {
+if(!(rel_9_call->empty())) {
 [&](){
-CREATE_OP_CONTEXT(rel_9_used_in_condition_op_ctxt,rel_9_used_in_condition->createContext());
-CREATE_OP_CONTEXT(rel_11_call_op_ctxt,rel_11_call->createContext());
-CREATE_OP_CONTEXT(rel_21_UnhandledException_op_ctxt,rel_21_UnhandledException->createContext());
+CREATE_OP_CONTEXT(rel_7_used_in_condition_op_ctxt,rel_7_used_in_condition->createContext());
+CREATE_OP_CONTEXT(rel_9_call_op_ctxt,rel_9_call->createContext());
+CREATE_OP_CONTEXT(rel_19_UnhandledException_op_ctxt,rel_19_UnhandledException->createContext());
 const Tuple<RamDomain,9> key{{0,0,RamDomain(2),0,0,0,0,0,RamDomain(0)}};
-auto range = rel_11_call->equalRange_260(key,READ_OP_CONTEXT(rel_11_call_op_ctxt));
+auto range = rel_9_call->equalRange_260(key,READ_OP_CONTEXT(rel_9_call_op_ctxt));
 for(const auto& env0 : range) {
-if( !(rel_9_used_in_condition->contains(Tuple<RamDomain,2>{{env0[0],env0[1]}},READ_OP_CONTEXT(rel_9_used_in_condition_op_ctxt))) && !regex_wrapper(symTable.resolve(RamDomain(3)),symTable.resolve(env0[6]))) {
+if( !(rel_7_used_in_condition->contains(Tuple<RamDomain,2>{{env0[0],env0[1]}},READ_OP_CONTEXT(rel_7_used_in_condition_op_ctxt))) && !regex_wrapper(symTable.resolve(RamDomain(3)),symTable.resolve(env0[6]))) {
 Tuple<RamDomain,5> tuple{{static_cast<RamDomain>(env0[1]),static_cast<RamDomain>(env0[0]),static_cast<RamDomain>(env0[3]),static_cast<RamDomain>(env0[4]),static_cast<RamDomain>(env0[6])}};
-rel_21_UnhandledException->insert(tuple,READ_OP_CONTEXT(rel_21_UnhandledException_op_ctxt));
+rel_19_UnhandledException->insert(tuple,READ_OP_CONTEXT(rel_19_UnhandledException_op_ctxt));
 }
 }
 }
@@ -3251,7 +3052,7 @@ if (performIO) {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tstep\tcaller\tcallee\tamount"},{"filename","./UnhandledException.csv"},{"name","UnhandledException"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_21_UnhandledException);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_19_UnhandledException);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 }
 }();
@@ -3262,7 +3063,7 @@ if (performIO) {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"filename","./block.facts"},{"name","block"}});
 if (!inputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = inputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getReader(std::vector<bool>({0,0,0}), symTable, ioDirectives, false, 1)->readAll(*rel_22_block);
+IOSystem::getInstance().getReader(std::vector<bool>({0,0,0}), symTable, ioDirectives, false, 1)->readAll(*rel_20_block);
 } catch (std::exception& e) {std::cerr << "Error loading data: " << e.what() << '\n';}
 }
 }();
@@ -3273,7 +3074,7 @@ if (performIO) {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"filename","./error.facts"},{"name","error"}});
 if (!inputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = inputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getReader(std::vector<bool>({1,1}), symTable, ioDirectives, false, 1)->readAll(*rel_23_error);
+IOSystem::getInstance().getReader(std::vector<bool>({1,1}), symTable, ioDirectives, false, 1)->readAll(*rel_21_error);
 } catch (std::exception& e) {std::cerr << "Error loading data: " << e.what() << '\n';}
 }
 }();
@@ -3287,22 +3088,22 @@ SignalHandler::instance()->setMsg(R"_(InsufficientGas(hash,step2,caller,callee) 
    error(hash,"out of gas"),
    "0" match amount.
 in file /Users/Christof/Git/Horus/horus/analyzer/datalog/attacks.dl [280:1-285:29])_");
-if(!(rel_23_error->empty()) && !(rel_6_data_flow->empty()) && !(rel_11_call->empty()) && !(rel_2_def->empty())) {
+if(!(rel_21_error->empty()) && !(rel_6_data_flow->empty()) && !(rel_9_call->empty()) && !(rel_2_def->empty())) {
 [&](){
-CREATE_OP_CONTEXT(rel_2_def_op_ctxt,rel_2_def->createContext());
 CREATE_OP_CONTEXT(rel_6_data_flow_op_ctxt,rel_6_data_flow->createContext());
-CREATE_OP_CONTEXT(rel_11_call_op_ctxt,rel_11_call->createContext());
-CREATE_OP_CONTEXT(rel_23_error_op_ctxt,rel_23_error->createContext());
-CREATE_OP_CONTEXT(rel_24_InsufficientGas_op_ctxt,rel_24_InsufficientGas->createContext());
+CREATE_OP_CONTEXT(rel_9_call_op_ctxt,rel_9_call->createContext());
+CREATE_OP_CONTEXT(rel_21_error_op_ctxt,rel_21_error->createContext());
+CREATE_OP_CONTEXT(rel_22_InsufficientGas_op_ctxt,rel_22_InsufficientGas->createContext());
+CREATE_OP_CONTEXT(rel_2_def_op_ctxt,rel_2_def->createContext());
 const Tuple<RamDomain,2> key{{0,RamDomain(6)}};
 auto range = rel_2_def->equalRange_2(key,READ_OP_CONTEXT(rel_2_def_op_ctxt));
 for(const auto& env0 : range) {
 const Tuple<RamDomain,9> key{{0,0,RamDomain(2),0,0,0,0,RamDomain(1),RamDomain(0)}};
-auto range = rel_11_call->equalRange_388(key,READ_OP_CONTEXT(rel_11_call_op_ctxt));
+auto range = rel_9_call->equalRange_388(key,READ_OP_CONTEXT(rel_9_call_op_ctxt));
 for(const auto& env1 : range) {
-if( regex_wrapper(symTable.resolve(RamDomain(3)),symTable.resolve(env1[6])) && rel_23_error->contains(Tuple<RamDomain,2>{{env1[1],RamDomain(13)}},READ_OP_CONTEXT(rel_23_error_op_ctxt)) && rel_6_data_flow->contains(Tuple<RamDomain,2>{{env0[0],env1[0]}},READ_OP_CONTEXT(rel_6_data_flow_op_ctxt))) {
+if( regex_wrapper(symTable.resolve(RamDomain(3)),symTable.resolve(env1[6])) && rel_21_error->contains(Tuple<RamDomain,2>{{env1[1],RamDomain(13)}},READ_OP_CONTEXT(rel_21_error_op_ctxt)) && rel_6_data_flow->contains(Tuple<RamDomain,2>{{env0[0],env1[0]}},READ_OP_CONTEXT(rel_6_data_flow_op_ctxt))) {
 Tuple<RamDomain,4> tuple{{static_cast<RamDomain>(env1[1]),static_cast<RamDomain>(env1[0]),static_cast<RamDomain>(env1[3]),static_cast<RamDomain>(env1[4])}};
-rel_24_InsufficientGas->insert(tuple,READ_OP_CONTEXT(rel_24_InsufficientGas_op_ctxt));
+rel_22_InsufficientGas->insert(tuple,READ_OP_CONTEXT(rel_22_InsufficientGas_op_ctxt));
 }
 }
 }
@@ -3312,7 +3113,7 @@ if (performIO) {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tstep\tcaller\tcallee"},{"filename","./InsufficientGas.csv"},{"name","InsufficientGas"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_24_InsufficientGas);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_22_InsufficientGas);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 }
 }();
@@ -3323,7 +3124,7 @@ if (performIO) {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"filename","./transaction.facts"},{"name","transaction"}});
 if (!inputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = inputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getReader(std::vector<bool>({1,1,1,1,0}), symTable, ioDirectives, false, 1)->readAll(*rel_25_transaction);
+IOSystem::getInstance().getReader(std::vector<bool>({1,1,1,1,0}), symTable, ioDirectives, false, 1)->readAll(*rel_23_transaction);
 } catch (std::exception& e) {std::cerr << "Error loading data: " << e.what() << '\n';}
 }
 }();
@@ -3337,21 +3138,21 @@ SignalHandler::instance()->setMsg(R"_(DoSWithBlockGasLimit(hash,step,gas_limit,c
    error(hash,"out of gas"),
    "0" not_match amount.
 in file /Users/Christof/Git/Horus/horus/analyzer/datalog/attacks.dl [200:1-206:29])_");
-if(!(rel_23_error->empty()) && !(rel_25_transaction->empty()) && !(rel_11_call->empty()) && !(rel_22_block->empty())) {
+if(!(rel_21_error->empty()) && !(rel_23_transaction->empty()) && !(rel_9_call->empty()) && !(rel_20_block->empty())) {
 [&](){
-CREATE_OP_CONTEXT(rel_11_call_op_ctxt,rel_11_call->createContext());
-CREATE_OP_CONTEXT(rel_22_block_op_ctxt,rel_22_block->createContext());
-CREATE_OP_CONTEXT(rel_23_error_op_ctxt,rel_23_error->createContext());
-CREATE_OP_CONTEXT(rel_25_transaction_op_ctxt,rel_25_transaction->createContext());
-CREATE_OP_CONTEXT(rel_26_DoSWithBlockGasLimit_op_ctxt,rel_26_DoSWithBlockGasLimit->createContext());
-for(const auto& env0 : *rel_22_block) {
+CREATE_OP_CONTEXT(rel_9_call_op_ctxt,rel_9_call->createContext());
+CREATE_OP_CONTEXT(rel_20_block_op_ctxt,rel_20_block->createContext());
+CREATE_OP_CONTEXT(rel_21_error_op_ctxt,rel_21_error->createContext());
+CREATE_OP_CONTEXT(rel_23_transaction_op_ctxt,rel_23_transaction->createContext());
+CREATE_OP_CONTEXT(rel_24_DoSWithBlockGasLimit_op_ctxt,rel_24_DoSWithBlockGasLimit->createContext());
+for(const auto& env0 : *rel_20_block) {
 if( ((env0[1]) == (env0[2]))) {
 const Tuple<RamDomain,9> key{{0,0,RamDomain(2),0,0,0,0,0,RamDomain(1)}};
-auto range = rel_11_call->equalRange_260(key,READ_OP_CONTEXT(rel_11_call_op_ctxt));
+auto range = rel_9_call->equalRange_260(key,READ_OP_CONTEXT(rel_9_call_op_ctxt));
 for(const auto& env1 : range) {
-if( !regex_wrapper(symTable.resolve(RamDomain(3)),symTable.resolve(env1[6])) && rel_23_error->contains(Tuple<RamDomain,2>{{env1[1],RamDomain(13)}},READ_OP_CONTEXT(rel_23_error_op_ctxt)) && !rel_25_transaction->equalRange_17(Tuple<RamDomain,5>{{env1[1],0,0,0,env0[0]}},READ_OP_CONTEXT(rel_25_transaction_op_ctxt)).empty()) {
+if( !regex_wrapper(symTable.resolve(RamDomain(3)),symTable.resolve(env1[6])) && rel_21_error->contains(Tuple<RamDomain,2>{{env1[1],RamDomain(13)}},READ_OP_CONTEXT(rel_21_error_op_ctxt)) && !rel_23_transaction->equalRange_17(Tuple<RamDomain,5>{{env1[1],0,0,0,env0[0]}},READ_OP_CONTEXT(rel_23_transaction_op_ctxt)).empty()) {
 Tuple<RamDomain,6> tuple{{static_cast<RamDomain>(env1[1]),static_cast<RamDomain>(env1[0]),static_cast<RamDomain>(env0[1]),static_cast<RamDomain>(env1[3]),static_cast<RamDomain>(env1[4]),static_cast<RamDomain>(env1[6])}};
-rel_26_DoSWithBlockGasLimit->insert(tuple,READ_OP_CONTEXT(rel_26_DoSWithBlockGasLimit_op_ctxt));
+rel_24_DoSWithBlockGasLimit->insert(tuple,READ_OP_CONTEXT(rel_24_DoSWithBlockGasLimit_op_ctxt));
 }
 }
 }
@@ -3362,11 +3163,11 @@ if (performIO) {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tstep\tgas_limit\tcaller\tcallee\tamount"},{"filename","./DoSWithBlockGasLimit.csv"},{"name","DoSWithBlockGasLimit"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_26_DoSWithBlockGasLimit);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_24_DoSWithBlockGasLimit);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 }
-if (!isHintsProfilingEnabled()&& performIO) rel_23_error->purge();
-if (!isHintsProfilingEnabled()&& performIO) rel_22_block->purge();
+if (!isHintsProfilingEnabled()&& performIO) rel_21_error->purge();
+if (!isHintsProfilingEnabled()&& performIO) rel_20_block->purge();
 }();
 /* END STRATUM 23 */
 /* BEGIN STRATUM 24 */
@@ -3380,29 +3181,29 @@ SignalHandler::instance()->setMsg(R"_(TransactionStateDependence(hash,step3,call
    step1 < step3,
    callee != from.
 in file /Users/Christof/Git/Horus/horus/analyzer/datalog/attacks.dl [221:1-228:18])_");
-if(!(rel_25_transaction->empty()) && !(rel_11_call->empty()) && !(rel_9_used_in_condition->empty()) && !(rel_2_def->empty())) {
+if(!(rel_23_transaction->empty()) && !(rel_9_call->empty()) && !(rel_7_used_in_condition->empty()) && !(rel_2_def->empty())) {
 [&](){
+CREATE_OP_CONTEXT(rel_25_TransactionStateDependence_op_ctxt,rel_25_TransactionStateDependence->createContext());
+CREATE_OP_CONTEXT(rel_7_used_in_condition_op_ctxt,rel_7_used_in_condition->createContext());
+CREATE_OP_CONTEXT(rel_9_call_op_ctxt,rel_9_call->createContext());
+CREATE_OP_CONTEXT(rel_23_transaction_op_ctxt,rel_23_transaction->createContext());
 CREATE_OP_CONTEXT(rel_2_def_op_ctxt,rel_2_def->createContext());
-CREATE_OP_CONTEXT(rel_9_used_in_condition_op_ctxt,rel_9_used_in_condition->createContext());
-CREATE_OP_CONTEXT(rel_11_call_op_ctxt,rel_11_call->createContext());
-CREATE_OP_CONTEXT(rel_25_transaction_op_ctxt,rel_25_transaction->createContext());
-CREATE_OP_CONTEXT(rel_27_TransactionStateDependence_op_ctxt,rel_27_TransactionStateDependence->createContext());
 const Tuple<RamDomain,2> key{{0,RamDomain(15)}};
 auto range = rel_2_def->equalRange_2(key,READ_OP_CONTEXT(rel_2_def_op_ctxt));
 for(const auto& env0 : range) {
 const Tuple<RamDomain,2> key{{env0[0],0}};
-auto range = rel_9_used_in_condition->equalRange_1(key,READ_OP_CONTEXT(rel_9_used_in_condition_op_ctxt));
+auto range = rel_7_used_in_condition->equalRange_1(key,READ_OP_CONTEXT(rel_7_used_in_condition_op_ctxt));
 for(const auto& env1 : range) {
 const Tuple<RamDomain,9> key{{0,env1[1],RamDomain(2),0,0,0,0,0,RamDomain(1)}};
-auto range = rel_11_call->equalRange_262(key,READ_OP_CONTEXT(rel_11_call_op_ctxt));
+auto range = rel_9_call->equalRange_262(key,READ_OP_CONTEXT(rel_9_call_op_ctxt));
 for(const auto& env2 : range) {
 if( !regex_wrapper(symTable.resolve(RamDomain(3)),symTable.resolve(env2[6])) && ((env0[0]) < (env2[0]))) {
 const Tuple<RamDomain,5> key{{env1[1],0,0,0,0}};
-auto range = rel_25_transaction->equalRange_1(key,READ_OP_CONTEXT(rel_25_transaction_op_ctxt));
+auto range = rel_23_transaction->equalRange_1(key,READ_OP_CONTEXT(rel_23_transaction_op_ctxt));
 for(const auto& env3 : range) {
 if( ((env2[4]) != (env3[1]))) {
 Tuple<RamDomain,5> tuple{{static_cast<RamDomain>(env1[1]),static_cast<RamDomain>(env2[0]),static_cast<RamDomain>(env2[3]),static_cast<RamDomain>(env2[4]),static_cast<RamDomain>(env2[6])}};
-rel_27_TransactionStateDependence->insert(tuple,READ_OP_CONTEXT(rel_27_TransactionStateDependence_op_ctxt));
+rel_25_TransactionStateDependence->insert(tuple,READ_OP_CONTEXT(rel_25_TransactionStateDependence_op_ctxt));
 break;
 }
 }
@@ -3416,7 +3217,7 @@ if (performIO) {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tstep\tcaller\tcallee\tamount"},{"filename","./TransactionStateDependence.csv"},{"name","TransactionStateDependence"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_27_TransactionStateDependence);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_25_TransactionStateDependence);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 }
 }();
@@ -3427,7 +3228,7 @@ if (performIO) {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"filename","./arithmetic.facts"},{"name","arithmetic"}});
 if (!inputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = inputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getReader(std::vector<bool>({0,1,1,1,1,1}), symTable, ioDirectives, false, 1)->readAll(*rel_28_arithmetic);
+IOSystem::getInstance().getReader(std::vector<bool>({0,1,1,1,1,1}), symTable, ioDirectives, false, 1)->readAll(*rel_26_arithmetic);
 } catch (std::exception& e) {std::cerr << "Error loading data: " << e.what() << '\n';}
 }
 }();
@@ -3438,7 +3239,7 @@ if (performIO) {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"filename","./storage.facts"},{"name","storage"}});
 if (!inputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = inputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getReader(std::vector<bool>({0,1,0,1,1,1,1}), symTable, ioDirectives, false, 1)->readAll(*rel_29_storage);
+IOSystem::getInstance().getReader(std::vector<bool>({0,1,0,1,1,1,1}), symTable, ioDirectives, false, 1)->readAll(*rel_27_storage);
 } catch (std::exception& e) {std::cerr << "Error loading data: " << e.what() << '\n';}
 }
 }();
@@ -3459,33 +3260,33 @@ SignalHandler::instance()->setMsg(R"_(ParityWalletHack1(transaction2,step6,calle
    "0" not_match amount,
    step4 < step6.
 in file /Users/Christof/Git/Horus/horus/analyzer/datalog/attacks.dl [135:1-147:17])_");
-if(!(rel_29_storage->empty()) && !(rel_9_used_in_condition->empty()) && !(rel_11_call->empty())) {
+if(!(rel_27_storage->empty()) && !(rel_7_used_in_condition->empty()) && !(rel_9_call->empty())) {
 [&](){
-CREATE_OP_CONTEXT(rel_9_used_in_condition_op_ctxt,rel_9_used_in_condition->createContext());
-CREATE_OP_CONTEXT(rel_11_call_op_ctxt,rel_11_call->createContext());
-CREATE_OP_CONTEXT(rel_29_storage_op_ctxt,rel_29_storage->createContext());
-CREATE_OP_CONTEXT(rel_30_ParityWalletHack1_op_ctxt,rel_30_ParityWalletHack1->createContext());
+CREATE_OP_CONTEXT(rel_27_storage_op_ctxt,rel_27_storage->createContext());
+CREATE_OP_CONTEXT(rel_28_ParityWalletHack1_op_ctxt,rel_28_ParityWalletHack1->createContext());
+CREATE_OP_CONTEXT(rel_7_used_in_condition_op_ctxt,rel_7_used_in_condition->createContext());
+CREATE_OP_CONTEXT(rel_9_call_op_ctxt,rel_9_call->createContext());
 const Tuple<RamDomain,9> key{{0,0,RamDomain(4),0,0,0,0,0,RamDomain(1)}};
-auto range = rel_11_call->equalRange_260(key,READ_OP_CONTEXT(rel_11_call_op_ctxt));
+auto range = rel_9_call->equalRange_260(key,READ_OP_CONTEXT(rel_9_call_op_ctxt));
 for(const auto& env0 : range) {
 const Tuple<RamDomain,7> key{{0,RamDomain(8),0,env0[1],0,0,0}};
-auto range = rel_29_storage->equalRange_10(key,READ_OP_CONTEXT(rel_29_storage_op_ctxt));
+auto range = rel_27_storage->equalRange_10(key,READ_OP_CONTEXT(rel_27_storage_op_ctxt));
 for(const auto& env1 : range) {
 if( ((env0[0]) < (env1[0]))) {
 const Tuple<RamDomain,9> key{{0,0,RamDomain(4),0,0,0,0,0,RamDomain(1)}};
-auto range = rel_11_call->equalRange_260(key,READ_OP_CONTEXT(rel_11_call_op_ctxt));
+auto range = rel_9_call->equalRange_260(key,READ_OP_CONTEXT(rel_9_call_op_ctxt));
 for(const auto& env2 : range) {
 if( ((env0[1]) != (env2[1]))) {
 const Tuple<RamDomain,7> key{{0,RamDomain(1),0,env2[1],env1[4],env1[5],env1[6]}};
-auto range = rel_29_storage->equalRange_122(key,READ_OP_CONTEXT(rel_29_storage_op_ctxt));
+auto range = rel_27_storage->equalRange_122(key,READ_OP_CONTEXT(rel_27_storage_op_ctxt));
 for(const auto& env3 : range) {
-if( ((env1[0]) < (env3[0])) && ((env2[0]) < (env3[0])) && rel_9_used_in_condition->contains(Tuple<RamDomain,2>{{env3[0],env2[1]}},READ_OP_CONTEXT(rel_9_used_in_condition_op_ctxt))) {
+if( ((env1[0]) < (env3[0])) && ((env2[0]) < (env3[0])) && rel_7_used_in_condition->contains(Tuple<RamDomain,2>{{env3[0],env2[1]}},READ_OP_CONTEXT(rel_7_used_in_condition_op_ctxt))) {
 const Tuple<RamDomain,9> key{{0,env2[1],RamDomain(2),0,0,0,0,0,RamDomain(1)}};
-auto range = rel_11_call->equalRange_262(key,READ_OP_CONTEXT(rel_11_call_op_ctxt));
+auto range = rel_9_call->equalRange_262(key,READ_OP_CONTEXT(rel_9_call_op_ctxt));
 for(const auto& env4 : range) {
 if( !regex_wrapper(symTable.resolve(RamDomain(3)),symTable.resolve(env4[6])) && ((env3[0]) < (env4[0]))) {
 Tuple<RamDomain,5> tuple{{static_cast<RamDomain>(env2[1]),static_cast<RamDomain>(env4[0]),static_cast<RamDomain>(env4[3]),static_cast<RamDomain>(env4[4]),static_cast<RamDomain>(env4[6])}};
-rel_30_ParityWalletHack1->insert(tuple,READ_OP_CONTEXT(rel_30_ParityWalletHack1_op_ctxt));
+rel_28_ParityWalletHack1->insert(tuple,READ_OP_CONTEXT(rel_28_ParityWalletHack1_op_ctxt));
 }
 }
 }
@@ -3501,7 +3302,7 @@ if (performIO) {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tstep\tcaller\tcallee\tamount"},{"filename","./ParityWalletHack1.csv"},{"name","ParityWalletHack1"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_30_ParityWalletHack1);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_28_ParityWalletHack1);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 }
 }();
@@ -3515,19 +3316,19 @@ SignalHandler::instance()->setMsg(R"_(TransactionOrderDependency(transaction1,tr
    transaction1 != transaction2,
    caller1 != caller2.
 in file /Users/Christof/Git/Horus/horus/analyzer/datalog/attacks.dl [101:1-106:22])_");
-if(!(rel_29_storage->empty())) {
+if(!(rel_27_storage->empty())) {
 [&](){
-CREATE_OP_CONTEXT(rel_29_storage_op_ctxt,rel_29_storage->createContext());
-CREATE_OP_CONTEXT(rel_31_TransactionOrderDependency_op_ctxt,rel_31_TransactionOrderDependency->createContext());
+CREATE_OP_CONTEXT(rel_27_storage_op_ctxt,rel_27_storage->createContext());
+CREATE_OP_CONTEXT(rel_29_TransactionOrderDependency_op_ctxt,rel_29_TransactionOrderDependency->createContext());
 const Tuple<RamDomain,7> key{{0,RamDomain(8),0,0,0,0,0}};
-auto range = rel_29_storage->equalRange_2(key,READ_OP_CONTEXT(rel_29_storage_op_ctxt));
+auto range = rel_27_storage->equalRange_2(key,READ_OP_CONTEXT(rel_27_storage_op_ctxt));
 for(const auto& env0 : range) {
 const Tuple<RamDomain,7> key{{0,RamDomain(1),env0[2],0,0,env0[5],env0[6]}};
-auto range = rel_29_storage->equalRange_102(key,READ_OP_CONTEXT(rel_29_storage_op_ctxt));
+auto range = rel_27_storage->equalRange_102(key,READ_OP_CONTEXT(rel_27_storage_op_ctxt));
 for(const auto& env1 : range) {
 if( ((env0[0]) < (env1[0])) && ((env0[3]) != (env1[3])) && ((env0[4]) != (env1[4]))) {
 Tuple<RamDomain,4> tuple{{static_cast<RamDomain>(env0[3]),static_cast<RamDomain>(env1[3]),static_cast<RamDomain>(env0[2]),static_cast<RamDomain>(env0[6])}};
-rel_31_TransactionOrderDependency->insert(tuple,READ_OP_CONTEXT(rel_31_TransactionOrderDependency_op_ctxt));
+rel_29_TransactionOrderDependency->insert(tuple,READ_OP_CONTEXT(rel_29_TransactionOrderDependency_op_ctxt));
 }
 }
 }
@@ -3537,7 +3338,7 @@ if (performIO) {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","transaction1\ttransaction2\tblock\tstorage_index"},{"filename","./TransactionOrderDependency.csv"},{"name","TransactionOrderDependency"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,1,0,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_31_TransactionOrderDependency);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,1,0,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_29_TransactionOrderDependency);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 }
 }();
@@ -3548,7 +3349,7 @@ if (performIO) {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"filename","./transfer.facts"},{"name","transfer"}});
 if (!inputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = inputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getReader(std::vector<bool>({0,1,1,1,1}), symTable, ioDirectives, false, 1)->readAll(*rel_32_transfer);
+IOSystem::getInstance().getReader(std::vector<bool>({0,1,1,1,1}), symTable, ioDirectives, false, 1)->readAll(*rel_30_transfer);
 } catch (std::exception& e) {std::cerr << "Error loading data: " << e.what() << '\n';}
 }
 }();
@@ -3567,29 +3368,29 @@ SignalHandler::instance()->setMsg(R"_(IntegerOverflow(transaction,step2,opcode,f
    "ADD" match opcode,
    from != to.
 in file /Users/Christof/Git/Horus/horus/analyzer/datalog/attacks.dl [62:1-82:14])_");
-if(!(rel_2_def->empty()) && !(rel_28_arithmetic->empty()) && !(rel_29_storage->empty()) && !(rel_32_transfer->empty()) && !(rel_6_data_flow->empty())) {
+if(!(rel_2_def->empty()) && !(rel_26_arithmetic->empty()) && !(rel_27_storage->empty()) && !(rel_30_transfer->empty()) && !(rel_6_data_flow->empty())) {
 [&](){
-CREATE_OP_CONTEXT(rel_2_def_op_ctxt,rel_2_def->createContext());
+CREATE_OP_CONTEXT(rel_27_storage_op_ctxt,rel_27_storage->createContext());
+CREATE_OP_CONTEXT(rel_30_transfer_op_ctxt,rel_30_transfer->createContext());
+CREATE_OP_CONTEXT(rel_31_IntegerOverflow_op_ctxt,rel_31_IntegerOverflow->createContext());
+CREATE_OP_CONTEXT(rel_26_arithmetic_op_ctxt,rel_26_arithmetic->createContext());
 CREATE_OP_CONTEXT(rel_6_data_flow_op_ctxt,rel_6_data_flow->createContext());
-CREATE_OP_CONTEXT(rel_28_arithmetic_op_ctxt,rel_28_arithmetic->createContext());
-CREATE_OP_CONTEXT(rel_29_storage_op_ctxt,rel_29_storage->createContext());
-CREATE_OP_CONTEXT(rel_32_transfer_op_ctxt,rel_32_transfer->createContext());
-CREATE_OP_CONTEXT(rel_33_IntegerOverflow_op_ctxt,rel_33_IntegerOverflow->createContext());
+CREATE_OP_CONTEXT(rel_2_def_op_ctxt,rel_2_def->createContext());
 const Tuple<RamDomain,2> key{{0,RamDomain(6)}};
 auto range = rel_2_def->equalRange_2(key,READ_OP_CONTEXT(rel_2_def_op_ctxt));
 for(const auto& env0 : range) {
-for(const auto& env1 : *rel_28_arithmetic) {
+for(const auto& env1 : *rel_26_arithmetic) {
 if( ((env1[4]) != (env1[5])) && regex_wrapper(symTable.resolve(RamDomain(7)),symTable.resolve(env1[1])) && rel_6_data_flow->contains(Tuple<RamDomain,2>{{env0[0],env1[0]}},READ_OP_CONTEXT(rel_6_data_flow_op_ctxt))) {
 const Tuple<RamDomain,7> key{{0,RamDomain(8),0,0,0,0,0}};
-auto range = rel_29_storage->equalRange_2(key,READ_OP_CONTEXT(rel_29_storage_op_ctxt));
+auto range = rel_27_storage->equalRange_2(key,READ_OP_CONTEXT(rel_27_storage_op_ctxt));
 for(const auto& env2 : range) {
 if( rel_6_data_flow->contains(Tuple<RamDomain,2>{{env1[0],env2[0]}},READ_OP_CONTEXT(rel_6_data_flow_op_ctxt))) {
 const Tuple<RamDomain,5> key{{0,env2[3],0,0,0}};
-auto range = rel_32_transfer->equalRange_2(key,READ_OP_CONTEXT(rel_32_transfer_op_ctxt));
+auto range = rel_30_transfer->equalRange_2(key,READ_OP_CONTEXT(rel_30_transfer_op_ctxt));
 for(const auto& env3 : range) {
 if( ((env3[2]) != (env3[3])) && rel_6_data_flow->contains(Tuple<RamDomain,2>{{env0[0],env3[0]}},READ_OP_CONTEXT(rel_6_data_flow_op_ctxt))) {
 Tuple<RamDomain,10> tuple{{static_cast<RamDomain>(env2[3]),static_cast<RamDomain>(env1[0]),static_cast<RamDomain>(env1[1]),static_cast<RamDomain>(env1[2]),static_cast<RamDomain>(env1[3]),static_cast<RamDomain>(env1[4]),static_cast<RamDomain>(env1[5]),static_cast<RamDomain>(env3[2]),static_cast<RamDomain>(env3[3]),static_cast<RamDomain>(env3[4])}};
-rel_33_IntegerOverflow->insert(tuple,READ_OP_CONTEXT(rel_33_IntegerOverflow_op_ctxt));
+rel_31_IntegerOverflow->insert(tuple,READ_OP_CONTEXT(rel_31_IntegerOverflow_op_ctxt));
 }
 }
 }
@@ -3611,29 +3412,29 @@ SignalHandler::instance()->setMsg(R"_(IntegerOverflow(transaction,step2,opcode,f
    "MUL" match opcode,
    from != to.
 in file /Users/Christof/Git/Horus/horus/analyzer/datalog/attacks.dl [62:1-82:14])_");
-if(!(rel_2_def->empty()) && !(rel_28_arithmetic->empty()) && !(rel_29_storage->empty()) && !(rel_32_transfer->empty()) && !(rel_6_data_flow->empty())) {
+if(!(rel_2_def->empty()) && !(rel_26_arithmetic->empty()) && !(rel_27_storage->empty()) && !(rel_30_transfer->empty()) && !(rel_6_data_flow->empty())) {
 [&](){
-CREATE_OP_CONTEXT(rel_2_def_op_ctxt,rel_2_def->createContext());
+CREATE_OP_CONTEXT(rel_27_storage_op_ctxt,rel_27_storage->createContext());
+CREATE_OP_CONTEXT(rel_30_transfer_op_ctxt,rel_30_transfer->createContext());
+CREATE_OP_CONTEXT(rel_31_IntegerOverflow_op_ctxt,rel_31_IntegerOverflow->createContext());
+CREATE_OP_CONTEXT(rel_26_arithmetic_op_ctxt,rel_26_arithmetic->createContext());
 CREATE_OP_CONTEXT(rel_6_data_flow_op_ctxt,rel_6_data_flow->createContext());
-CREATE_OP_CONTEXT(rel_28_arithmetic_op_ctxt,rel_28_arithmetic->createContext());
-CREATE_OP_CONTEXT(rel_29_storage_op_ctxt,rel_29_storage->createContext());
-CREATE_OP_CONTEXT(rel_32_transfer_op_ctxt,rel_32_transfer->createContext());
-CREATE_OP_CONTEXT(rel_33_IntegerOverflow_op_ctxt,rel_33_IntegerOverflow->createContext());
+CREATE_OP_CONTEXT(rel_2_def_op_ctxt,rel_2_def->createContext());
 const Tuple<RamDomain,2> key{{0,RamDomain(6)}};
 auto range = rel_2_def->equalRange_2(key,READ_OP_CONTEXT(rel_2_def_op_ctxt));
 for(const auto& env0 : range) {
-for(const auto& env1 : *rel_28_arithmetic) {
+for(const auto& env1 : *rel_26_arithmetic) {
 if( ((env1[4]) != (env1[5])) && regex_wrapper(symTable.resolve(RamDomain(9)),symTable.resolve(env1[1])) && rel_6_data_flow->contains(Tuple<RamDomain,2>{{env0[0],env1[0]}},READ_OP_CONTEXT(rel_6_data_flow_op_ctxt))) {
 const Tuple<RamDomain,7> key{{0,RamDomain(8),0,0,0,0,0}};
-auto range = rel_29_storage->equalRange_2(key,READ_OP_CONTEXT(rel_29_storage_op_ctxt));
+auto range = rel_27_storage->equalRange_2(key,READ_OP_CONTEXT(rel_27_storage_op_ctxt));
 for(const auto& env2 : range) {
 if( rel_6_data_flow->contains(Tuple<RamDomain,2>{{env1[0],env2[0]}},READ_OP_CONTEXT(rel_6_data_flow_op_ctxt))) {
 const Tuple<RamDomain,5> key{{0,env2[3],0,0,0}};
-auto range = rel_32_transfer->equalRange_2(key,READ_OP_CONTEXT(rel_32_transfer_op_ctxt));
+auto range = rel_30_transfer->equalRange_2(key,READ_OP_CONTEXT(rel_30_transfer_op_ctxt));
 for(const auto& env3 : range) {
 if( ((env3[2]) != (env3[3])) && rel_6_data_flow->contains(Tuple<RamDomain,2>{{env0[0],env3[0]}},READ_OP_CONTEXT(rel_6_data_flow_op_ctxt))) {
 Tuple<RamDomain,10> tuple{{static_cast<RamDomain>(env2[3]),static_cast<RamDomain>(env1[0]),static_cast<RamDomain>(env1[1]),static_cast<RamDomain>(env1[2]),static_cast<RamDomain>(env1[3]),static_cast<RamDomain>(env1[4]),static_cast<RamDomain>(env1[5]),static_cast<RamDomain>(env3[2]),static_cast<RamDomain>(env3[3]),static_cast<RamDomain>(env3[4])}};
-rel_33_IntegerOverflow->insert(tuple,READ_OP_CONTEXT(rel_33_IntegerOverflow_op_ctxt));
+rel_31_IntegerOverflow->insert(tuple,READ_OP_CONTEXT(rel_31_IntegerOverflow_op_ctxt));
 }
 }
 }
@@ -3647,7 +3448,7 @@ if (performIO) {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tstep\topcode\tfirst_operand\tsecond_operand\tarithmetic_result\tevm_result\tfrom\tto\tvalue"},{"filename","./IntegerOverflow.csv"},{"name","IntegerOverflow"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1,1,1,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_33_IntegerOverflow);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1,1,1,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_31_IntegerOverflow);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 }
 }();
@@ -3665,31 +3466,31 @@ SignalHandler::instance()->setMsg(R"_(IntegerUnderflow(transaction,step2,first_o
    arithmetic_result != evm_result,
    from != to.
 in file /Users/Christof/Git/Horus/horus/analyzer/datalog/attacks.dl [87:1-96:14])_");
-if(!(rel_2_def->empty()) && !(rel_28_arithmetic->empty()) && !(rel_29_storage->empty()) && !(rel_32_transfer->empty()) && !(rel_6_data_flow->empty())) {
+if(!(rel_2_def->empty()) && !(rel_26_arithmetic->empty()) && !(rel_27_storage->empty()) && !(rel_30_transfer->empty()) && !(rel_6_data_flow->empty())) {
 [&](){
-CREATE_OP_CONTEXT(rel_34_IntegerUnderflow_op_ctxt,rel_34_IntegerUnderflow->createContext());
-CREATE_OP_CONTEXT(rel_2_def_op_ctxt,rel_2_def->createContext());
+CREATE_OP_CONTEXT(rel_32_IntegerUnderflow_op_ctxt,rel_32_IntegerUnderflow->createContext());
+CREATE_OP_CONTEXT(rel_27_storage_op_ctxt,rel_27_storage->createContext());
+CREATE_OP_CONTEXT(rel_30_transfer_op_ctxt,rel_30_transfer->createContext());
+CREATE_OP_CONTEXT(rel_26_arithmetic_op_ctxt,rel_26_arithmetic->createContext());
 CREATE_OP_CONTEXT(rel_6_data_flow_op_ctxt,rel_6_data_flow->createContext());
-CREATE_OP_CONTEXT(rel_28_arithmetic_op_ctxt,rel_28_arithmetic->createContext());
-CREATE_OP_CONTEXT(rel_29_storage_op_ctxt,rel_29_storage->createContext());
-CREATE_OP_CONTEXT(rel_32_transfer_op_ctxt,rel_32_transfer->createContext());
+CREATE_OP_CONTEXT(rel_2_def_op_ctxt,rel_2_def->createContext());
 const Tuple<RamDomain,2> key{{0,RamDomain(6)}};
 auto range = rel_2_def->equalRange_2(key,READ_OP_CONTEXT(rel_2_def_op_ctxt));
 for(const auto& env0 : range) {
 const Tuple<RamDomain,6> key{{0,RamDomain(10),0,0,0,0}};
-auto range = rel_28_arithmetic->equalRange_2(key,READ_OP_CONTEXT(rel_28_arithmetic_op_ctxt));
+auto range = rel_26_arithmetic->equalRange_2(key,READ_OP_CONTEXT(rel_26_arithmetic_op_ctxt));
 for(const auto& env1 : range) {
 if( ((env1[4]) != (env1[5])) && rel_6_data_flow->contains(Tuple<RamDomain,2>{{env0[0],env1[0]}},READ_OP_CONTEXT(rel_6_data_flow_op_ctxt))) {
 const Tuple<RamDomain,7> key{{0,RamDomain(8),0,0,0,0,0}};
-auto range = rel_29_storage->equalRange_2(key,READ_OP_CONTEXT(rel_29_storage_op_ctxt));
+auto range = rel_27_storage->equalRange_2(key,READ_OP_CONTEXT(rel_27_storage_op_ctxt));
 for(const auto& env2 : range) {
 if( rel_6_data_flow->contains(Tuple<RamDomain,2>{{env1[0],env2[0]}},READ_OP_CONTEXT(rel_6_data_flow_op_ctxt))) {
 const Tuple<RamDomain,5> key{{0,env2[3],0,0,0}};
-auto range = rel_32_transfer->equalRange_2(key,READ_OP_CONTEXT(rel_32_transfer_op_ctxt));
+auto range = rel_30_transfer->equalRange_2(key,READ_OP_CONTEXT(rel_30_transfer_op_ctxt));
 for(const auto& env3 : range) {
 if( ((env3[2]) != (env3[3])) && rel_6_data_flow->contains(Tuple<RamDomain,2>{{env0[0],env3[0]}},READ_OP_CONTEXT(rel_6_data_flow_op_ctxt))) {
 Tuple<RamDomain,9> tuple{{static_cast<RamDomain>(env2[3]),static_cast<RamDomain>(env1[0]),static_cast<RamDomain>(env1[2]),static_cast<RamDomain>(env1[3]),static_cast<RamDomain>(env1[4]),static_cast<RamDomain>(env1[5]),static_cast<RamDomain>(env3[2]),static_cast<RamDomain>(env3[3]),static_cast<RamDomain>(env3[4])}};
-rel_34_IntegerUnderflow->insert(tuple,READ_OP_CONTEXT(rel_34_IntegerUnderflow_op_ctxt));
+rel_32_IntegerUnderflow->insert(tuple,READ_OP_CONTEXT(rel_32_IntegerUnderflow_op_ctxt));
 }
 }
 }
@@ -3703,7 +3504,7 @@ if (performIO) {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tstep\tfirst_operand\tsecond_operand\tarithmetic_result\tevm_result\tfrom\tto\tvalue"},{"filename","./IntegerUnderflow.csv"},{"name","IntegerUnderflow"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1,1,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_34_IntegerUnderflow);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1,1,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_32_IntegerUnderflow);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 }
 }();
@@ -3718,30 +3519,30 @@ SignalHandler::instance()->setMsg(R"_(UncheckedSignature(hash,step2,input_data,f
    transfer(_,hash,from,to,value),
    !data_flow(step1,step3).
 in file /Users/Christof/Git/Horus/horus/analyzer/datalog/attacks.dl [262:1-268:38])_");
-if(!(rel_32_transfer->empty()) && !(rel_29_storage->empty()) && !(rel_6_data_flow->empty()) && !(rel_11_call->empty()) && !(rel_2_def->empty())) {
+if(!(rel_30_transfer->empty()) && !(rel_27_storage->empty()) && !(rel_6_data_flow->empty()) && !(rel_9_call->empty()) && !(rel_2_def->empty())) {
 [&](){
-CREATE_OP_CONTEXT(rel_35_UncheckedSignature_op_ctxt,rel_35_UncheckedSignature->createContext());
-CREATE_OP_CONTEXT(rel_2_def_op_ctxt,rel_2_def->createContext());
+CREATE_OP_CONTEXT(rel_33_UncheckedSignature_op_ctxt,rel_33_UncheckedSignature->createContext());
+CREATE_OP_CONTEXT(rel_27_storage_op_ctxt,rel_27_storage->createContext());
+CREATE_OP_CONTEXT(rel_30_transfer_op_ctxt,rel_30_transfer->createContext());
 CREATE_OP_CONTEXT(rel_6_data_flow_op_ctxt,rel_6_data_flow->createContext());
-CREATE_OP_CONTEXT(rel_11_call_op_ctxt,rel_11_call->createContext());
-CREATE_OP_CONTEXT(rel_29_storage_op_ctxt,rel_29_storage->createContext());
-CREATE_OP_CONTEXT(rel_32_transfer_op_ctxt,rel_32_transfer->createContext());
+CREATE_OP_CONTEXT(rel_9_call_op_ctxt,rel_9_call->createContext());
+CREATE_OP_CONTEXT(rel_2_def_op_ctxt,rel_2_def->createContext());
 const Tuple<RamDomain,2> key{{0,RamDomain(21)}};
 auto range = rel_2_def->equalRange_2(key,READ_OP_CONTEXT(rel_2_def_op_ctxt));
 for(const auto& env0 : range) {
 const Tuple<RamDomain,9> key{{0,0,RamDomain(2),0,RamDomain(22),0,0,0,RamDomain(1)}};
-auto range = rel_11_call->equalRange_276(key,READ_OP_CONTEXT(rel_11_call_op_ctxt));
+auto range = rel_9_call->equalRange_276(key,READ_OP_CONTEXT(rel_9_call_op_ctxt));
 for(const auto& env1 : range) {
 if( rel_6_data_flow->contains(Tuple<RamDomain,2>{{env0[0],env1[0]}},READ_OP_CONTEXT(rel_6_data_flow_op_ctxt))) {
 const Tuple<RamDomain,7> key{{0,RamDomain(8),0,env1[1],0,0,0}};
-auto range = rel_29_storage->equalRange_10(key,READ_OP_CONTEXT(rel_29_storage_op_ctxt));
+auto range = rel_27_storage->equalRange_10(key,READ_OP_CONTEXT(rel_27_storage_op_ctxt));
 for(const auto& env2 : range) {
 if( !(rel_6_data_flow->contains(Tuple<RamDomain,2>{{env0[0],env2[0]}},READ_OP_CONTEXT(rel_6_data_flow_op_ctxt)))) {
 const Tuple<RamDomain,5> key{{0,env1[1],0,0,0}};
-auto range = rel_32_transfer->equalRange_2(key,READ_OP_CONTEXT(rel_32_transfer_op_ctxt));
+auto range = rel_30_transfer->equalRange_2(key,READ_OP_CONTEXT(rel_30_transfer_op_ctxt));
 for(const auto& env3 : range) {
 Tuple<RamDomain,6> tuple{{static_cast<RamDomain>(env1[1]),static_cast<RamDomain>(env1[0]),static_cast<RamDomain>(env1[5]),static_cast<RamDomain>(env3[2]),static_cast<RamDomain>(env3[3]),static_cast<RamDomain>(env3[4])}};
-rel_35_UncheckedSignature->insert(tuple,READ_OP_CONTEXT(rel_35_UncheckedSignature_op_ctxt));
+rel_33_UncheckedSignature->insert(tuple,READ_OP_CONTEXT(rel_33_UncheckedSignature_op_ctxt));
 }
 break;
 }
@@ -3755,10 +3556,10 @@ if (performIO) {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tstep\tinput_data\tfrom\tto\tvalue"},{"filename","./UncheckedSignature.csv"},{"name","UncheckedSignature"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_35_UncheckedSignature);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_33_UncheckedSignature);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 }
-if (!isHintsProfilingEnabled()&& performIO) rel_11_call->purge();
+if (!isHintsProfilingEnabled()&& performIO) rel_9_call->purge();
 }();
 /* END STRATUM 32 */
 /* BEGIN STRATUM 33 */
@@ -3767,7 +3568,7 @@ if (performIO) {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"filename","./selfdestruct.facts"},{"name","selfdestruct"}});
 if (!inputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = inputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getReader(std::vector<bool>({0,1,1,1}), symTable, ioDirectives, false, 1)->readAll(*rel_36_selfdestruct);
+IOSystem::getInstance().getReader(std::vector<bool>({0,1,1,1}), symTable, ioDirectives, false, 1)->readAll(*rel_34_selfdestruct);
 } catch (std::exception& e) {std::cerr << "Error loading data: " << e.what() << '\n';}
 }
 }();
@@ -3783,25 +3584,25 @@ SignalHandler::instance()->setMsg(R"_(ParityWalletHack2(transaction2,step4,calle
    transaction1 != transaction2,
    step2 < step4.
 in file /Users/Christof/Git/Horus/horus/analyzer/datalog/attacks.dl [152:1-159:17])_");
-if(!(rel_29_storage->empty()) && !(rel_9_used_in_condition->empty()) && !(rel_36_selfdestruct->empty())) {
+if(!(rel_27_storage->empty()) && !(rel_7_used_in_condition->empty()) && !(rel_34_selfdestruct->empty())) {
 [&](){
-CREATE_OP_CONTEXT(rel_36_selfdestruct_op_ctxt,rel_36_selfdestruct->createContext());
-CREATE_OP_CONTEXT(rel_37_ParityWalletHack2_op_ctxt,rel_37_ParityWalletHack2->createContext());
-CREATE_OP_CONTEXT(rel_9_used_in_condition_op_ctxt,rel_9_used_in_condition->createContext());
-CREATE_OP_CONTEXT(rel_29_storage_op_ctxt,rel_29_storage->createContext());
+CREATE_OP_CONTEXT(rel_34_selfdestruct_op_ctxt,rel_34_selfdestruct->createContext());
+CREATE_OP_CONTEXT(rel_35_ParityWalletHack2_op_ctxt,rel_35_ParityWalletHack2->createContext());
+CREATE_OP_CONTEXT(rel_27_storage_op_ctxt,rel_27_storage->createContext());
+CREATE_OP_CONTEXT(rel_7_used_in_condition_op_ctxt,rel_7_used_in_condition->createContext());
 const Tuple<RamDomain,7> key{{0,RamDomain(8),0,0,0,0,0}};
-auto range = rel_29_storage->equalRange_2(key,READ_OP_CONTEXT(rel_29_storage_op_ctxt));
+auto range = rel_27_storage->equalRange_2(key,READ_OP_CONTEXT(rel_27_storage_op_ctxt));
 for(const auto& env0 : range) {
 const Tuple<RamDomain,7> key{{0,RamDomain(1),0,0,env0[4],env0[5],env0[6]}};
-auto range = rel_29_storage->equalRange_114(key,READ_OP_CONTEXT(rel_29_storage_op_ctxt));
+auto range = rel_27_storage->equalRange_114(key,READ_OP_CONTEXT(rel_27_storage_op_ctxt));
 for(const auto& env1 : range) {
-if( ((env0[3]) != (env1[3])) && ((env0[0]) < (env1[0])) && rel_9_used_in_condition->contains(Tuple<RamDomain,2>{{env1[0],env1[3]}},READ_OP_CONTEXT(rel_9_used_in_condition_op_ctxt))) {
+if( ((env0[3]) != (env1[3])) && ((env0[0]) < (env1[0])) && rel_7_used_in_condition->contains(Tuple<RamDomain,2>{{env1[0],env1[3]}},READ_OP_CONTEXT(rel_7_used_in_condition_op_ctxt))) {
 const Tuple<RamDomain,4> key{{0,env1[3],0,0}};
-auto range = rel_36_selfdestruct->equalRange_2(key,READ_OP_CONTEXT(rel_36_selfdestruct_op_ctxt));
+auto range = rel_34_selfdestruct->equalRange_2(key,READ_OP_CONTEXT(rel_34_selfdestruct_op_ctxt));
 for(const auto& env2 : range) {
 if( ((env1[0]) < (env2[0]))) {
 Tuple<RamDomain,4> tuple{{static_cast<RamDomain>(env1[3]),static_cast<RamDomain>(env2[0]),static_cast<RamDomain>(env2[2]),static_cast<RamDomain>(env2[3])}};
-rel_37_ParityWalletHack2->insert(tuple,READ_OP_CONTEXT(rel_37_ParityWalletHack2_op_ctxt));
+rel_35_ParityWalletHack2->insert(tuple,READ_OP_CONTEXT(rel_35_ParityWalletHack2_op_ctxt));
 }
 }
 }
@@ -3813,10 +3614,10 @@ if (performIO) {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tstep\tcaller\tdestination"},{"filename","./ParityWalletHack2.csv"},{"name","ParityWalletHack2"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_37_ParityWalletHack2);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_35_ParityWalletHack2);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 }
-if (!isHintsProfilingEnabled()&& performIO) rel_9_used_in_condition->purge();
+if (!isHintsProfilingEnabled()&& performIO) rel_7_used_in_condition->purge();
 }();
 /* END STRATUM 34 */
 /* BEGIN STRATUM 35 */
@@ -3825,15 +3626,15 @@ SignalHandler::instance()->setMsg(R"_(UncheckedSuicide(hash,step1,caller,destina
    selfdestruct(step1,hash,caller,destination),
    !caller_check(_,hash).
 in file /Users/Christof/Git/Horus/horus/analyzer/datalog/attacks.dl [111:1-116:17])_");
-if(!(rel_36_selfdestruct->empty())) {
+if(!(rel_34_selfdestruct->empty())) {
 [&](){
-CREATE_OP_CONTEXT(rel_36_selfdestruct_op_ctxt,rel_36_selfdestruct->createContext());
-CREATE_OP_CONTEXT(rel_38_UncheckedSuicide_op_ctxt,rel_38_UncheckedSuicide->createContext());
-CREATE_OP_CONTEXT(rel_10_caller_check_op_ctxt,rel_10_caller_check->createContext());
-for(const auto& env0 : *rel_36_selfdestruct) {
-if( !(!rel_10_caller_check->equalRange_2(Tuple<RamDomain,2>{{0,env0[1]}},READ_OP_CONTEXT(rel_10_caller_check_op_ctxt)).empty())) {
+CREATE_OP_CONTEXT(rel_34_selfdestruct_op_ctxt,rel_34_selfdestruct->createContext());
+CREATE_OP_CONTEXT(rel_36_UncheckedSuicide_op_ctxt,rel_36_UncheckedSuicide->createContext());
+CREATE_OP_CONTEXT(rel_8_caller_check_op_ctxt,rel_8_caller_check->createContext());
+for(const auto& env0 : *rel_34_selfdestruct) {
+if( !(!rel_8_caller_check->equalRange_2(Tuple<RamDomain,2>{{0,env0[1]}},READ_OP_CONTEXT(rel_8_caller_check_op_ctxt)).empty())) {
 Tuple<RamDomain,4> tuple{{static_cast<RamDomain>(env0[1]),static_cast<RamDomain>(env0[0]),static_cast<RamDomain>(env0[2]),static_cast<RamDomain>(env0[3])}};
-rel_38_UncheckedSuicide->insert(tuple,READ_OP_CONTEXT(rel_38_UncheckedSuicide_op_ctxt));
+rel_36_UncheckedSuicide->insert(tuple,READ_OP_CONTEXT(rel_36_UncheckedSuicide_op_ctxt));
 }
 }
 }
@@ -3843,18 +3644,18 @@ SignalHandler::instance()->setMsg(R"_(UncheckedSuicide(hash,step1,caller,destina
    caller_check(step2,hash),
    step1 < step2.
 in file /Users/Christof/Git/Horus/horus/analyzer/datalog/attacks.dl [111:1-116:17])_");
-if(!(rel_10_caller_check->empty()) && !(rel_36_selfdestruct->empty())) {
+if(!(rel_8_caller_check->empty()) && !(rel_34_selfdestruct->empty())) {
 [&](){
-CREATE_OP_CONTEXT(rel_36_selfdestruct_op_ctxt,rel_36_selfdestruct->createContext());
-CREATE_OP_CONTEXT(rel_38_UncheckedSuicide_op_ctxt,rel_38_UncheckedSuicide->createContext());
-CREATE_OP_CONTEXT(rel_10_caller_check_op_ctxt,rel_10_caller_check->createContext());
-for(const auto& env0 : *rel_36_selfdestruct) {
+CREATE_OP_CONTEXT(rel_34_selfdestruct_op_ctxt,rel_34_selfdestruct->createContext());
+CREATE_OP_CONTEXT(rel_36_UncheckedSuicide_op_ctxt,rel_36_UncheckedSuicide->createContext());
+CREATE_OP_CONTEXT(rel_8_caller_check_op_ctxt,rel_8_caller_check->createContext());
+for(const auto& env0 : *rel_34_selfdestruct) {
 const Tuple<RamDomain,2> key{{0,env0[1]}};
-auto range = rel_10_caller_check->equalRange_2(key,READ_OP_CONTEXT(rel_10_caller_check_op_ctxt));
+auto range = rel_8_caller_check->equalRange_2(key,READ_OP_CONTEXT(rel_8_caller_check_op_ctxt));
 for(const auto& env1 : range) {
 if( ((env0[0]) < (env1[0]))) {
 Tuple<RamDomain,4> tuple{{static_cast<RamDomain>(env0[1]),static_cast<RamDomain>(env0[0]),static_cast<RamDomain>(env0[2]),static_cast<RamDomain>(env0[3])}};
-rel_38_UncheckedSuicide->insert(tuple,READ_OP_CONTEXT(rel_38_UncheckedSuicide_op_ctxt));
+rel_36_UncheckedSuicide->insert(tuple,READ_OP_CONTEXT(rel_36_UncheckedSuicide_op_ctxt));
 break;
 }
 }
@@ -3865,11 +3666,11 @@ if (performIO) {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tstep\tcaller\tdestination"},{"filename","./UncheckedSuicide.csv"},{"name","UncheckedSuicide"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_38_UncheckedSuicide);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_36_UncheckedSuicide);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 }
-if (!isHintsProfilingEnabled()&& performIO) rel_36_selfdestruct->purge();
-if (!isHintsProfilingEnabled()&& performIO) rel_10_caller_check->purge();
+if (!isHintsProfilingEnabled()&& performIO) rel_34_selfdestruct->purge();
+if (!isHintsProfilingEnabled()&& performIO) rel_8_caller_check->purge();
 }();
 /* END STRATUM 35 */
 /* BEGIN STRATUM 36 */
@@ -3878,7 +3679,7 @@ if (performIO) {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"filename","./bitwise_logic.facts"},{"name","bitwise_logic"}});
 if (!inputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = inputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getReader(std::vector<bool>({0,1,1,1}), symTable, ioDirectives, false, 1)->readAll(*rel_39_bitwise_logic);
+IOSystem::getInstance().getReader(std::vector<bool>({0,1,1,1}), symTable, ioDirectives, false, 1)->readAll(*rel_37_bitwise_logic);
 } catch (std::exception& e) {std::cerr << "Error loading data: " << e.what() << '\n';}
 }
 }();
@@ -3904,46 +3705,46 @@ SignalHandler::instance()->setMsg(R"_(ShortAddress(hash,step7,from,to,value) :-
    "1461501637330902918203684832716283019655932542975" match second_operand,
    from != to.
 in file /Users/Christof/Git/Horus/horus/analyzer/datalog/attacks.dl [164:1-182:14])_");
-if(!(rel_25_transaction->empty()) && !(rel_39_bitwise_logic->empty()) && !(rel_28_arithmetic->empty()) && !(rel_29_storage->empty()) && !(rel_2_def->empty()) && !(rel_32_transfer->empty()) && !(rel_6_data_flow->empty())) {
+if(!(rel_23_transaction->empty()) && !(rel_37_bitwise_logic->empty()) && !(rel_26_arithmetic->empty()) && !(rel_27_storage->empty()) && !(rel_2_def->empty()) && !(rel_30_transfer->empty()) && !(rel_6_data_flow->empty())) {
 [&](){
-CREATE_OP_CONTEXT(rel_39_bitwise_logic_op_ctxt,rel_39_bitwise_logic->createContext());
-CREATE_OP_CONTEXT(rel_40_ShortAddress_op_ctxt,rel_40_ShortAddress->createContext());
-CREATE_OP_CONTEXT(rel_2_def_op_ctxt,rel_2_def->createContext());
+CREATE_OP_CONTEXT(rel_37_bitwise_logic_op_ctxt,rel_37_bitwise_logic->createContext());
+CREATE_OP_CONTEXT(rel_38_ShortAddress_op_ctxt,rel_38_ShortAddress->createContext());
+CREATE_OP_CONTEXT(rel_27_storage_op_ctxt,rel_27_storage->createContext());
+CREATE_OP_CONTEXT(rel_30_transfer_op_ctxt,rel_30_transfer->createContext());
+CREATE_OP_CONTEXT(rel_26_arithmetic_op_ctxt,rel_26_arithmetic->createContext());
 CREATE_OP_CONTEXT(rel_6_data_flow_op_ctxt,rel_6_data_flow->createContext());
-CREATE_OP_CONTEXT(rel_25_transaction_op_ctxt,rel_25_transaction->createContext());
-CREATE_OP_CONTEXT(rel_28_arithmetic_op_ctxt,rel_28_arithmetic->createContext());
-CREATE_OP_CONTEXT(rel_29_storage_op_ctxt,rel_29_storage->createContext());
-CREATE_OP_CONTEXT(rel_32_transfer_op_ctxt,rel_32_transfer->createContext());
-for(const auto& env0 : *rel_25_transaction) {
+CREATE_OP_CONTEXT(rel_23_transaction_op_ctxt,rel_23_transaction->createContext());
+CREATE_OP_CONTEXT(rel_2_def_op_ctxt,rel_2_def->createContext());
+for(const auto& env0 : *rel_23_transaction) {
 if( (((static_cast<RamDomain>(symTable.resolve(env0[3]).size())) / (RamDomain(2))) < (RamDomain(68))) && (((static_cast<RamDomain>(symTable.resolve(env0[3]).size())) / (RamDomain(2))) > (RamDomain(36)))) {
 const Tuple<RamDomain,2> key{{0,RamDomain(6)}};
 auto range = rel_2_def->equalRange_2(key,READ_OP_CONTEXT(rel_2_def_op_ctxt));
 for(const auto& env1 : range) {
 const Tuple<RamDomain,4> key{{0,RamDomain(11),0,0}};
-auto range = rel_39_bitwise_logic->equalRange_2(key,READ_OP_CONTEXT(rel_39_bitwise_logic_op_ctxt));
+auto range = rel_37_bitwise_logic->equalRange_2(key,READ_OP_CONTEXT(rel_37_bitwise_logic_op_ctxt));
 for(const auto& env2 : range) {
 if( regex_wrapper(symTable.resolve(RamDomain(12)),symTable.resolve(env2[3])) && rel_6_data_flow->contains(Tuple<RamDomain,2>{{env1[0],env2[0]}},READ_OP_CONTEXT(rel_6_data_flow_op_ctxt))) {
 const Tuple<RamDomain,7> key{{0,RamDomain(1),0,env0[0],0,0,0}};
-auto range = rel_29_storage->equalRange_10(key,READ_OP_CONTEXT(rel_29_storage_op_ctxt));
+auto range = rel_27_storage->equalRange_10(key,READ_OP_CONTEXT(rel_27_storage_op_ctxt));
 for(const auto& env3 : range) {
 if( rel_6_data_flow->contains(Tuple<RamDomain,2>{{env2[0],env3[0]}},READ_OP_CONTEXT(rel_6_data_flow_op_ctxt))) {
 const Tuple<RamDomain,6> key{{0,RamDomain(7),0,0,0,0}};
-auto range = rel_28_arithmetic->equalRange_2(key,READ_OP_CONTEXT(rel_28_arithmetic_op_ctxt));
+auto range = rel_26_arithmetic->equalRange_2(key,READ_OP_CONTEXT(rel_26_arithmetic_op_ctxt));
 for(const auto& env4 : range) {
 if( rel_6_data_flow->contains(Tuple<RamDomain,2>{{env3[0],env4[0]}},READ_OP_CONTEXT(rel_6_data_flow_op_ctxt))) {
 const Tuple<RamDomain,7> key{{0,RamDomain(8),0,env0[0],0,0,0}};
-auto range = rel_29_storage->equalRange_10(key,READ_OP_CONTEXT(rel_29_storage_op_ctxt));
+auto range = rel_27_storage->equalRange_10(key,READ_OP_CONTEXT(rel_27_storage_op_ctxt));
 for(const auto& env5 : range) {
 if( rel_6_data_flow->contains(Tuple<RamDomain,2>{{env4[0],env5[0]}},READ_OP_CONTEXT(rel_6_data_flow_op_ctxt))) {
 const Tuple<RamDomain,2> key{{0,RamDomain(6)}};
 auto range = rel_2_def->equalRange_2(key,READ_OP_CONTEXT(rel_2_def_op_ctxt));
 for(const auto& env6 : range) {
 const Tuple<RamDomain,5> key{{0,env0[0],0,0,0}};
-auto range = rel_32_transfer->equalRange_2(key,READ_OP_CONTEXT(rel_32_transfer_op_ctxt));
+auto range = rel_30_transfer->equalRange_2(key,READ_OP_CONTEXT(rel_30_transfer_op_ctxt));
 for(const auto& env7 : range) {
 if( ((env7[2]) != (env7[3])) && rel_6_data_flow->contains(Tuple<RamDomain,2>{{env6[0],env7[0]}},READ_OP_CONTEXT(rel_6_data_flow_op_ctxt))) {
 Tuple<RamDomain,5> tuple{{static_cast<RamDomain>(env0[0]),static_cast<RamDomain>(env7[0]),static_cast<RamDomain>(env7[2]),static_cast<RamDomain>(env7[3]),static_cast<RamDomain>(env7[4])}};
-rel_40_ShortAddress->insert(tuple,READ_OP_CONTEXT(rel_40_ShortAddress_op_ctxt));
+rel_38_ShortAddress->insert(tuple,READ_OP_CONTEXT(rel_38_ShortAddress_op_ctxt));
 }
 }
 }
@@ -3965,16 +3766,16 @@ if (performIO) {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tstep\tfrom\tto\tvalue"},{"filename","./ShortAddress.csv"},{"name","ShortAddress"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_40_ShortAddress);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_38_ShortAddress);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 }
 if (!isHintsProfilingEnabled()&& performIO) rel_2_def->purge();
-if (!isHintsProfilingEnabled()&& performIO) rel_28_arithmetic->purge();
-if (!isHintsProfilingEnabled()&& performIO) rel_29_storage->purge();
-if (!isHintsProfilingEnabled()&& performIO) rel_39_bitwise_logic->purge();
-if (!isHintsProfilingEnabled()&& performIO) rel_32_transfer->purge();
-if (!isHintsProfilingEnabled()&& performIO) rel_25_transaction->purge();
 if (!isHintsProfilingEnabled()&& performIO) rel_6_data_flow->purge();
+if (!isHintsProfilingEnabled()&& performIO) rel_26_arithmetic->purge();
+if (!isHintsProfilingEnabled()&& performIO) rel_27_storage->purge();
+if (!isHintsProfilingEnabled()&& performIO) rel_37_bitwise_logic->purge();
+if (!isHintsProfilingEnabled()&& performIO) rel_30_transfer->purge();
+if (!isHintsProfilingEnabled()&& performIO) rel_23_transaction->purge();
 }();
 /* END STRATUM 37 */
 
@@ -3999,107 +3800,101 @@ std::cout << "\n";
 std::cout << "Relation rel_6_data_flow:\n";
 rel_6_data_flow->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
-std::cout << "Relation rel_7_delta_data_flow:\n";
-rel_7_delta_data_flow->printHintStatistics(std::cout,"  ");
+std::cout << "Relation rel_7_used_in_condition:\n";
+rel_7_used_in_condition->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
-std::cout << "Relation rel_8_new_data_flow:\n";
-rel_8_new_data_flow->printHintStatistics(std::cout,"  ");
+std::cout << "Relation rel_8_caller_check:\n";
+rel_8_caller_check->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
-std::cout << "Relation rel_9_used_in_condition:\n";
-rel_9_used_in_condition->printHintStatistics(std::cout,"  ");
+std::cout << "Relation rel_9_call:\n";
+rel_9_call->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
-std::cout << "Relation rel_10_caller_check:\n";
-rel_10_caller_check->printHintStatistics(std::cout,"  ");
+std::cout << "Relation rel_10_BlockStateDependence:\n";
+rel_10_BlockStateDependence->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
-std::cout << "Relation rel_11_call:\n";
-rel_11_call->printHintStatistics(std::cout,"  ");
+std::cout << "Relation rel_11_CallStackDepth:\n";
+rel_11_CallStackDepth->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
-std::cout << "Relation rel_12_BlockStateDependence:\n";
-rel_12_BlockStateDependence->printHintStatistics(std::cout,"  ");
+std::cout << "Relation rel_12_CreateBasedReentrancy:\n";
+rel_12_CreateBasedReentrancy->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
-std::cout << "Relation rel_13_CallStackDepth:\n";
-rel_13_CallStackDepth->printHintStatistics(std::cout,"  ");
+std::cout << "Relation rel_13_CrossFunctionReentrancy:\n";
+rel_13_CrossFunctionReentrancy->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
-std::cout << "Relation rel_14_CreateBasedReentrancy:\n";
-rel_14_CreateBasedReentrancy->printHintStatistics(std::cout,"  ");
+std::cout << "Relation rel_14_DelegatedReentrancy:\n";
+rel_14_DelegatedReentrancy->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
-std::cout << "Relation rel_15_CrossFunctionReentrancy:\n";
-rel_15_CrossFunctionReentrancy->printHintStatistics(std::cout,"  ");
+std::cout << "Relation rel_15_DoSWithUnexpectedThrow:\n";
+rel_15_DoSWithUnexpectedThrow->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
-std::cout << "Relation rel_16_DelegatedReentrancy:\n";
-rel_16_DelegatedReentrancy->printHintStatistics(std::cout,"  ");
+std::cout << "Relation rel_16_Reentrancy:\n";
+rel_16_Reentrancy->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
-std::cout << "Relation rel_17_DoSWithUnexpectedThrow:\n";
-rel_17_DoSWithUnexpectedThrow->printHintStatistics(std::cout,"  ");
+std::cout << "Relation rel_17_TimestampDependence:\n";
+rel_17_TimestampDependence->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
-std::cout << "Relation rel_18_Reentrancy:\n";
-rel_18_Reentrancy->printHintStatistics(std::cout,"  ");
+std::cout << "Relation rel_18_UncheckedDelegatecall:\n";
+rel_18_UncheckedDelegatecall->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
-std::cout << "Relation rel_19_TimestampDependence:\n";
-rel_19_TimestampDependence->printHintStatistics(std::cout,"  ");
+std::cout << "Relation rel_19_UnhandledException:\n";
+rel_19_UnhandledException->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
-std::cout << "Relation rel_20_UncheckedDelegatecall:\n";
-rel_20_UncheckedDelegatecall->printHintStatistics(std::cout,"  ");
+std::cout << "Relation rel_20_block:\n";
+rel_20_block->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
-std::cout << "Relation rel_21_UnhandledException:\n";
-rel_21_UnhandledException->printHintStatistics(std::cout,"  ");
+std::cout << "Relation rel_21_error:\n";
+rel_21_error->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
-std::cout << "Relation rel_22_block:\n";
-rel_22_block->printHintStatistics(std::cout,"  ");
+std::cout << "Relation rel_22_InsufficientGas:\n";
+rel_22_InsufficientGas->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
-std::cout << "Relation rel_23_error:\n";
-rel_23_error->printHintStatistics(std::cout,"  ");
+std::cout << "Relation rel_23_transaction:\n";
+rel_23_transaction->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
-std::cout << "Relation rel_24_InsufficientGas:\n";
-rel_24_InsufficientGas->printHintStatistics(std::cout,"  ");
+std::cout << "Relation rel_24_DoSWithBlockGasLimit:\n";
+rel_24_DoSWithBlockGasLimit->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
-std::cout << "Relation rel_25_transaction:\n";
-rel_25_transaction->printHintStatistics(std::cout,"  ");
+std::cout << "Relation rel_25_TransactionStateDependence:\n";
+rel_25_TransactionStateDependence->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
-std::cout << "Relation rel_26_DoSWithBlockGasLimit:\n";
-rel_26_DoSWithBlockGasLimit->printHintStatistics(std::cout,"  ");
+std::cout << "Relation rel_26_arithmetic:\n";
+rel_26_arithmetic->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
-std::cout << "Relation rel_27_TransactionStateDependence:\n";
-rel_27_TransactionStateDependence->printHintStatistics(std::cout,"  ");
+std::cout << "Relation rel_27_storage:\n";
+rel_27_storage->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
-std::cout << "Relation rel_28_arithmetic:\n";
-rel_28_arithmetic->printHintStatistics(std::cout,"  ");
+std::cout << "Relation rel_28_ParityWalletHack1:\n";
+rel_28_ParityWalletHack1->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
-std::cout << "Relation rel_29_storage:\n";
-rel_29_storage->printHintStatistics(std::cout,"  ");
+std::cout << "Relation rel_29_TransactionOrderDependency:\n";
+rel_29_TransactionOrderDependency->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
-std::cout << "Relation rel_30_ParityWalletHack1:\n";
-rel_30_ParityWalletHack1->printHintStatistics(std::cout,"  ");
+std::cout << "Relation rel_30_transfer:\n";
+rel_30_transfer->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
-std::cout << "Relation rel_31_TransactionOrderDependency:\n";
-rel_31_TransactionOrderDependency->printHintStatistics(std::cout,"  ");
+std::cout << "Relation rel_31_IntegerOverflow:\n";
+rel_31_IntegerOverflow->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
-std::cout << "Relation rel_32_transfer:\n";
-rel_32_transfer->printHintStatistics(std::cout,"  ");
+std::cout << "Relation rel_32_IntegerUnderflow:\n";
+rel_32_IntegerUnderflow->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
-std::cout << "Relation rel_33_IntegerOverflow:\n";
-rel_33_IntegerOverflow->printHintStatistics(std::cout,"  ");
+std::cout << "Relation rel_33_UncheckedSignature:\n";
+rel_33_UncheckedSignature->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
-std::cout << "Relation rel_34_IntegerUnderflow:\n";
-rel_34_IntegerUnderflow->printHintStatistics(std::cout,"  ");
+std::cout << "Relation rel_34_selfdestruct:\n";
+rel_34_selfdestruct->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
-std::cout << "Relation rel_35_UncheckedSignature:\n";
-rel_35_UncheckedSignature->printHintStatistics(std::cout,"  ");
+std::cout << "Relation rel_35_ParityWalletHack2:\n";
+rel_35_ParityWalletHack2->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
-std::cout << "Relation rel_36_selfdestruct:\n";
-rel_36_selfdestruct->printHintStatistics(std::cout,"  ");
+std::cout << "Relation rel_36_UncheckedSuicide:\n";
+rel_36_UncheckedSuicide->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
-std::cout << "Relation rel_37_ParityWalletHack2:\n";
-rel_37_ParityWalletHack2->printHintStatistics(std::cout,"  ");
+std::cout << "Relation rel_37_bitwise_logic:\n";
+rel_37_bitwise_logic->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
-std::cout << "Relation rel_38_UncheckedSuicide:\n";
-rel_38_UncheckedSuicide->printHintStatistics(std::cout,"  ");
-std::cout << "\n";
-std::cout << "Relation rel_39_bitwise_logic:\n";
-rel_39_bitwise_logic->printHintStatistics(std::cout,"  ");
-std::cout << "\n";
-std::cout << "Relation rel_40_ShortAddress:\n";
-rel_40_ShortAddress->printHintStatistics(std::cout,"  ");
+std::cout << "Relation rel_38_ShortAddress:\n";
+rel_38_ShortAddress->printHintStatistics(std::cout,"  ");
 std::cout << "\n";
 }
 SignalHandler::instance()->reset();
@@ -4119,107 +3914,107 @@ IOSystem::getInstance().getWriter(std::vector<bool>({1,0}), symTable, ioDirectiv
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tstep\tcaller\tcallee\tamount"},{"filename","./BlockStateDependence.csv"},{"name","BlockStateDependence"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_12_BlockStateDependence);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_10_BlockStateDependence);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tstep\tcaller\tcallee\tamount"},{"filename","./CallStackDepth.csv"},{"name","CallStackDepth"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_13_CallStackDepth);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_11_CallStackDepth);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tcaller\tcallee\tamount\tdepth"},{"filename","./CreateBasedReentrancy.csv"},{"name","CreateBasedReentrancy"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,1,1,1,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_14_CreateBasedReentrancy);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,1,1,1,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_12_CreateBasedReentrancy);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tcaller\tcallee\tamount\tdepth"},{"filename","./CrossFunctionReentrancy.csv"},{"name","CrossFunctionReentrancy"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,1,1,1,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_15_CrossFunctionReentrancy);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,1,1,1,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_13_CrossFunctionReentrancy);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tcaller\tcallee\tamount\tdepth"},{"filename","./DelegatedReentrancy.csv"},{"name","DelegatedReentrancy"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,1,1,1,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_16_DelegatedReentrancy);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,1,1,1,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_14_DelegatedReentrancy);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tstep\tcaller\tcallee\tamount"},{"filename","./DoSWithUnexpectedThrow.csv"},{"name","DoSWithUnexpectedThrow"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_17_DoSWithUnexpectedThrow);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_15_DoSWithUnexpectedThrow);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tcaller\tcallee\tamount\tdepth"},{"filename","./Reentrancy.csv"},{"name","Reentrancy"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,1,1,1,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_18_Reentrancy);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,1,1,1,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_16_Reentrancy);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tstep\tcaller\tcallee\tamount"},{"filename","./TimestampDependence.csv"},{"name","TimestampDependence"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_19_TimestampDependence);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_17_TimestampDependence);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tstep\tcaller\tcallee"},{"filename","./UncheckedDelegatecall.csv"},{"name","UncheckedDelegatecall"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_20_UncheckedDelegatecall);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_18_UncheckedDelegatecall);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tstep\tcaller\tcallee\tamount"},{"filename","./UnhandledException.csv"},{"name","UnhandledException"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_21_UnhandledException);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_19_UnhandledException);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tstep\tcaller\tcallee"},{"filename","./InsufficientGas.csv"},{"name","InsufficientGas"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_24_InsufficientGas);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_22_InsufficientGas);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tstep\tgas_limit\tcaller\tcallee\tamount"},{"filename","./DoSWithBlockGasLimit.csv"},{"name","DoSWithBlockGasLimit"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_26_DoSWithBlockGasLimit);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_24_DoSWithBlockGasLimit);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tstep\tcaller\tcallee\tamount"},{"filename","./TransactionStateDependence.csv"},{"name","TransactionStateDependence"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_27_TransactionStateDependence);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_25_TransactionStateDependence);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tstep\tcaller\tcallee\tamount"},{"filename","./ParityWalletHack1.csv"},{"name","ParityWalletHack1"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_30_ParityWalletHack1);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_28_ParityWalletHack1);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","transaction1\ttransaction2\tblock\tstorage_index"},{"filename","./TransactionOrderDependency.csv"},{"name","TransactionOrderDependency"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,1,0,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_31_TransactionOrderDependency);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,1,0,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_29_TransactionOrderDependency);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tstep\topcode\tfirst_operand\tsecond_operand\tarithmetic_result\tevm_result\tfrom\tto\tvalue"},{"filename","./IntegerOverflow.csv"},{"name","IntegerOverflow"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1,1,1,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_33_IntegerOverflow);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1,1,1,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_31_IntegerOverflow);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tstep\tfirst_operand\tsecond_operand\tarithmetic_result\tevm_result\tfrom\tto\tvalue"},{"filename","./IntegerUnderflow.csv"},{"name","IntegerUnderflow"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1,1,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_34_IntegerUnderflow);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1,1,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_32_IntegerUnderflow);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tstep\tinput_data\tfrom\tto\tvalue"},{"filename","./UncheckedSignature.csv"},{"name","UncheckedSignature"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_35_UncheckedSignature);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_33_UncheckedSignature);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tstep\tcaller\tdestination"},{"filename","./ParityWalletHack2.csv"},{"name","ParityWalletHack2"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_37_ParityWalletHack2);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_35_ParityWalletHack2);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tstep\tcaller\tdestination"},{"filename","./UncheckedSuicide.csv"},{"name","UncheckedSuicide"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_38_UncheckedSuicide);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_36_UncheckedSuicide);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","hash\tstep\tfrom\tto\tvalue"},{"filename","./ShortAddress.csv"},{"name","ShortAddress"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_40_ShortAddress);
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_38_ShortAddress);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 }
 public:
@@ -4247,47 +4042,47 @@ IOSystem::getInstance().getReader(std::vector<bool>({0,0}), symTable, ioDirectiv
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"filename","./call.facts"},{"name","call"}});
 if (!inputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = inputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getReader(std::vector<bool>({0,1,1,1,1,1,1,0,0}), symTable, ioDirectives, false, 1)->readAll(*rel_11_call);
+IOSystem::getInstance().getReader(std::vector<bool>({0,1,1,1,1,1,1,0,0}), symTable, ioDirectives, false, 1)->readAll(*rel_9_call);
 } catch (std::exception& e) {std::cerr << "Error loading data: " << e.what() << '\n';}
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"filename","./block.facts"},{"name","block"}});
 if (!inputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = inputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getReader(std::vector<bool>({0,0,0}), symTable, ioDirectives, false, 1)->readAll(*rel_22_block);
+IOSystem::getInstance().getReader(std::vector<bool>({0,0,0}), symTable, ioDirectives, false, 1)->readAll(*rel_20_block);
 } catch (std::exception& e) {std::cerr << "Error loading data: " << e.what() << '\n';}
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"filename","./error.facts"},{"name","error"}});
 if (!inputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = inputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getReader(std::vector<bool>({1,1}), symTable, ioDirectives, false, 1)->readAll(*rel_23_error);
+IOSystem::getInstance().getReader(std::vector<bool>({1,1}), symTable, ioDirectives, false, 1)->readAll(*rel_21_error);
 } catch (std::exception& e) {std::cerr << "Error loading data: " << e.what() << '\n';}
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"filename","./transaction.facts"},{"name","transaction"}});
 if (!inputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = inputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getReader(std::vector<bool>({1,1,1,1,0}), symTable, ioDirectives, false, 1)->readAll(*rel_25_transaction);
+IOSystem::getInstance().getReader(std::vector<bool>({1,1,1,1,0}), symTable, ioDirectives, false, 1)->readAll(*rel_23_transaction);
 } catch (std::exception& e) {std::cerr << "Error loading data: " << e.what() << '\n';}
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"filename","./arithmetic.facts"},{"name","arithmetic"}});
 if (!inputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = inputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getReader(std::vector<bool>({0,1,1,1,1,1}), symTable, ioDirectives, false, 1)->readAll(*rel_28_arithmetic);
+IOSystem::getInstance().getReader(std::vector<bool>({0,1,1,1,1,1}), symTable, ioDirectives, false, 1)->readAll(*rel_26_arithmetic);
 } catch (std::exception& e) {std::cerr << "Error loading data: " << e.what() << '\n';}
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"filename","./storage.facts"},{"name","storage"}});
 if (!inputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = inputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getReader(std::vector<bool>({0,1,0,1,1,1,1}), symTable, ioDirectives, false, 1)->readAll(*rel_29_storage);
+IOSystem::getInstance().getReader(std::vector<bool>({0,1,0,1,1,1,1}), symTable, ioDirectives, false, 1)->readAll(*rel_27_storage);
 } catch (std::exception& e) {std::cerr << "Error loading data: " << e.what() << '\n';}
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"filename","./transfer.facts"},{"name","transfer"}});
 if (!inputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = inputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getReader(std::vector<bool>({0,1,1,1,1}), symTable, ioDirectives, false, 1)->readAll(*rel_32_transfer);
+IOSystem::getInstance().getReader(std::vector<bool>({0,1,1,1,1}), symTable, ioDirectives, false, 1)->readAll(*rel_30_transfer);
 } catch (std::exception& e) {std::cerr << "Error loading data: " << e.what() << '\n';}
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"filename","./selfdestruct.facts"},{"name","selfdestruct"}});
 if (!inputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = inputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getReader(std::vector<bool>({0,1,1,1}), symTable, ioDirectives, false, 1)->readAll(*rel_36_selfdestruct);
+IOSystem::getInstance().getReader(std::vector<bool>({0,1,1,1}), symTable, ioDirectives, false, 1)->readAll(*rel_34_selfdestruct);
 } catch (std::exception& e) {std::cerr << "Error loading data: " << e.what() << '\n';}
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"filename","./bitwise_logic.facts"},{"name","bitwise_logic"}});
 if (!inputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = inputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getReader(std::vector<bool>({0,1,1,1}), symTable, ioDirectives, false, 1)->readAll(*rel_39_bitwise_logic);
+IOSystem::getInstance().getReader(std::vector<bool>({0,1,1,1}), symTable, ioDirectives, false, 1)->readAll(*rel_37_bitwise_logic);
 } catch (std::exception& e) {std::cerr << "Error loading data: " << e.what() << '\n';}
 }
 public:
@@ -4314,48 +4109,48 @@ IOSystem::getInstance().getWriter(std::vector<bool>({0,0}), symTable, ioDirectiv
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
-ioDirectives.setRelationName("rel_11_call");
-IOSystem::getInstance().getWriter(std::vector<bool>({0,1,1,1,1,1,1,0,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_11_call);
+ioDirectives.setRelationName("rel_9_call");
+IOSystem::getInstance().getWriter(std::vector<bool>({0,1,1,1,1,1,1,0,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_9_call);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
-ioDirectives.setRelationName("rel_22_block");
-IOSystem::getInstance().getWriter(std::vector<bool>({0,0,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_22_block);
+ioDirectives.setRelationName("rel_20_block");
+IOSystem::getInstance().getWriter(std::vector<bool>({0,0,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_20_block);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
-ioDirectives.setRelationName("rel_23_error");
-IOSystem::getInstance().getWriter(std::vector<bool>({1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_23_error);
+ioDirectives.setRelationName("rel_21_error");
+IOSystem::getInstance().getWriter(std::vector<bool>({1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_21_error);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
-ioDirectives.setRelationName("rel_25_transaction");
-IOSystem::getInstance().getWriter(std::vector<bool>({1,1,1,1,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_25_transaction);
+ioDirectives.setRelationName("rel_23_transaction");
+IOSystem::getInstance().getWriter(std::vector<bool>({1,1,1,1,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_23_transaction);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
-ioDirectives.setRelationName("rel_28_arithmetic");
-IOSystem::getInstance().getWriter(std::vector<bool>({0,1,1,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_28_arithmetic);
+ioDirectives.setRelationName("rel_26_arithmetic");
+IOSystem::getInstance().getWriter(std::vector<bool>({0,1,1,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_26_arithmetic);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
-ioDirectives.setRelationName("rel_29_storage");
-IOSystem::getInstance().getWriter(std::vector<bool>({0,1,0,1,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_29_storage);
+ioDirectives.setRelationName("rel_27_storage");
+IOSystem::getInstance().getWriter(std::vector<bool>({0,1,0,1,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_27_storage);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
-ioDirectives.setRelationName("rel_32_transfer");
-IOSystem::getInstance().getWriter(std::vector<bool>({0,1,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_32_transfer);
+ioDirectives.setRelationName("rel_30_transfer");
+IOSystem::getInstance().getWriter(std::vector<bool>({0,1,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_30_transfer);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
-ioDirectives.setRelationName("rel_36_selfdestruct");
-IOSystem::getInstance().getWriter(std::vector<bool>({0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_36_selfdestruct);
+ioDirectives.setRelationName("rel_34_selfdestruct");
+IOSystem::getInstance().getWriter(std::vector<bool>({0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_34_selfdestruct);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
-ioDirectives.setRelationName("rel_39_bitwise_logic");
-IOSystem::getInstance().getWriter(std::vector<bool>({0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_39_bitwise_logic);
+ioDirectives.setRelationName("rel_37_bitwise_logic");
+IOSystem::getInstance().getWriter(std::vector<bool>({0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_37_bitwise_logic);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 }
 public:
@@ -4367,108 +4162,108 @@ IOSystem::getInstance().getWriter(std::vector<bool>({1,0}), symTable, ioDirectiv
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
-ioDirectives.setRelationName("rel_12_BlockStateDependence");
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_12_BlockStateDependence);
+ioDirectives.setRelationName("rel_10_BlockStateDependence");
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_10_BlockStateDependence);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
-ioDirectives.setRelationName("rel_13_CallStackDepth");
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_13_CallStackDepth);
+ioDirectives.setRelationName("rel_11_CallStackDepth");
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_11_CallStackDepth);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
-ioDirectives.setRelationName("rel_14_CreateBasedReentrancy");
-IOSystem::getInstance().getWriter(std::vector<bool>({1,1,1,1,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_14_CreateBasedReentrancy);
+ioDirectives.setRelationName("rel_12_CreateBasedReentrancy");
+IOSystem::getInstance().getWriter(std::vector<bool>({1,1,1,1,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_12_CreateBasedReentrancy);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
-ioDirectives.setRelationName("rel_15_CrossFunctionReentrancy");
-IOSystem::getInstance().getWriter(std::vector<bool>({1,1,1,1,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_15_CrossFunctionReentrancy);
+ioDirectives.setRelationName("rel_13_CrossFunctionReentrancy");
+IOSystem::getInstance().getWriter(std::vector<bool>({1,1,1,1,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_13_CrossFunctionReentrancy);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
-ioDirectives.setRelationName("rel_16_DelegatedReentrancy");
-IOSystem::getInstance().getWriter(std::vector<bool>({1,1,1,1,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_16_DelegatedReentrancy);
+ioDirectives.setRelationName("rel_14_DelegatedReentrancy");
+IOSystem::getInstance().getWriter(std::vector<bool>({1,1,1,1,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_14_DelegatedReentrancy);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
-ioDirectives.setRelationName("rel_17_DoSWithUnexpectedThrow");
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_17_DoSWithUnexpectedThrow);
+ioDirectives.setRelationName("rel_15_DoSWithUnexpectedThrow");
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_15_DoSWithUnexpectedThrow);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
-ioDirectives.setRelationName("rel_18_Reentrancy");
-IOSystem::getInstance().getWriter(std::vector<bool>({1,1,1,1,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_18_Reentrancy);
+ioDirectives.setRelationName("rel_16_Reentrancy");
+IOSystem::getInstance().getWriter(std::vector<bool>({1,1,1,1,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_16_Reentrancy);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
-ioDirectives.setRelationName("rel_19_TimestampDependence");
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_19_TimestampDependence);
+ioDirectives.setRelationName("rel_17_TimestampDependence");
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_17_TimestampDependence);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
-ioDirectives.setRelationName("rel_20_UncheckedDelegatecall");
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_20_UncheckedDelegatecall);
+ioDirectives.setRelationName("rel_18_UncheckedDelegatecall");
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_18_UncheckedDelegatecall);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
-ioDirectives.setRelationName("rel_21_UnhandledException");
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_21_UnhandledException);
+ioDirectives.setRelationName("rel_19_UnhandledException");
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_19_UnhandledException);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
-ioDirectives.setRelationName("rel_24_InsufficientGas");
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_24_InsufficientGas);
+ioDirectives.setRelationName("rel_22_InsufficientGas");
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_22_InsufficientGas);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
-ioDirectives.setRelationName("rel_26_DoSWithBlockGasLimit");
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_26_DoSWithBlockGasLimit);
+ioDirectives.setRelationName("rel_24_DoSWithBlockGasLimit");
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_24_DoSWithBlockGasLimit);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
-ioDirectives.setRelationName("rel_27_TransactionStateDependence");
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_27_TransactionStateDependence);
+ioDirectives.setRelationName("rel_25_TransactionStateDependence");
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_25_TransactionStateDependence);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
-ioDirectives.setRelationName("rel_30_ParityWalletHack1");
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_30_ParityWalletHack1);
+ioDirectives.setRelationName("rel_28_ParityWalletHack1");
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_28_ParityWalletHack1);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
-ioDirectives.setRelationName("rel_31_TransactionOrderDependency");
-IOSystem::getInstance().getWriter(std::vector<bool>({1,1,0,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_31_TransactionOrderDependency);
+ioDirectives.setRelationName("rel_29_TransactionOrderDependency");
+IOSystem::getInstance().getWriter(std::vector<bool>({1,1,0,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_29_TransactionOrderDependency);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
-ioDirectives.setRelationName("rel_33_IntegerOverflow");
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1,1,1,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_33_IntegerOverflow);
+ioDirectives.setRelationName("rel_31_IntegerOverflow");
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1,1,1,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_31_IntegerOverflow);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
-ioDirectives.setRelationName("rel_34_IntegerUnderflow");
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1,1,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_34_IntegerUnderflow);
+ioDirectives.setRelationName("rel_32_IntegerUnderflow");
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1,1,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_32_IntegerUnderflow);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
-ioDirectives.setRelationName("rel_35_UncheckedSignature");
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_35_UncheckedSignature);
+ioDirectives.setRelationName("rel_33_UncheckedSignature");
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_33_UncheckedSignature);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
-ioDirectives.setRelationName("rel_37_ParityWalletHack2");
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_37_ParityWalletHack2);
+ioDirectives.setRelationName("rel_35_ParityWalletHack2");
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_35_ParityWalletHack2);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
-ioDirectives.setRelationName("rel_38_UncheckedSuicide");
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_38_UncheckedSuicide);
+ioDirectives.setRelationName("rel_36_UncheckedSuicide");
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_36_UncheckedSuicide);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
-ioDirectives.setRelationName("rel_40_ShortAddress");
-IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_40_ShortAddress);
+ioDirectives.setRelationName("rel_38_ShortAddress");
+IOSystem::getInstance().getWriter(std::vector<bool>({1,0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_38_ShortAddress);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 }
 public:
@@ -4494,7 +4289,7 @@ static factory_Sf_analyzer __factory_Sf_analyzer_instance;
 int main(int argc, char** argv)
 {
 try{
-souffle::CmdOptions opt(R"(../horus/analyzer/datalog/attacks.dl)",
+souffle::CmdOptions opt(R"(./analyzer/datalog/attacks.dl)",
 R"(.)",
 R"(.)",
 false,

@@ -106,6 +106,7 @@ def request_debug_trace(connection, request_timeout, request_retry_interval, tra
                 return json.loads(data)
             return {"error": {"status": response.status, "reason": response.reason, "data": response.read().decode()}}
         except Exception as e:
+            print(e)
             if tries < 3:
                 print("Retrying retrival of trace "+str(transaction_hash)+" in "+str(request_retry_interval)+" seconds.")
                 time.sleep(request_retry_interval)

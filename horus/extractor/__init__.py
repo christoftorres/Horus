@@ -4,6 +4,7 @@
 import os
 import time
 import shutil
+import tracemalloc
 
 from utils.utils import *
 from utils import settings
@@ -11,7 +12,10 @@ from .data_flow_analysis import TaintRunner
 from .call_flow_analysis import CallFlowAnalysis
 
 class Extractor:
-    def extract_facts_from_trace(self, facts_folder, trace, step, block, transaction, taint_runner):
+    def extract_facts_from_trace(self, facts_folder, trace, step, max_step, block, transaction, taint_runner):
+        if settings.DEBUG_MODE:
+            tracemalloc.start()
+
         def_facts           = open(facts_folder+"/def.facts",           "a")
         use_facts           = open(facts_folder+"/use.facts",           "a")
         arithmetic_facts    = open(facts_folder+"/arithmetic.facts",    "a")
@@ -82,7 +86,10 @@ class Extractor:
                         _arithmetic_result = int(_first_operand / _second_operand)
                     else:
                         _arithmetic_result = 0
-                _evm_result = int(trace[step + 1]["stack"][-1], 16)
+                if not "error" in trace[step]:
+                    _evm_result = int(trace[step + 1]["stack"][-1], 16)
+                else:
+                    _evm_result = 0
                 arithmetic_facts.write("%d\t%s\t%s\t%s\t%s\t%s\r\n" % (step, _opcode, _first_operand, _second_operand, _arithmetic_result, _evm_result))
 
             # Bitwise logic facts
@@ -121,7 +128,7 @@ class Extractor:
             # Call facts
             elif trace[step]["op"] in ["CREATE", "CALL", "CALLCODE", "DELEGATECALL", "STATICCALL"]:
                 i = step + 1
-                while i < len(trace)-1 and trace[step]["depth"] < trace[i]["depth"]:
+                while i < max_step and trace[step]["depth"] < trace[i]["depth"]:
                     i += 1
                 _transaction_hash = transaction["hash"]
                 _opcode = trace[step]["op"]
@@ -213,11 +220,16 @@ class Extractor:
         execution_delta = execution_end - execution_begin
         print("Extracting facts for transaction "+str(transaction["hash"])+" took %.2f second(s)." % execution_delta)
 
+        if settings.DEBUG_MODE:
+            current, peak = tracemalloc.get_traced_memory()
+            print("Memory usage: %d MB (%d MB)" % (int(current/1024/1024), int(peak/1024/1024)))
+
         return step
 
     def extract_facts_from_transactions(self, connection, transactions, blocks, facts_folder):
         step = 0
         trace = {}
+        max_step = 0
 
         if os.path.isdir(facts_folder):
             shutil.rmtree(facts_folder)
@@ -235,6 +247,7 @@ class Extractor:
             else:
                 for k in range(len(trace_response["result"]["structLogs"])):
                     trace[k+step] = trace_response["result"]["structLogs"][k]
+                    max_step = k+step
             retrieval_end = time.time()
             retrieval_delta = retrieval_end - retrieval_begin
             if settings.DEBUG_MODE:
@@ -245,4 +258,6 @@ class Extractor:
                 block = blocks[transaction["blockNumber"]]
             else:
                 block = format_block(settings.W3.eth.getBlock(transaction["blockNumber"]))
-            step = self.extract_facts_from_trace(facts_folder, trace, step, block, transaction, taint_runner)
+            step = self.extract_facts_from_trace(facts_folder, trace, step, max_step, block, transaction, taint_runner)
+            # Free memory
+            trace = {}
