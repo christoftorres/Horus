@@ -9,8 +9,8 @@ CONTRACTS      = "/Users/Christof/Downloads/contracts/"
 ARGUMENTS      = "arguments"
 LAUNCHERS      = "launchers"
 MAX_ARGUMENTS  = 3000
-WALLTIME       = "0-08:00:00"
-CORES          = 28
+WALLTIME       = "0-01:00:00"
+CORES          = 10
 NODES          = 1
 CORES_PER_TASK = 1
 
@@ -31,7 +31,6 @@ if __name__ == "__main__":
             os.remove("launch.sh")
 
         launcher_script = open("launch.sh", "w+")
-        print("here")
 
         file_counter = 1
         arguments_counter = 0
@@ -43,7 +42,7 @@ if __name__ == "__main__":
         s = s.replace('#SBATCH -c 1',              '#SBATCH -c '+str(CORES_PER_TASK))
         s = s.replace('#SBATCH --time=0-08:00:00', '#SBATCH --time='+WALLTIME)
         s = s.replace('#SBATCH -J Horus',          '#SBATCH -J Horus_'+str(file_counter))
-        s = s.replace('cat $HOME/Horus/arguments/parallel_launcher_arguments', 'cat $HOME/Horus/'+ARGUMENTS+'/parallel_launcher_arguments_'+str(file_counter))
+        s = s.replace('cat $HOME/Horus/arguments/parallel_launcher_arguments', 'cat $HOME/Horus/analyze/'+ARGUMENTS+'/parallel_launcher_arguments_'+str(file_counter))
         f = open(os.path.join(LAUNCHERS, "horus_parallel_launcher_"+str(file_counter)+".sh"), 'w')
         f.write(s)
         f.close()
@@ -63,13 +62,13 @@ if __name__ == "__main__":
                 s = s.replace('#SBATCH -c 1',              '#SBATCH -c '+str(CORES_PER_TASK))
                 s = s.replace('#SBATCH --time=0-08:00:00', '#SBATCH --time='+WALLTIME)
                 s = s.replace('#SBATCH -J Horus',          '#SBATCH -J Horus_'+str(file_counter))
-                s = s.replace('cat $HOME/Horus/arguments/parallel_launcher_arguments', 'cat $HOME/Horus/'+ARGUMENTS+'/parallel_launcher_arguments_'+str(file_counter))
+                s = s.replace('cat $HOME/Horus/arguments/parallel_launcher_arguments', 'cat $HOME/Horus/analyze'+ARGUMENTS+'/parallel_launcher_arguments_'+str(file_counter))
                 f = open(os.path.join(LAUNCHERS, "horus_parallel_launcher_"+str(file_counter)+".sh"), 'w')
                 f.write(s)
                 f.close()
                 launcher_script.write('sbatch ./'+os.path.join(LAUNCHERS, "horus_parallel_launcher_"+str(file_counter)+".sh")+'\n')
             #arguments_file.write(os.path.splitext(os.path.basename(contract))[0]+"\n")
-            arguments_file.write('/work/projects/horus/contracts/'+os.path.basename(contract)+" "+'/work/projects/horus/facts/'+os.path.splitext(os.path.basename(contract))[0]+"\n")
+            arguments_file.write('/work/projects/horus/facts/'+os.path.splitext(os.path.basename(contract))[0]+' '+'/work/projects/horus/results/'+os.path.splitext(os.path.basename(contract))[0]+"\n")
             print(os.path.splitext(os.path.basename(contract))[0])
         arguments_file.close()
 

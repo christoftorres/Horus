@@ -231,33 +231,44 @@ class Extractor:
         trace = {}
         max_step = 0
 
-        if os.path.isdir(facts_folder):
-            shutil.rmtree(facts_folder)
+        #if os.path.isdir(facts_folder):
+        #    shutil.rmtree(facts_folder)
         if not os.path.isdir(facts_folder):
             os.mkdir(facts_folder)
 
         taint_runner = TaintRunner()
 
+        extracted_transactions = {}
+        if os.path.isfile(facts_folder+"/transaction.facts"):
+            import csv
+            with open(facts_folder+"/transaction.facts") as file:
+                reader = csv.reader(file, delimiter='\t')
+                for row in reader:
+                    extracted_transactions[row[0]] = True
+
         for transaction in transactions:
-            retrieval_begin = time.time()
-            trace_response = request_debug_trace(connection, settings.REQUEST_TIMEOUT, settings.REQUEST_RETRY_INTERVAL, transaction["hash"])
-            if "error" in trace_response:
-                print("An error occured in retrieving the trace: "+str(trace_response["error"]))
-                raise Exception("An error occured in retrieving the trace: {}".format(trace_response["error"]))
+            if not transaction["hash"] in extracted_transactions:
+                retrieval_begin = time.time()
+                trace_response = request_debug_trace(connection, settings.CONNECTION_RETRIES, settings.RPC_HOST, settings.RPC_PORT, settings.REQUEST_TIMEOUT, settings.REQUEST_RETRY_INTERVAL, transaction["hash"])
+                if "error" in trace_response:
+                    print("An error occured in retrieving the trace: "+str(trace_response["error"]))
+                    raise Exception("An error occured in retrieving the trace: {}".format(trace_response["error"]))
+                else:
+                    for k in range(len(trace_response["result"]["structLogs"])):
+                        trace[k+step] = trace_response["result"]["structLogs"][k]
+                        max_step = k+step
+                retrieval_end = time.time()
+                retrieval_delta = retrieval_end - retrieval_begin
+                if settings.DEBUG_MODE:
+                    print("Retrieving transaction "+transaction["hash"]+" took %.2f second(s). (%d MB)" % (retrieval_delta, (deep_getsizeof(trace, set()) / 1024) / 1024))
+                else:
+                    print("Retrieving transaction "+transaction["hash"]+" took %.2f second(s)." % (retrieval_delta))
+                if blocks:
+                    block = blocks[transaction["blockNumber"]]
+                else:
+                    block = format_block(settings.W3.eth.getBlock(transaction["blockNumber"]))
+                step = self.extract_facts_from_trace(facts_folder, trace, step, max_step, block, transaction, taint_runner)
+                # Free memory
+                trace = {}
             else:
-                for k in range(len(trace_response["result"]["structLogs"])):
-                    trace[k+step] = trace_response["result"]["structLogs"][k]
-                    max_step = k+step
-            retrieval_end = time.time()
-            retrieval_delta = retrieval_end - retrieval_begin
-            if settings.DEBUG_MODE:
-                print("Retrieving transaction "+transaction["hash"]+" took %.2f second(s). (%d MB)" % (retrieval_delta, (deep_getsizeof(trace, set()) / 1024) / 1024))
-            else:
-                print("Retrieving transaction "+transaction["hash"]+" took %.2f second(s)." % (retrieval_delta))
-            if blocks:
-                block = blocks[transaction["blockNumber"]]
-            else:
-                block = format_block(settings.W3.eth.getBlock(transaction["blockNumber"]))
-            step = self.extract_facts_from_trace(facts_folder, trace, step, max_step, block, transaction, taint_runner)
-            # Free memory
-            trace = {}
+                print("Transaction "+transaction["hash"]+" has already been extracted.")

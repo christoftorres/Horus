@@ -232,7 +232,10 @@ def main():
                         transaction['to'] = row[2]
                         transaction['input'] = row[3]
                         transaction['blockNumber'] = int(row[4])
-                        transactions.append(transaction)
+                        if not is_block_within_ranges(transaction['blockNumber'], settings.DOS_ATTACK_BLOCK_RANGES):
+                            transactions.append(transaction)
+                        else:
+                            print("Ignoring transaction "+transaction['hash']+" since it is part of the DoS attack block range.")
                         if row[4] not in blocks:
                             block = {}
                             block['number'] = int(row[4])
@@ -247,12 +250,15 @@ def main():
             extractor.extract_facts_from_transactions(connection, transactions, blocks, settings.FACTS_FOLDER)
 
         if args.analyze:
-            if os.path.isdir(settings.RESULTS_FOLDER):
-                shutil.rmtree(settings.RESULTS_FOLDER)
+            #if os.path.isdir(settings.RESULTS_FOLDER):
+            #    shutil.rmtree(settings.RESULTS_FOLDER)
             if not os.path.isdir(settings.RESULTS_FOLDER):
                 os.mkdir(settings.RESULTS_FOLDER)
             analyzer = Analyzer()
-            analyzer.analyze_facts(args.number_of_threads, args.profile, settings.FACTS_FOLDER, settings.RESULTS_FOLDER, settings.DATALOG_FILE)
+            if not os.listdir(settings.RESULTS_FOLDER):
+                analyzer.analyze_facts(args.number_of_threads, args.profile, settings.FACTS_FOLDER, settings.RESULTS_FOLDER, settings.DATALOG_FILE)
+            else:
+                print("Datalog facts have already been analyzed.")
 
         print("")
     except argparse.ArgumentTypeError as e:

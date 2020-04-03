@@ -91,11 +91,11 @@ def convert_hex_to_int(x):
         return new_list
     return x
 
-def request_debug_trace(connection, request_timeout, request_retry_interval, transaction_hash, disable_stack=False, disable_memory=False, disable_storage=True, retries=0):
+def request_debug_trace(connection, connection_retries, rpc_host, rpc_port, request_timeout, request_retry_interval, transaction_hash, disable_stack=False, disable_memory=False, disable_storage=True, retries=0):
     headers = {"Content-Type": "application/json"}
     data = json.dumps({"id": 1, "method": "debug_traceTransaction", "params": [transaction_hash, {"disableStack": disable_stack, "disableMemory": disable_memory, "disableStorage": disable_storage}]})
     tries = 0
-    while tries < 3:
+    while tries < connection_retries:
         try:
             tries += 1
             connection.request('GET', '/', data, headers)
@@ -106,10 +106,12 @@ def request_debug_trace(connection, request_timeout, request_retry_interval, tra
                 return json.loads(data)
             return {"error": {"status": response.status, "reason": response.reason, "data": response.read().decode()}}
         except Exception as e:
-            print(e)
-            if tries < 3:
+            connection.close()
+            print("Exception: "+str(e))
+            if tries < connection_retries:
                 print("Retrying retrival of trace "+str(transaction_hash)+" in "+str(request_retry_interval)+" seconds.")
                 time.sleep(request_retry_interval)
+                connection = http.client.HTTPConnection(rpc_host, rpc_port)
             else:
                 return {"error": e}
 
