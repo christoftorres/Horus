@@ -166,7 +166,7 @@ python3 horus.py -e -c 0xf90a54b20881ece27e3a8e31903e3e75009a0164
 ```
 GovernMental (Mainnet)
 
-python3 horus.py -e -t 0x8995a4334fc1e811afcfe257b82a4eae329bda7347d09fff6b7873a7e2a63036
+python3 horus.py -e -t 0x0d80d67202bd9cb6773df8dd2020e7190a1b0793e8ec4fc105257e8128f0506b
 ```
 
 ###### Block State Dependence
