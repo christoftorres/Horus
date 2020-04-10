@@ -70,7 +70,7 @@ class TaintRecord:
         clone.value   = self.value
         clone.output  = self.output
         clone.address = self.address
-        clone.stack   = self.stack[:]
+        clone.stack   = self.stack
         clone.memory  = self.memory
         return clone
 
@@ -117,23 +117,15 @@ class TaintRunner:
                         records[-1].stack[-i] = [taint]
                     else:
                         record = copy.deepcopy(records[-1].stack[-i])
-                        if not taint in record:
-                            record.append(taint)
+                        record = [taint]
                         records[-1].stack[-i] = record
-
-                if instruction["op"] in ["CALL", "CALLCODE", "DELEGATECALL", "STATICCALL"]:
+                if instruction["op"] == "CALL":
                     if not records[-1].output:
                         records[-1].output = []
                     records[-1].output += [taint]
                 elif instruction["op"] == "CALLDATACOPY":
                     records[-1].memory[instruction["stack"][-1]] = []
                     records[-1].memory[instruction["stack"][-1]].append(taint)
-                elif instruction["op"].startswith("MSTORE"):
-                    records[-1].memory[instruction["stack"][-1]] = []
-                    records[-1].memory[instruction["stack"][-1]].append(taint)
-                elif instruction["op"] == "SSTORE":
-                    self.storage[records[-1].address][instruction["stack"][-1]] = []
-                    self.storage[records[-1].address][instruction["stack"][-1]].append(taint)
         except:
             traceback.print_exc()
 
@@ -148,7 +140,7 @@ class TaintRunner:
                     if stack:
                         values += stack
                 else:
-                    if instruction["op"].startswith("LOG"):
+                    if instruction["op"].startswith("LOG") or instruction["op"] == "SHA3":
                         memory = TaintRunner.extract_taint_from_memory(records[-2].memory, int(instruction["stack"][-1], 16), int(instruction["stack"][-2], 16))
                         if memory:
                             values += memory
@@ -215,7 +207,7 @@ class TaintRunner:
         taint = False
         for i in range(mutator[0]):
             values = record.stack.pop()
-            if values != False:
+            if values:
                 if taint == False:
                     taint = []
                 for j in range(len(values)):

@@ -5,13 +5,12 @@ import os
 import glob
 import shutil
 
-CONTRACTS      = "/Users/Christof/Downloads/contracts/"
+CONTRACTS      = "contracts/"
 ARGUMENTS      = "arguments"
 LAUNCHERS      = "launchers"
 MAX_ARGUMENTS  = 3000
-WALLTIME       = "0-08:00:00"
-CORES          = 28
-NODES          = 1
+WALLTIME       = "0-24:00:00"
+CORES          = 100
 CORES_PER_TASK = 1
 
 if __name__ == "__main__":
@@ -31,14 +30,14 @@ if __name__ == "__main__":
             os.remove("launch.sh")
 
         launcher_script = open("launch.sh", "w+")
-        
+
         file_counter = 1
         arguments_counter = 0
         arguments_file = open(ARGUMENTS+"/parallel_launcher_arguments_"+str(file_counter), "w")
         shutil.copy("horus_parallel_launcher.sh", os.path.join(LAUNCHERS, "horus_parallel_launcher_"+str(file_counter)+".sh"))
         s = open(os.path.join(LAUNCHERS, "horus_parallel_launcher_"+str(file_counter)+".sh")).read()
         s = s.replace('#SBATCH -n 28',             '#SBATCH -n '+str(CORES))
-        s = s.replace('#SBATCH -N 1',              '#SBATCH -N '+str(NODES))
+        #s = s.replace('#SBATCH -N 1',              '#SBATCH -N '+str(NODES))
         s = s.replace('#SBATCH -c 1',              '#SBATCH -c '+str(CORES_PER_TASK))
         s = s.replace('#SBATCH --time=0-08:00:00', '#SBATCH --time='+WALLTIME)
         s = s.replace('#SBATCH -J Horus',          '#SBATCH -J Horus_'+str(file_counter))
@@ -58,7 +57,7 @@ if __name__ == "__main__":
                 shutil.copy("horus_parallel_launcher.sh", os.path.join(LAUNCHERS, "horus_parallel_launcher_"+str(file_counter)+".sh"))
                 s = open(os.path.join(LAUNCHERS, "horus_parallel_launcher_"+str(file_counter)+".sh")).read()
                 s = s.replace('#SBATCH -n 28',             '#SBATCH -n '+str(CORES))
-                s = s.replace('#SBATCH -N 1',              '#SBATCH -N '+str(NODES))
+                #s = s.replace('#SBATCH -N 1',              '#SBATCH -N '+str(NODES))
                 s = s.replace('#SBATCH -c 1',              '#SBATCH -c '+str(CORES_PER_TASK))
                 s = s.replace('#SBATCH --time=0-08:00:00', '#SBATCH --time='+WALLTIME)
                 s = s.replace('#SBATCH -J Horus',          '#SBATCH -J Horus_'+str(file_counter))

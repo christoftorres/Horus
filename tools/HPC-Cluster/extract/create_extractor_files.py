@@ -39,7 +39,7 @@ def main():
         csvreader = csv.reader(csvfile)
         for row in csvreader:
             if csvreader.line_num > 1:
-                blocks[row[0]] = [int(row[15]), int(row[14])]
+                blocks[row[0]] = [int(row[15]), int(row[14]), int(row[16])]
     end = time.time()
     log = open(FOLDER+"create_extractor_files.log", "a")
     print("Loaded "+str(len(blocks))+" blocks into memory in "+str(end - start)+" seconds.")
@@ -62,7 +62,7 @@ def main():
     with open(FOLDER+"transactions.csv", "r") as csvfile:
         csvreader = csv.reader(csvfile)
         for row in csvreader:
-            if csvreader.line_num > 1:
+            if csvreader.line_num > 1 and int(row[8]) > 21000: # Check if transaction uses more than 21000 gas
                 address = row[6]
                 transaction_hash = row[0]
                 total_transactions += 1
@@ -112,10 +112,9 @@ def dump_to_storage(contracts, contract_count, transaction_hash, batch_count, tr
 
 def print_memory_usage():
     current, peak = tracemalloc.get_traced_memory()
-    average = tracemalloc.get_tracemalloc_memory()
     log = open(FOLDER+"create_extractor_files.log", "a")
-    print("Current: %d MB, Peak %d MB, Average %d MB" % (int(current/1024/1024), int(peak/1024/1024), int(average/1024/1024)))
-    log.write("Current: %d MB, Peak %d MB, Average %d MB\n" % (int(current/1024/1024), int(peak/1024/1024), int(average/1024/1024)))
+    print("Current: %d MB, Peak %d MB" % (int(current/1024/1024), int(peak/1024/1024)))
+    log.write("Current: %d MB, Peak %d MB\n" % (int(current/1024/1024), int(peak/1024/1024)))
     log.close()
 
 if __name__ == '__main__':

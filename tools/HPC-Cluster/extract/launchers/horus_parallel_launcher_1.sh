@@ -1,15 +1,15 @@
 #!/bin/bash -l
 #SBATCH --mail-type=end,fail
 #SBATCH --mail-user=christof.torres@uni.lu
-#SBATCH --time=0-08:00:00 # Execution time
+#SBATCH --time=0-24:00:00 # Execution time
 #SBATCH --partition=batch # Use the batch partition reserved for passive jobs
 #SBATCH --qos=qos-batch
 #SBATCH -J Horus_1          # Set the job name
-#SBATCH -N 1              # Number of nodes
-#SBATCH -n 28             # Number of tasks (cores)
+#SBATCH -n 100             # Number of tasks (cores)
 #SBATCH -c 1              # 1 core per task
 
 set -x
+export TMPDIR=/work/projects/horus/tmp
 module load lang/Python/3.7.2-GCCcore-8.2.0
 cd /home/users/cferreira/Horus/horus
 

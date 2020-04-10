@@ -4,6 +4,7 @@
 import os
 import sys
 import time
+import json
 import shlex
 import shutil
 import subprocess
@@ -43,7 +44,11 @@ class Analyzer:
         p = ""
         if profile:
             p = " -p profile.log"
-        proc = subprocess.Popen(shlex.split(execution_path+"/analyzer/executable/analyzer"+j+p+" -D "+results_folder+" -F "+facts_folder), stdout=subprocess.PIPE)
-        proc.communicate()
-        analysis_end = time.time()
-        print("Analyzing facts took %.2f second(s)." % (analysis_end - analysis_begin))
+        if os.path.isfile(execution_path+"/analyzer/executable/analyzer"):
+            proc = subprocess.Popen(shlex.split(execution_path+"/analyzer/executable/analyzer"+j+p+" -D "+results_folder+" -F "+facts_folder), stdout=subprocess.PIPE)
+            proc.communicate()
+            analysis_end = time.time()
+            analysis_delta = analysis_end - analysis_begin
+            print("Analyzing facts took %.2f second(s)." % (analysis_delta))
+        with open(results_folder+"/stats.json", "w") as jsonfile:
+            json.dump(analysis_delta, jsonfile)

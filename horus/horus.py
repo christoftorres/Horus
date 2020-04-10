@@ -241,6 +241,7 @@ def main():
                             block['number'] = int(row[4])
                             block['gasUsed'] = int(row[5])
                             block['gasLimit'] = int(row[6])
+                            block['timestamp'] = int(row[7])
                             blocks[transaction['blockNumber']] = block
             else:
                 print("Contract requires to be either an address or a CSV file")
@@ -250,8 +251,8 @@ def main():
             extractor.extract_facts_from_transactions(connection, transactions, blocks, settings.FACTS_FOLDER)
 
         if args.analyze:
-            #if os.path.isdir(settings.RESULTS_FOLDER):
-            #    shutil.rmtree(settings.RESULTS_FOLDER)
+            if os.path.isdir(settings.RESULTS_FOLDER):
+                shutil.rmtree(settings.RESULTS_FOLDER)
             if not os.path.isdir(settings.RESULTS_FOLDER):
                 os.mkdir(settings.RESULTS_FOLDER)
             analyzer = Analyzer()

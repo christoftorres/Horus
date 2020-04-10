@@ -76,7 +76,10 @@ def is_block_within_ranges(block, ranges):
 
 def normalize_32_byte_hex_address(value):
     as_bytes = eth_utils.to_bytes(hexstr=value)
-    return eth_utils.to_normalized_address(as_bytes[-20:])
+    try:
+        return eth_utils.to_normalized_address(as_bytes[-20:])
+    except:
+        return '0x'+value.replace('0x', '').zfill(40)
 
 def convert_hex_to_int(x):
     if isinstance(x, str) and x.startswith("0x"):
@@ -91,7 +94,7 @@ def convert_hex_to_int(x):
         return new_list
     return x
 
-def request_debug_trace(connection, connection_retries, rpc_host, rpc_port, request_timeout, request_retry_interval, transaction_hash, disable_stack=False, disable_memory=False, disable_storage=True, retries=0):
+def request_debug_trace(connection, connection_retries, rpc_host, rpc_port, request_timeout, request_retry_interval, transaction_hash, disable_stack=False, disable_memory=True, disable_storage=True):
     headers = {"Content-Type": "application/json"}
     data = json.dumps({"id": 1, "method": "debug_traceTransaction", "params": [transaction_hash, {"disableStack": disable_stack, "disableMemory": disable_memory, "disableStorage": disable_storage}]})
     tries = 0
@@ -102,8 +105,7 @@ def request_debug_trace(connection, connection_retries, rpc_host, rpc_port, requ
             connection.sock.settimeout(request_timeout)
             response = connection.getresponse()
             if response.status == 200 and response.reason == "OK":
-                data = response.read().decode()
-                return json.loads(data)
+                return json.loads(response.read())
             return {"error": {"status": response.status, "reason": response.reason, "data": response.read().decode()}}
         except Exception as e:
             connection.close()
