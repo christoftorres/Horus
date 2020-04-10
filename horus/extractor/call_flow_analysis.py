@@ -8,6 +8,9 @@ class CallFlowAnalysis:
         self.call_stack = []
         self.call_stack.append(transaction["to"])
 
+    def get_caller(self):
+        return self.call_stack[-1]
+
     def analyze_call_flow(self, step, max_step, trace):
         if step < len(trace)-1:
             if trace[step]["depth"] < trace[step+1]["depth"]:

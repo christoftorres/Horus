@@ -11,39 +11,10 @@ import tracemalloc
 from utils.utils import *
 from utils import settings
 from .data_flow_analysis import TaintRunner
+from .memory_management import MemoryManager
 from .call_flow_analysis import CallFlowAnalysis
 
-from eth.vm.memory import (
-    Memory
-)
-
-from eth.validation import (
-    validate_uint256
-)
-
-from eth._utils.address import (
-    force_bytes_to_address
-)
-
 class Extractor:
-    def __init__(self):
-        self.call_stack = []
-
-    #
-    # Memory Management
-    #
-    def extend_memory(self, start_position: int, size: int) -> None:
-        validate_uint256(start_position, title="Memory start position")
-        validate_uint256(size, title="Memory size")
-        if size:
-            self.call_stack[-1]["memory"].extend(start_position, size)
-
-    def memory_write(self, start_position: int, size: int, value: bytes) -> None:
-        return self.call_stack[-1]["memory"].write(start_position, size, value)
-
-    def memory_read_bytes(self, start_position: int, size: int) -> bytes:
-        return self.call_stack[-1]["memory"].read_bytes(start_position, size)
-
     def extract_facts_from_trace(self, facts_folder, trace, step, max_step, block, transaction, taint_runner, stats):
         #if settings.DEBUG_MODE:
         if True:
@@ -64,16 +35,12 @@ class Extractor:
         transaction_facts   = open(facts_folder+"/transaction.facts",   "a")
 
         call_flow_analysis = CallFlowAnalysis(transaction)
+        memory_manager = MemoryManager(transaction)
         execution_begin = time.time()
 
         balances = {}
         first_step = step
-        self.call_stack.append({"memory": Memory(), "data": bytes.fromhex(transaction["input"].replace('0x', '')), "code": b'', "output": b''})
-
         while step in trace:
-            if len(self.call_stack) > int(trace[step]["depth"]):
-                self.call_stack.pop()
-
             if settings.DEBUG_MODE:
                 if step == first_step:
                     print("")
@@ -82,68 +49,7 @@ class Extractor:
                     print("")
                     print("Step \t PC \t Operation\t Gas       \t GasCost \t Depth \t Contract")
                     print("-------------------------------------------------------------------------------------------------------------------")
-                print(str(step)+" \t "+str(trace[step]["pc"])+" \t "+trace[step]["op"].ljust(10)+"\t "+str(trace[step]["gas"]).ljust(10)+" \t "+str(trace[step]["gasCost"]).ljust(10)+" \t "+str(trace[step]["depth"])+" \t "+str(call_flow_analysis.call_stack[-1])+(" \t "+"[Error]" if "error" in trace[step] else ""))
-
-            if trace[step]["op"] == "CALLDATACOPY":
-                mem_start_position = int(trace[step]["stack"][-1], 16)
-                calldata_start_position = int(trace[step]["stack"][-2], 16)
-                size = int(trace[step]["stack"][-3], 16)
-                self.extend_memory(mem_start_position, size)
-                value = self.call_stack[-1]["data"][
-                    calldata_start_position: calldata_start_position + size
-                ]
-                padded_value = value.ljust(size, b'\x00')
-                self.memory_write(mem_start_position, size, padded_value)
-            elif trace[step]["op"] == "CODECOPY":
-                mem_start_position = int(trace[step]["stack"][-1], 16)
-                code_start_position = int(trace[step]["stack"][-2], 16)
-                size = int(trace[step]["stack"][-3], 16)
-                self.extend_memory(mem_start_position, size)
-                if self.call_stack[-1]["code"]:
-                    code = self.call_stack[-1]["code"]
-                else:
-                    code = settings.W3.eth.getCode(settings.W3.toChecksumAddress(call_flow_analysis.call_stack[-1]), transaction["blockNumber"]-1)
-                code_bytes = code[code_start_position:code_start_position + size]
-                padded_code_bytes = code_bytes.ljust(size, b'\x00')
-                self.memory_write(mem_start_position, size, padded_code_bytes)
-            elif trace[step]["op"] == "EXTCODECOPY":
-                account = force_bytes_to_address(bytes.fromhex(trace[step]["stack"][-1]))
-                mem_start_position = int(trace[step]["stack"][-2], 16)
-                code_start_position = int(trace[step]["stack"][-3], 16)
-                size = int(trace[step]["stack"][-4], 16)
-                self.extend_memory(mem_start_position, size)
-                code = settings.W3.eth.getCode(settings.W3.toChecksumAddress(account), transaction["blockNumber"]-1)
-                code_bytes = code[code_start_position:code_start_position + size]
-                padded_code_bytes = code_bytes.ljust(size, b'\x00')
-                self.memory_write(mem_start_position, size, padded_code_bytes)
-            elif trace[step]["op"] == "RETURNDATACOPY":
-                mem_start_position = int(trace[step]["stack"][-1], 16)
-                returndata_start_position = int(trace[step]["stack"][-2], 16)
-                size = int(trace[step]["stack"][-3], 16)
-                self.extend_memory(mem_start_position, size)
-                value = self.call_stack[-1]["output"][returndata_start_position: returndata_start_position + size]
-                self.memory_write(mem_start_position, size, value)
-            elif trace[step]["op"] == "MSTORE":
-                start_position = int(trace[step]["stack"][-1], 16)
-                value = bytes.fromhex(trace[step]["stack"][-2])
-                padded_value = value.rjust(32, b'\x00')
-                normalized_value = padded_value[-32:]
-                self.extend_memory(start_position, 32)
-                self.memory_write(start_position, 32, normalized_value)
-            elif trace[step]["op"] == "MSTORE8":
-                start_position = int(trace[step]["stack"][-1], 16)
-                value = bytes.fromhex(trace[step]["stack"][-2])
-                padded_value = value.rjust(1, b'\x00')
-                normalized_value = padded_value[-1:]
-                self.extend_memory(start_position, 1)
-                self.memory_write(start_position, 1, normalized_value)
-            elif trace[step]["op"] == "RETURN":
-                start_position = int(trace[step]["stack"][-1], 16)
-                size = int(trace[step]["stack"][-2], 16)
-                self.extend_memory(start_position, size)
-                output = self.memory_read_bytes(start_position, size)
-                if len(self.call_stack) > 1:
-                    self.call_stack[-2]["output"] = output
+                print(str(step)+" \t "+str(trace[step]["pc"])+" \t "+trace[step]["op"].ljust(10)+"\t "+str(trace[step]["gas"]).ljust(10)+" \t "+str(trace[step]["gasCost"]).ljust(10)+" \t "+str(trace[step]["depth"])+" \t "+str(call_flow_analysis.get_caller())+(" \t "+"[Error]" if "error" in trace[step] else ""))
 
             # Use facts
             if trace[step]["op"] in [
@@ -160,7 +66,7 @@ class Extractor:
                     for i in values:
                         use_facts.write("%d\t%d\r\n" % (step, i))
 
-            taint_runner.propagate_taint(trace[step], call_flow_analysis.call_stack[-1])
+            taint_runner.propagate_taint(trace[step], call_flow_analysis.get_caller())
 
             # Def facts
             if trace[step]["op"] in [
@@ -210,7 +116,7 @@ class Extractor:
                 _transaction_hash = transaction["hash"]
                 _block_number = transaction["blockNumber"]
                 _caller = transaction["from"]
-                _contract = call_flow_analysis.call_stack[-1]
+                _contract = call_flow_analysis.get_caller()
                 _storage_index = trace[step]["stack"][-1]
                 storage_facts.write("%d\t%s\t%d\t%s\t%s\t%s\t%s\r\n" % (step, _opcode, _block_number, _transaction_hash, _caller, _contract, _storage_index))
 
@@ -227,7 +133,7 @@ class Extractor:
                     size = int(trace[step]["stack"][-2], 16)
                     _from = normalize_32_byte_hex_address(trace[step]["stack"][-4])
                     _to = normalize_32_byte_hex_address(trace[step]["stack"][-5])
-                    _value = int(self.memory_read_bytes(offset, size).hex(), 16)
+                    _value = int(memory_manager.memory_read_bytes(offset, size).hex(), 16)
                     transfer_facts.write("%d\t%s\t%s\t%s\t%s\r\n" % (step, _transaction_hash, _from, _to, _value))
 
             # Call facts
@@ -237,7 +143,7 @@ class Extractor:
                     i += 1
                 _transaction_hash = transaction["hash"]
                 _opcode = trace[step]["op"]
-                _caller = call_flow_analysis.call_stack[-1]
+                _caller = call_flow_analysis.get_caller()
                 if trace[step]["op"] == "CREATE":
                     _callee = normalize_32_byte_hex_address(trace[i]["stack"][-1])
                 else:
@@ -267,14 +173,7 @@ class Extractor:
                 elif trace[step]["op"] in ["DELEGATECALL", "STATICCALL"]:
                     offset = int(trace[step]["stack"][-3], 16)
                     size = int(trace[step]["stack"][-4], 16)
-                _input_data = self.memory_read_bytes(offset, size)
-
-                code = b''
-                if trace[step]["op"] == "CREATE":
-                    code = _input_data
-                output = b''
-                self.call_stack.append({"memory": Memory(), "data": _input_data, "code": code, "output": output})
-
+                _input_data = memory_manager.memory_read_bytes(offset, size)
                 if _caller not in balances:
                     balances[_caller] = settings.W3.eth.getBalance(settings.W3.toChecksumAddress(_caller), transaction["blockNumber"]-1)
                 balances[_caller] -= _amount
@@ -284,7 +183,7 @@ class Extractor:
             elif trace[step]["op"] in ["REVERT", "INVALID", "ASSERTFAIL"]:
                 _transaction_hash = transaction["hash"]
                 _opcode = trace[step]["op"]
-                _caller = call_flow_analysis.call_stack[-1]
+                _caller = call_flow_analysis.get_caller()
                 _depth = trace[step]["depth"]
                 throw_facts.write("%d\t%s\t%s\t%s\t%d\r\n" % (step, _transaction_hash, _opcode, _caller, _depth))
 
@@ -293,7 +192,7 @@ class Extractor:
                 _transaction_hash = transaction["hash"]
                 _caller = transaction["from"]
                 _destination = normalize_32_byte_hex_address(trace[step]["stack"][-1])
-                _contract = call_flow_analysis.call_stack[-1]
+                _contract = call_flow_analysis.get_caller()
                 if _contract not in balances:
                     _balance = settings.W3.eth.getBalance(settings.W3.toChecksumAddress(_contract), transaction["blockNumber"]-1)
                 else:
@@ -310,9 +209,9 @@ class Extractor:
                 error_facts.write("%s\t%s\r\n" % (transaction["hash"], _error_message))
 
             call_flow_analysis.analyze_call_flow(step, max_step, trace)
+            memory_manager.manage_memory(trace, step, transaction)
             step += 1
         taint_runner.clear_machine_state()
-        self.call_stack = []
 
         # Block facts
         block_facts.write("%d\t%d\t%d\t%d\r\n" % (block["number"], block["gasUsed"], block["gasLimit"], block["timestamp"]))
