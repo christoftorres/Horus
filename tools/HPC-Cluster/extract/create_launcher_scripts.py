@@ -5,10 +5,10 @@ import os
 import glob
 import shutil
 
-CONTRACTS      = "contracts/"
+CONTRACTS      = "/Users/Christof/Downloads/contracts/"
 ARGUMENTS      = "arguments"
 LAUNCHERS      = "launchers"
-MAX_ARGUMENTS  = 3000
+MAX_ARGUMENTS  = 100000
 WALLTIME       = "0-24:00:00"
 CORES          = 100
 CORES_PER_TASK = 1

@@ -13,5 +13,5 @@ export TMPDIR=/work/projects/horus/tmp
 module load lang/Python/3.7.2-GCCcore-8.2.0
 cd /home/users/cferreira/Horus/horus
 
-parallel="parallel -j $SLURM_NTASKS"
+parallel="parallel -j $SLURM_NTASKS --tmpdir /work/projects/horus/tmp"
 cat $HOME/Horus/arguments/parallel_launcher_arguments_1 | $parallel --colsep ' ' "python3 horus.py -e -c {1} -f {2}"
