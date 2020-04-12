@@ -1,5 +1,6 @@
 
 import json
+import time
 import argparse
 
 from tqdm import tqdm
@@ -14,36 +15,42 @@ parser.add_argument('--neo-password', type=str, dest='password', default='ethere
 args = parser.parse_args()
 
 etherscan = Etherscan(api_key='VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU')
+
 graph = Neo4J(uri=args.address, user=args.user, password=args.password)
 graph.delete_graph()
 
 #attacker = '0x04786aada9deea2150deab7b3b8911c309f5ed90'
 #attacker = '0x6a164122d5cf7c840d26e829b46dcc4ed6c0ae48'
 #attacker = '0x91efffb9c6cd3a66474688d0a48aa6ecfe515aa5'
-attacker = '0x0e64779930d9a5165dd712c06d11632c58ff8a4d'
-hops = 5
+#attacker = '0x0e64779930d9a5165dd712c06d11632c58ff8a4d'
+attacker = '0xda12f365ec4b2a8d19b8b46b63a54c8fc60915b5'
+
+hops = 3
+
+token = "RMC"
 
 with open('labeled_accounts.json') as json_file:
     labeled_accounts = json.load(json_file)
 
 # Normal transactions
-accounts = [attacker]
-with tqdm(total=hops, unit=" hop", leave=False, smoothing=0.1) as pbar:
-    for i in range(hops):
-        for account in accounts:
-            transactions = etherscan.get_normal_transactions(account)
-            transactions = [transaction for transaction in transactions if transaction["from"] == account]
-            if len(transactions) <= 100:
-                graph.save_normal_transactions(transactions, attacker, labeled_accounts)
+def load_normal_transactions(account, hops, hop=1, visited_accounts=[]):
+    if hop <= hops and account not in visited_accounts:
+        visited_accounts.append(account)
+        transactions = etherscan.get_normal_transactions(account)
+        print(account+" "+str(hop)+" "+str(len(transactions)))
+        transactions = [transaction for transaction in transactions if transaction["from"] == account]
+        if len(transactions) <= 100:
+            graph.save_normal_transactions(transactions, attacker, labeled_accounts)
+        accounts = []
+        for transaction in transactions:
+            if transaction["to"] and transaction["to"] not in accounts:
+                accounts.append(transaction["to"])
+        if len(accounts) > 100:
             accounts = []
-            for transaction in transactions:
-                if transaction["to"] and transaction["to"] not in accounts:
-                    accounts.append(transaction["to"])
-            if len(accounts) > 100:
-                accounts = []
-        pbar.update(1)
+        for to_account in accounts:
+            load_normal_transactions(to_account, hops, hop+1, visited_accounts)
 
-# Internal transactions
+"""# Internal transactions
 accounts = [attacker]
 with tqdm(total=hops, unit=" hop", leave=False, smoothing=0.1) as pbar:
     for i in range(hops):
@@ -58,21 +65,29 @@ with tqdm(total=hops, unit=" hop", leave=False, smoothing=0.1) as pbar:
                     accounts.append(transaction["to"])
             if len(accounts) > 100:
                 accounts = []
-        pbar.update(1)
+        pbar.update(1)"""
+
 
 # Token transactions
-accounts = [attacker]
-with tqdm(total=hops, unit=" hop", leave=False, smoothing=0.1) as pbar:
-    for i in range(hops):
-        for account in accounts:
-            transactions = etherscan.get_token_transactions(account)
-            #transactions = [transaction for transaction in transactions if transaction["from"] == account]
-            if len(transactions) <= 100:
-                graph.save_token_transactions(transactions, attacker, labeled_accounts)
+def load_token_transactions(account, hops, hop=1, visited_accounts=[]):
+    if hop <= hops and account not in visited_accounts:
+        visited_accounts.append(account)
+        transactions = etherscan.get_token_transactions(account)
+        print(account+" "+str(hop)+" "+str(len(transactions)))
+        transactions = [transaction for transaction in transactions if transaction["from"] == account]
+        if len(transactions) <= 100:
+            graph.save_token_transactions(transactions, attacker, labeled_accounts, token, account)
+        accounts = []
+        for transaction in transactions:
+            if transaction["to"] and transaction["to"] not in accounts:
+                accounts.append(transaction["to"])
+        if len(accounts) > 100:
             accounts = []
-            for transaction in transactions:
-                if transaction["to"] and transaction["to"] not in accounts:
-                    accounts.append(transaction["to"])
-            if len(accounts) > 100:
-                accounts = []
-        pbar.update(1)
+        for account in accounts:
+            load_token_transactions(account, hops, hop+1, visited_accounts)
+
+start = time.time()
+#load_normal_transactions(attacker, hops)
+load_token_transactions(attacker, hops)
+end = time.time()
+print("Execution time: "+str(end - start))

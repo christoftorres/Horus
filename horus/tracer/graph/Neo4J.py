@@ -151,7 +151,7 @@ class Neo4J:
                           MERGE (a:Attacker {address:$from_address})
                             SET a.label=$label
                           MERGE (a)-[:FROM]->(t)""",
-                       hash=transaction["hash"], value=int(transaction["value"], 16) / int(transaction["tokenDecimal"]),
+                       hash=transaction["hash"], value=str(int(transaction["value"], 16) / int(10)**int(transaction["tokenDecimal"])),
                        block=transaction["blockNumber"], timestamp=datetime.fromtimestamp(int(transaction["timeStamp"])),
                        token_name=transaction["tokenName"], token_symbol=transaction["tokenSymbol"], token_decimal=transaction["tokenDecimal"],
                        from_address=transaction["from"], label=labeled_accounts[transaction["from"]][0])
@@ -165,7 +165,7 @@ class Neo4J:
                             SET t.token_decimal=$token_decimal
                           MERGE (a:Attacker {address:$from_address})
                           MERGE (a)-[:FROM]->(t)""",
-                       hash=transaction["hash"], value=int(transaction["value"], 16) / int(transaction["tokenDecimal"]),
+                       hash=transaction["hash"], value=str(int(transaction["value"], 16) / int(10)**int(transaction["tokenDecimal"])),
                        block=transaction["blockNumber"], timestamp=datetime.fromtimestamp(int(transaction["timeStamp"])),
                        token_name=transaction["tokenName"], token_symbol=transaction["tokenSymbol"], token_decimal=transaction["tokenDecimal"],
                        from_address=transaction["from"])
@@ -181,7 +181,7 @@ class Neo4J:
                           MERGE (a:Labeled_Account {address:$from_address})
                             SET a.label=$label
                           MERGE (a)-[:FROM]->(t)""",
-                       hash=transaction["hash"], value=int(transaction["value"], 16) / int(transaction["tokenDecimal"]),
+                       hash=transaction["hash"], value=str(int(transaction["value"], 16) / int(10)**int(transaction["tokenDecimal"])),
                        block=transaction["blockNumber"], timestamp=datetime.fromtimestamp(int(transaction["timeStamp"])),
                        token_name=transaction["tokenName"], token_symbol=transaction["tokenSymbol"], token_decimal=transaction["tokenDecimal"],
                        from_address=transaction["from"], label=labeled_accounts[transaction["from"]][0])
@@ -195,7 +195,7 @@ class Neo4J:
                             SET t.token_decimal=$token_decimal
                           MERGE (a:Account {address:$from_address})
                           MERGE (a)-[:FROM]->(t)""",
-                       hash=transaction["hash"], value=int(transaction["value"], 16) / int(transaction["tokenDecimal"]),
+                       hash=transaction["hash"], value=str(int(transaction["value"], 16) / int(10)**int(transaction["tokenDecimal"])),
                        block=transaction["blockNumber"], timestamp=datetime.fromtimestamp(int(transaction["timeStamp"])),
                        token_name=transaction["tokenName"], token_symbol=transaction["tokenSymbol"], token_decimal=transaction["tokenDecimal"],
                        from_address=transaction["from"])
@@ -248,20 +248,25 @@ class Neo4J:
     def _group_similar_transactions_together(transactions):
         aggregated_transactions = []
         to_addresses = []
+        tokens = []
         for i in range(len(transactions)):
             t1 = transactions[i]
-            if t1["to"] not in to_addresses:
+            if t1["to"] not in to_addresses or t1["tokenSymbol"] not in tokens:
                 for j in range(i, len(transactions)):
                     t2 = transactions[j]
-                    if t1["from"] == t2["from"] and t1["to"] == t2["to"]:
+                    if t1["from"] == t2["from"] and t1["to"] == t2["to"] and t1["tokenSymbol"] == t2["tokenSymbol"]:
                         t1["value"] = str(int(t1["value"]) + int(t2["value"]))
                 aggregated_transactions.append(t1)
                 to_addresses.append(t1["to"])
+                tokens.append(t1["tokenSymbol"])
         return aggregated_transactions
 
     @staticmethod
     def _remove_transactions_with_no_value(transactions):
         return [transaction for transaction in transactions if int(transaction["value"]) > 0]
+
+    def _keep_only_token_transactions(transactions, token):
+        return [transaction for transaction in transactions if transaction["tokenSymbol"] == token]
 
     def save_normal_transactions(self, transactions, attacker, labeled_accounts):
         with self._driver.session() as session:
@@ -285,12 +290,13 @@ class Neo4J:
                 except ClientError as e:
                     print(e)
 
-    def save_token_transactions(self, transactions, attacker, labeled_accounts):
+    def save_token_transactions(self, transactions, attacker, labeled_accounts, token, account):
         with self._driver.session() as session:
             with session.begin_transaction() as tx:
                 try:
                     transactions = Neo4J._remove_transactions_with_no_value(transactions)
                     transactions = Neo4J._group_similar_transactions_together(transactions)
+                    transactions = Neo4J._keep_only_token_transactions(transactions, token)
                     for transaction in transactions:
                         Neo4J._save_token_transaction(tx, transaction, attacker, labeled_accounts)
                 except ClientError as e:
