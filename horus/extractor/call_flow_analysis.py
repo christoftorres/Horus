@@ -14,7 +14,7 @@ class CallFlowAnalysis:
     def analyze_call_flow(self, step, max_step, trace):
         if step < len(trace)-1:
             if trace[step]["depth"] < trace[step+1]["depth"]:
-                if trace[step]["op"] == "CREATE":
+                if trace[step]["op"] in ["CREATE", "CREATE2"]:
                     i = step + 1
                     while i < max_step and trace[step]["depth"] < trace[i]["depth"]:
                         i += 1

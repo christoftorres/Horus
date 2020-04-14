@@ -197,8 +197,7 @@ class TaintRunner:
             mutator = TaintRunner.stack_taint_table[op]
             TaintRunner.mutate_stack(new_record, mutator)
         else:
-            if settings.DEBUG_MODE:
-                print("Unknown operation encountered: {}".format(op))
+            print("Unknown operation encountered: {}".format(op))
 
         return new_record
 
@@ -412,6 +411,8 @@ class TaintRunner:
         'NUMBER': (0, 1),
         'DIFFICULTY': (0, 1),
         'GASLIMIT': (0, 1),
+        'CHAINID': (0, 1),
+        'SELFBALANCE': (0, 1),
         # 50s: Stack, Memory, Storage and Flow Operations
         'POP': (1, 0),
         'MLOAD': (1, 1),
@@ -500,7 +501,7 @@ class TaintRunner:
         'LOG4': (6, 0),
         # f0s: System Operations
         'CREATE': (3, 1),
-        'CREATE2': (3, 1),
+        'CREATE2': (4, 1),
         'CALL': (7, 1),
         'CALLCODE': (7, 1),
         'RETURN': (2, 0),

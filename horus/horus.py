@@ -67,6 +67,8 @@ def main():
             "-p", "--profile", action="store_true", help="run the Souffle profiler during the execution of the Datalog program")
 
         parser.add_argument(
+            "--compress", action="store_true", help="compress facts and results into ZIP files")
+        parser.add_argument(
             "--debug", action="store_true", help="print debug information to the console")
         parser.add_argument(
             "--host", type=str, help="client HTTP-RPC listening interface (default: '"+settings.RPC_HOST+"')")
@@ -153,7 +155,7 @@ def main():
                 print(e)
                 print("Error: Blockchain is not in sync with transaction: "+args.transaction_hash)
             extractor = Extractor()
-            extractor.extract_facts_from_transactions(connection, transactions, blocks, settings.FACTS_FOLDER)
+            extractor.extract_facts_from_transactions(connection, transactions, blocks, settings.FACTS_FOLDER, args.compress)
 
         if args.extract and args.block_number:
             transactions = []
@@ -168,7 +170,7 @@ def main():
                 print("Error: Blockchain is not in sync with block number: "+args.block_number[0])
             print("Retrieving "+str(len(transactions))+" transaction(s).\n")
             extractor = Extractor()
-            extractor.extract_facts_from_transactions(connection, transactions, blocks, settings.FACTS_FOLDER)
+            extractor.extract_facts_from_transactions(connection, transactions, blocks, settings.FACTS_FOLDER, args.compress)
 
         if args.extract and args.contract_address:
             transactions = []
@@ -249,7 +251,7 @@ def main():
                 return
             print("Retrieving "+str(len(transactions))+" transaction(s).\n")
             extractor = Extractor()
-            extractor.extract_facts_from_transactions(connection, transactions, blocks, settings.FACTS_FOLDER)
+            extractor.extract_facts_from_transactions(connection, transactions, blocks, settings.FACTS_FOLDER, args.compress)
 
         if args.analyze:
             if os.path.isdir(settings.RESULTS_FOLDER):

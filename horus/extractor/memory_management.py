@@ -17,6 +17,9 @@ class MemoryManager:
         if len(self.call_stack) > int(trace[step]["depth"]):
             self.call_stack.pop()
 
+        if "error" in trace[step]:
+            return
+
         if trace[step]["op"] == "CALLDATACOPY":
             mem_start_position = int(trace[step]["stack"][-1], 16)
             calldata_start_position = int(trace[step]["stack"][-2], 16)
@@ -53,10 +56,11 @@ class MemoryManager:
             mem_start_position = int(trace[step]["stack"][-1], 16)
             returndata_start_position = int(trace[step]["stack"][-2], 16)
             size = int(trace[step]["stack"][-3], 16)
-            self.extend_memory(mem_start_position, size)
             value = self.call_stack[-1]["output"][returndata_start_position: returndata_start_position + size]
-            self.memory_write(mem_start_position, size, value)
-            
+            if len(value) == size:
+                self.extend_memory(mem_start_position, size)
+                self.memory_write(mem_start_position, size, value)
+
         elif trace[step]["op"] == "MSTORE":
             start_position = int(trace[step]["stack"][-1], 16)
             value = bytes.fromhex(trace[step]["stack"][-2])
@@ -81,7 +85,7 @@ class MemoryManager:
             if len(self.call_stack) > 1:
                 self.call_stack[-2]["output"] = output
 
-        elif trace[step]["op"] == "CREATE":
+        elif trace[step]["op"] in ["CREATE", "CREATE2"]:
             offset = int(trace[step]["stack"][-2], 16)
             size = int(trace[step]["stack"][-3], 16)
             call_data = self.memory_read_bytes(offset, size)
