@@ -8,7 +8,7 @@ import shutil
 CONTRACTS      = "/Users/Christof/Downloads/contracts/"
 ARGUMENTS      = "arguments"
 LAUNCHERS      = "launchers"
-MAX_ARGUMENTS  = 100000
+MAX_ARGUMENTS  = 50000
 WALLTIME       = "0-24:00:00"
 CORES          = 100
 CORES_PER_TASK = 1
@@ -37,7 +37,6 @@ if __name__ == "__main__":
         shutil.copy("horus_parallel_launcher.sh", os.path.join(LAUNCHERS, "horus_parallel_launcher_"+str(file_counter)+".sh"))
         s = open(os.path.join(LAUNCHERS, "horus_parallel_launcher_"+str(file_counter)+".sh")).read()
         s = s.replace('#SBATCH -n 28',             '#SBATCH -n '+str(CORES))
-        #s = s.replace('#SBATCH -N 1',              '#SBATCH -N '+str(NODES))
         s = s.replace('#SBATCH -c 1',              '#SBATCH -c '+str(CORES_PER_TASK))
         s = s.replace('#SBATCH --time=0-08:00:00', '#SBATCH --time='+WALLTIME)
         s = s.replace('#SBATCH -J Horus',          '#SBATCH -J Horus_'+str(file_counter))
@@ -57,7 +56,6 @@ if __name__ == "__main__":
                 shutil.copy("horus_parallel_launcher.sh", os.path.join(LAUNCHERS, "horus_parallel_launcher_"+str(file_counter)+".sh"))
                 s = open(os.path.join(LAUNCHERS, "horus_parallel_launcher_"+str(file_counter)+".sh")).read()
                 s = s.replace('#SBATCH -n 28',             '#SBATCH -n '+str(CORES))
-                #s = s.replace('#SBATCH -N 1',              '#SBATCH -N '+str(NODES))
                 s = s.replace('#SBATCH -c 1',              '#SBATCH -c '+str(CORES_PER_TASK))
                 s = s.replace('#SBATCH --time=0-08:00:00', '#SBATCH --time='+WALLTIME)
                 s = s.replace('#SBATCH -J Horus',          '#SBATCH -J Horus_'+str(file_counter))
@@ -67,7 +65,7 @@ if __name__ == "__main__":
                 f.close()
                 launcher_script.write('sbatch ./'+os.path.join(LAUNCHERS, "horus_parallel_launcher_"+str(file_counter)+".sh")+'\n')
             #arguments_file.write(os.path.splitext(os.path.basename(contract))[0]+"\n")
-            arguments_file.write('/work/projects/horus/contracts/'+os.path.basename(contract)+" "+'/work/projects/horus/facts/'+os.path.splitext(os.path.basename(contract))[0]+"\n")
+            arguments_file.write('/home/users/cferreira/Horus/contracts/'+os.path.basename(contract)+" "+'/work/projects/horus/facts/'+os.path.splitext(os.path.basename(contract))[0]+"\n")
             print(os.path.splitext(os.path.basename(contract))[0])
         arguments_file.close()
 

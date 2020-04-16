@@ -34,3 +34,5 @@ CONNECTION_RETRY_INTERVAL = 30
 REQUEST_TIMEOUT = 100
 # Time to wait in seconds before request retry
 REQUEST_RETRY_INTERVAL = 60
+# Folder for temporary results
+TMP_FOLDER = '/Users/Christof/Desktop/tmp'

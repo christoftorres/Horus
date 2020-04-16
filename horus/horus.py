@@ -254,13 +254,9 @@ def main():
             extractor.extract_facts_from_transactions(connection, transactions, blocks, settings.FACTS_FOLDER, args.compress)
 
         if args.analyze:
-            if os.path.isdir(settings.RESULTS_FOLDER):
-                shutil.rmtree(settings.RESULTS_FOLDER)
-            if not os.path.isdir(settings.RESULTS_FOLDER):
-                os.mkdir(settings.RESULTS_FOLDER)
             analyzer = Analyzer()
-            if not os.listdir(settings.RESULTS_FOLDER):
-                analyzer.analyze_facts(args.number_of_threads, args.profile, settings.FACTS_FOLDER, settings.RESULTS_FOLDER, settings.DATALOG_FILE)
+            if not os.path.isdir(settings.RESULTS_FOLDER) or not os.listdir(settings.RESULTS_FOLDER):
+                analyzer.analyze_facts(args.number_of_threads, args.profile, settings.FACTS_FOLDER, settings.RESULTS_FOLDER, settings.DATALOG_FILE, args.compress, settings.TMP_FOLDER)
             else:
                 print("Datalog facts have already been analyzed.")
 

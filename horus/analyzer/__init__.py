@@ -7,6 +7,7 @@ import time
 import json
 import shlex
 import shutil
+import zipfile
 import subprocess
 
 class Analyzer:
@@ -27,8 +28,8 @@ class Analyzer:
         compilation_end = time.time()
         print("Compilation took %.2f second(s).\n" % (compilation_end - compilation_begin))
 
-    def analyze_facts(self, nr_of_threads, profile, facts_folder, results_folder, datalog_file):
-        # Create parallel C++ executable if not available or is out-dated
+    def analyze_facts(self, nr_of_threads, profile, facts_folder, results_folder, datalog_file, compress, tmp_folder):
+        # Create parallel C++ executable if not available or out-dated
         execution_path = os.path.dirname(sys.argv[0]) if os.path.dirname(sys.argv[0]) else "."
         if not os.path.isdir(execution_path+"/analyzer/executable"):
             self.compile_datalog_file(profile,  datalog_file)
@@ -44,11 +45,30 @@ class Analyzer:
         p = ""
         if profile:
             p = " -p profile.log"
+        if tmp_folder:
+            results = tmp_folder
+        else:
+            results = results_folder
+        if os.path.isdir(results):
+            shutil.rmtree(results)
+        if not os.path.isdir(results):
+            os.mkdir(results)
+        if facts_folder.endswith(".zip"):
+            with zipfile.ZipFile(facts_folder, 'r') as zf:
+                zf.extractall(os.path.dirname(facts_folder))
+            facts = os.path.splitext(facts_folder)[0]
+        else:
+            facts = facts_folder
         if os.path.isfile(execution_path+"/analyzer/executable/analyzer"):
-            proc = subprocess.Popen(shlex.split(execution_path+"/analyzer/executable/analyzer"+j+p+" -D "+results_folder+" -F "+facts_folder), stdout=subprocess.PIPE)
+            proc = subprocess.Popen(shlex.split(execution_path+"/analyzer/executable/analyzer"+j+p+" -D "+results+" -F "+facts), stdout=subprocess.PIPE)
             proc.communicate()
             analysis_end = time.time()
             analysis_delta = analysis_end - analysis_begin
             print("Analyzing facts took %.2f second(s)." % (analysis_delta))
-        with open(results_folder+"/stats.json", "w") as jsonfile:
+        with open(results+"/stats.json", "w") as jsonfile:
             json.dump(analysis_delta, jsonfile)
+        if facts_folder.endswith(".zip"):
+            shutil.rmtree(facts)
+        if compress:
+            shutil.make_archive(results_folder, 'zip', results)
+            shutil.rmtree(results)
