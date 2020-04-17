@@ -9,7 +9,6 @@
 #SBATCH -c 1              # 1 core per task
 
 set -x
-export TMPDIR=/work/projects/horus/tmp
 module load lang/Python/3.7.2-GCCcore-8.2.0
 cd /home/users/cferreira/Horus/horus
 

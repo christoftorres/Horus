@@ -108,7 +108,6 @@ def main():
                     settings.W3 = Web3(Web3.HTTPProvider("http://"+settings.RPC_HOST+":"+str(settings.RPC_PORT)))
                     if settings.W3.isConnected():
                         if not 'api' in dir(settings.W3):
-                        #if int(settings.W3.api.split(".")[0]) <= 3:
                             chain_id = settings.W3.version.network
                             client_info = settings.W3.version.node
                         else:

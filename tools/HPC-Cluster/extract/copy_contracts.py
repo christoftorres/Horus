@@ -3,6 +3,7 @@ import zipfile
 
 MIN_TRANSACTIONS = 0
 MAX_TRANSACTIONS = 100
+START = 100000
 NUMBER_OF_CONTRACTS = 100000
 
 SOURCE = '/Users/Christof/Downloads/contracts.zip'
@@ -17,9 +18,10 @@ with zipfile.ZipFile(SOURCE, 'r') as zip_file:
                 transactions = len(file1.readlines())
                 if MIN_TRANSACTIONS <= transactions and transactions <= MAX_TRANSACTIONS:
                     count += 1
-                    file1.seek(0)
-                    print(file_name+" "+str(transactions))
-                    with open(DESTINATION+file_name, 'w') as file2:
-                        file2.write(file1.read().decode('utf-8'))
-        if count == NUMBER_OF_CONTRACTS:
+                    if count > START:
+                        file1.seek(0)
+                        print(file_name+" "+str(transactions))
+                        with open(DESTINATION+file_name, 'w') as file2:
+                            file2.write(file1.read().decode('utf-8'))
+        if count == START+NUMBER_OF_CONTRACTS:
             break

@@ -46,7 +46,7 @@ class Analyzer:
         if profile:
             p = " -p profile.log"
         if tmp_folder:
-            results = tmp_folder
+            results = tmp_folder+"/"+results_folder.split("/")[-1]
         else:
             results = results_folder
         if os.path.isdir(results):
@@ -54,9 +54,14 @@ class Analyzer:
         if not os.path.isdir(results):
             os.mkdir(results)
         if facts_folder.endswith(".zip"):
-            with zipfile.ZipFile(facts_folder, 'r') as zf:
-                zf.extractall(os.path.dirname(facts_folder))
-            facts = os.path.splitext(facts_folder)[0]
+            if tmp_folder:
+                with zipfile.ZipFile(facts_folder, 'r') as zf:
+                    zf.extractall(tmp_folder)
+                facts = tmp_folder+os.path.splitext(facts_folder)[0]
+            else:
+                with zipfile.ZipFile(facts_folder, 'r') as zf:
+                    zf.extractall(os.path.dirname(facts_folder))
+                facts = os.path.splitext(facts_folder)[0]
         else:
             facts = facts_folder
         if os.path.isfile(execution_path+"/analyzer/executable/analyzer"):

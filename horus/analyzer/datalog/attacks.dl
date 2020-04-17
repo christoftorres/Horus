@@ -187,30 +187,34 @@ UncheckedDelegatecall(hash, timestamp, step2, caller, callee) :-
 
 /* Parity Wallet Hack 1 */
 .decl ParityWalletHack1(hash1:symbol, hash2:symbol, timestamp1:number, timestamp2:number, step:number, caller:Address, callee:Address, amount:Value)
-ParityWalletHack1(hash1, hash2, timestamp1, timestamp2, step6, caller, callee, amount) :-
+ParityWalletHack1(hash1, hash2, timestamp1, timestamp2, step7, caller, callee, amount) :-
   call(step0, hash1, "DELEGATECALL", _, _, _, _, _, 1),
   opcode(step1, "CALLDATACOPY"),
+  step0 < step1,
   storage(step2, "SSTORE", _, hash1, from, contract, index),
-  step0 < step2,
   data_flow(step1, step2),
   call(step3, hash2, "DELEGATECALL", _, _, _, _, _, 1),
   storage(step4, "SLOAD", _, hash2, from, contract, index),
   step3 < step4,
   step2 < step4,
   hash1 != hash2,
-  used_in_condition(step4, hash2),
-  call(step6, hash2, "CALL", caller, callee, _, amount, _, 1),
+  caller_check(step5, hash2),
+  data_flow(step4, step5),
+  opcode(step6, "CALLDATALOAD"),
+  call(step7, hash2, "CALL", caller, callee, _, amount, _, 1),
   !match("0", amount),
-  step4 < step6,
-  transaction(hash1, _, _, _, 1, block1),
+  data_flow(step6, step7),
+  step4 < step7,
+  transaction(hash1, from, to, input1, 1, block1),
   block(block1, _, _, timestamp1),
-  transaction(hash2, _, _, _, 1, block2),
-  block(block2, _, _, timestamp2).
+  transaction(hash2, from, to, input2, 1, block2),
+  block(block2, _, _, timestamp2),
+  input1 != input2.
 .output ParityWalletHack1
 
 /* Parity Wallet Hack 2 */
 .decl ParityWalletHack2(hash1:symbol, hash2:symbol, timestamp1:number, timestamp2:number, step:number, caller:Address, contract:Address, destination:Address, amount:Value)
-ParityWalletHack2(hash1, hash2, timestamp1, timestamp2, step4, caller, contract, destination, amount) :-
+ParityWalletHack2(hash1, hash2, timestamp1, timestamp2, step5, caller, contract, destination, amount) :-
   opcode(step0, "CALLDATACOPY"),
   storage(step1, "SSTORE", _, hash1, from, contract, index),
   data_flow(step0, step1),
@@ -218,8 +222,12 @@ ParityWalletHack2(hash1, hash2, timestamp1, timestamp2, step4, caller, contract,
   step1 < step2,
   hash1 != hash2,
   used_in_condition(step2, hash2),
-  selfdestruct(step4, hash2, caller, contract, destination, amount),
-  step2 < step4,
+  caller_check(step3, hash2),
+  data_flow(step2, step3),
+  opcode(step4, "CALLDATALOAD"),
+  selfdestruct(step5, hash2, caller, contract, destination, amount),
+  data_flow(step4, step5),
+  step2 < step5,
   transaction(hash1, _, _, _, 1, block1),
   block(block1, _, _, timestamp1),
   transaction(hash2, _, _, _, 1, block2),
