@@ -64,7 +64,7 @@ class Extractor:
                 "JUMPI",                                                                    # Flow opcodes
                 "LOG3",                                                                     # Event opcodes
                 "CALL", "DELEGATECALL",                                                     # Call opcodes
-                "SELFDESTRUCT",
+                "SELFDESTRUCT", "SUICIDE",                                                  # Selfdestruct opcodes
                ]:
                 values = taint_runner.check_taint(trace[step])
                 if values:

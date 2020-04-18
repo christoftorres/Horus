@@ -175,9 +175,9 @@ if __name__ == '__main__':
                                     else:
                                         timeline["reentrancy"][d.strftime("%Y-%m-%d")] += 1
                                 elif attack == "CrossFunctionReentrancy":
-                                    #if contract not in contracts["cross_function_reentrancy"]:
-                                    #    print(contract+" "+str(row))
-                                    #    print("cross_function_reentrancy")
+                                    if contract not in contracts["cross_function_reentrancy"]:
+                                        print(contract+" "+str(row))
+                                        print("cross_function_reentrancy")
                                     contracts["cross_function_reentrancy"].add(contract)
                                     transactions["cross_function_reentrancy"].add(row[0])
                                     ether["cross_function_reentrancy"].append(int(row[5]))
@@ -238,17 +238,22 @@ if __name__ == '__main__':
                                         contracts_total.add(contract)
                                         transactions_total.add(row[0])
                                     elif row[3] == "MUL":
+                                        #if contract not in contracts["integer_overflow_multiplication"]:
+                                        #    print(contract+" "+str(row))
+                                        #    response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+contract+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
+                                        #    if "result" in response and response['result'][0]['SourceCode']:
+                                        #        print(contract)
                                         contracts["integer_overflow_multiplication"].add(contract)
                                         transactions["integer_overflow_multiplication"].add(row[0])
                                         #ether["integer_overflow_multiplication"].append(int(row[5]))
                                         contracts_total.add(contract)
                                         transactions_total.add(row[0])
                                 elif attack == "IntegerUnderflow":
-                                    if contract not in contracts["integer_underflow"]:
-                                        print(contract+" "+str(row))
-                                        response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+contract+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
-                                        if "result" in response and response['result'][0]['SourceCode']:
-                                            print(contract)
+                                    #if contract not in contracts["integer_underflow"]:
+                                    #    print(contract+" "+str(row))
+                                    #    response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+contract+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
+                                    #    if "result" in response and response['result'][0]['SourceCode']:
+                                    #        print(contract)
                                     contracts["integer_underflow"].add(contract)
                                     transactions["integer_underflow"].add(row[0])
                                     #ether["integer_underflow"].append(int(row[5]))
@@ -266,16 +271,21 @@ if __name__ == '__main__':
                                     transactions_total.add(row[0])
                                 elif attack == "UncheckedSuicide":
                                     #if contract not in contracts["unchecked_suicide"]:
+                                    #    print(contract+" "+str(row))
                                     #    response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+contract+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
                                     #    if "result" in response and response['result'][0]['SourceCode']:
-                                    #        print(contract)
-                                    #    print(contract+" "+str(row))
-                                    #        print(response['result'][0]['SourceCode'])
+                                    #        if "delegatecall" in response['result'][0]['SourceCode']:
+                                    #            print(contract)
                                     contracts["unchecked_suicide"].add(contract)
                                     transactions["unchecked_suicide"].add(row[0])
                                     contracts_total.add(contract)
                                     transactions_total.add(row[0])
                                 elif attack == "UncheckedDelegatecall":
+                                    #if contract not in contracts["unchecked_delegatecall"]:
+                                    #    response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+contract+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
+                                    #    if "result" in response and response['result'][0]['SourceCode']:
+                                    #        if "delegatecall" in response['result'][0]['SourceCode']:
+                                    #            print(contract+" "+str(row))
                                     contracts["unchecked_delegatecall"].add(contract)
                                     transactions["unchecked_delegatecall"].add(row[0])
                                     contracts_total.add(contract)
@@ -462,4 +472,4 @@ if __name__ == '__main__':
         for date in timeline["create_based_reentrancy"]:
             writer.writerow([date, timeline["create_based_reentrancy"][date]])
 
-    print(automated_validation)
+    #print(automated_validation)

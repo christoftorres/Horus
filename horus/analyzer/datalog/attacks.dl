@@ -12,8 +12,9 @@ CallStackDepth(hash, timestamp, step, caller, callee, amount) :-
 /* Reentrancy */
 .decl Reentrancy(hash:symbol, timestamp:number, caller:Address, callee:Address, depth:number, amount:Value)
 Reentrancy(hash, timestamp, caller, callee, depth1, amount) :-
-  call(_, hash, "CALL", caller, callee, _, amount, depth1, 1),
-  call(_, hash, "CALL", caller, callee, _, amount, depth2, 1),
+  call(step1, hash, "CALL", caller, callee, _, amount, depth1, 1),
+  call(step2, hash, "CALL", caller, callee, _, amount, depth2, 1),
+  step1 < step2,
   depth1 < depth2,
   !match("0", amount),
   transaction(hash, _, _, _, 1, block),
@@ -21,14 +22,16 @@ Reentrancy(hash, timestamp, caller, callee, depth1, amount) :-
 .output Reentrancy
 
 /* Cross-Function Reentrancy */
-.decl CrossFunctionReentrancy(hash:symbol, timestamp:number, caller:Address, callee:Address, depth:number, amount:Value)
-CrossFunctionReentrancy(hash, timestamp, callee, caller, depth2, amount2) :-
-  call(_, hash, "CALL", caller, callee, input_data1, amount1, depth1, 1),
-  call(_, hash, "CALL", callee, caller, _, amount2, depth2, 1),
-  call(_, hash, "CALL", caller, callee, input_data3, amount1, depth3, 1),
+.decl CrossFunctionReentrancy(hash:symbol, step1:number, step2:number, step3:number, timestamp:number, caller:Address, callee:Address, depth:number, amount:Value)
+CrossFunctionReentrancy(hash, step1, step2, step3, timestamp, callee, caller, depth2, amount2) :-
+  call(step1, hash, "CALL", caller, callee, input_data1, amount1, depth1, 1),
+  call(step2, hash, "CALL", callee, caller, _, amount2, depth2, 1),
+  call(step3, hash, "CALL", caller, callee, input_data3, amount1, depth3, 1),
+  step1 < step2,
+  step2 < step3,
   depth1 < depth2,
   depth2 < depth3,
-  input_data1 != input_data3,
+  substr(input_data1, 0, 8) != substr(input_data3, 0, 8),
   !match("0", amount2),
   transaction(hash, _, _, _, 1, block),
   block(block, _, _, timestamp).
@@ -37,9 +40,11 @@ CrossFunctionReentrancy(hash, timestamp, callee, caller, depth2, amount2) :-
 /* Delegated Reentrancy */
 .decl DelegatedReentrancy(hash:symbol, timestamp:number, caller:Address, callee:Address, depth:number, amount:Value)
 DelegatedReentrancy(hash, timestamp, caller, callee1, depth2, amount2) :-
-  call(_, hash, "DELEGATECALL", caller, callee1, input_data, amount1, depth1, 1),
-  call(_, hash, "CALL", callee1, _, _, amount2, depth2, 1),
-  call(_, hash, "DELEGATECALL", caller, callee1, input_data, amount1, depth3, 1),
+  call(step1, hash, "DELEGATECALL", caller, callee1, input_data, amount1, depth1, 1),
+  call(step2, hash, "CALL", callee1, _, _, amount2, depth2, 1),
+  call(step3, hash, "DELEGATECALL", caller, callee1, input_data, amount1, depth3, 1),
+  step1 < step2,
+  step2 < step3,
   depth1 < depth2,
   depth2 < depth3,
   !match("0", amount2),
@@ -50,11 +55,14 @@ DelegatedReentrancy(hash, timestamp, caller, callee1, depth2, amount2) :-
 /* Create-Based Reentrancy */
 .decl CreateBasedReentrancy(hash:symbol, timestamp:number, caller:Address, callee:Address, depth:number, amount:Value)
 CreateBasedReentrancy(hash, timestamp, caller, callee, depth3, amount2) :-
-  call(_, hash, "CREATE", caller, _, input_data, amount1, depth1, 1),
-  call(_, hash, "CREATE", caller, callee, input_data, amount1, depth2, 1),
-  call(_, hash, "CALL", caller, callee, _, amount2, depth3, 1),
+  call(step1, hash, "CREATE", caller, _, input_data, amount1, depth1, 1),
+  call(step2, hash, "CREATE", caller, callee, input_data, amount1, depth2, 1),
+  call(step3, hash, "CALL", caller, callee, _, amount2, depth3, 1),
+  step1 < step2,
+  step2 < step3,
   depth1 < depth2,
   depth2 = depth3,
+  !match("0", amount2),
   transaction(hash, _, _, _, 1, block),
   block(block, _, _, timestamp).
 .output CreateBasedReentrancy
@@ -80,6 +88,7 @@ IntegerOverflow(hash, timestamp, step2, opcode, first_operand, second_operand, a
   storage(step3, "SSTORE", _, hash, _, _, _),
   data_flow(step2, step3),
   transfer(step4, hash, from, to, amount),
+  !match("0", amount),
   data_flow(step1, step4),
   from != to,
   transaction(hash, _, _, _, 1, block),
@@ -91,6 +100,7 @@ IntegerOverflow(hash, timestamp, step2, opcode, first_operand, second_operand, a
   match("ADD", opcode),
   use(step2, step1),
   call(step3, hash, "CALL", from, to, _, amount, _, 1),
+  !match("0", amount),
   data_flow(step2, step3),
   transaction(hash, _, _, _, 1, block),
   block(block, _, _, timestamp),
@@ -103,6 +113,7 @@ IntegerOverflow(hash, timestamp, step2, opcode, first_operand, second_operand, a
   storage(step3, "SSTORE", _, hash, _, _, _),
   data_flow(step2, step3),
   transfer(step4, hash, from, to, amount),
+  !match("0", amount),
   data_flow(step1, step4),
   from != to,
   transaction(hash, _, _, _, 1, block),
@@ -114,6 +125,7 @@ IntegerOverflow(hash, timestamp, step2, opcode, first_operand, second_operand, a
   match("MUL", opcode),
   use(step2, step1),
   call(step3, hash, "CALL", from, to, _, amount, _, 1),
+  !match("0", amount),
   data_flow(step2, step3),
   transaction(hash, _, _, _, 1, block),
   block(block, _, _, timestamp),
@@ -161,16 +173,20 @@ TransactionOrderDependency(hash1, hash2, timestamp, block) :-
 
 /* Unchecked Suicide */
 .decl UncheckedSuicide(hash:symbol, timestamp:number, step:number, caller:Address, contract:Address, destination:Address, amount:Value)
-UncheckedSuicide(hash, timestamp, step1, caller, contract, destination, amount) :-
-  selfdestruct(step1, hash, caller, contract, destination, amount),
+UncheckedSuicide(hash, timestamp, step2, caller, contract, destination, amount) :-
+  opcode(step1, "CALLDATALOAD"),
+  selfdestruct(step2, hash, caller, contract, destination, amount),
   !match("0", amount),
+  data_flow(step1, step2),
   !caller_check(_, hash),
   transaction(hash, _, _, _, 1, block),
   block(block, _, _, timestamp);
-  selfdestruct(step1, hash, caller, contract, destination, amount),
+  opcode(step1, "CALLDATALOAD"),
+  selfdestruct(step2, hash, caller, contract, destination, amount),
   !match("0", amount),
-  caller_check(step2, hash),
-  step1 < step2,
+  data_flow(step1, step2),
+  caller_check(step3, hash),
+  step2 < step3,
   transaction(hash, _, _, _, 1, block),
   block(block, _, _, timestamp).
 .output UncheckedSuicide
@@ -180,16 +196,18 @@ UncheckedSuicide(hash, timestamp, step1, caller, contract, destination, amount) 
 UncheckedDelegatecall(hash, timestamp, step2, caller, callee) :-
   opcode(step1, "CALLDATALOAD"),
   call(step2, hash, "DELEGATECALL", caller, callee, _, _, _, 1),
-  data_flow(step1, step2),
+  use(step2, step1),
   !caller_check(_, hash),
-  transaction(hash, _, _, _, 1, block),
+  transaction(hash, _, _, input_data, 1, block),
+  contains(substr(callee, 3, strlen(callee)), input_data),
   block(block, _, _, timestamp);
   opcode(step1, "CALLDATALOAD"),
   call(step2, hash, "DELEGATECALL", caller, callee, _, _, _, 1),
-  data_flow(step1, step2),
+  use(step2, step1s),
   caller_check(step3, hash),
   step2 < step3,
-  transaction(hash, _, _, _, 1, block),
+  transaction(hash, _, _, input_data, 1, block),
+  contains(substr(callee, 3, strlen(callee)), input_data),
   block(block, _, _, timestamp).
 .output UncheckedDelegatecall
 
