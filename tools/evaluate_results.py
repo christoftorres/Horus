@@ -244,11 +244,11 @@ if __name__ == '__main__':
                                         contracts_total.add(contract)
                                         transactions_total.add(row[0])
                                 elif attack == "IntegerUnderflow":
-                                    #if contract not in contracts["integer_underflow"]:
-                                    #    print(contract+" "+str(row))
-                                    #    response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+contract+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
-                                    #    if "result" in response and response['result'][0]['SourceCode']:
-                                    #        print(contract)
+                                    if contract not in contracts["integer_underflow"]:
+                                        print(contract+" "+str(row))
+                                        response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+contract+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
+                                        if "result" in response and response['result'][0]['SourceCode']:
+                                            print(contract)
                                     contracts["integer_underflow"].add(contract)
                                     transactions["integer_underflow"].add(row[0])
                                     #ether["integer_underflow"].append(int(row[5]))
@@ -282,7 +282,7 @@ if __name__ == '__main__':
                                     transactions_total.add(row[0])
                                 elif attack == "ParityWalletHack1":
                                     if contract not in contracts["parity_wallet_hack_1"]:
-                                        print(contract+" "+str(row))
+                                        #print(contract+" "+str(row))
                                         response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+contract+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
                                         if "result" in response and response['result'][0]['SourceCode']:
                                             if "function initWallet(" in response['result'][0]['SourceCode'] and \

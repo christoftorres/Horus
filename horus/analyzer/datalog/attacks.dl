@@ -70,74 +70,82 @@ UnhandledException(hash, timestamp, step1, caller, callee, amount) :-
 .output UnhandledException
 
 /* Integer Overflow */
-.decl IntegerOverflow(hash:symbol, timestamp:number, step:number, opcode:Opcode, first_operand:Value, second_operand:Value, arithmetic_result:Value, evm_result:Value, from:Address, to:Address, amount:Value)
-IntegerOverflow(hash, timestamp, step2, opcode, first_operand, second_operand, arithmetic_result, evm_result, from, to, amount) :-
+.decl IntegerOverflow(hash:symbol, timestamp:number, step:number, opcode:Opcode, first_operand:Value, second_operand:Value, arithmetic_result:Value, evm_result:Value, from:Address, to:Address, amount:Value, asset:symbol)
+IntegerOverflow(hash, timestamp, step2, opcode, first_operand, second_operand, arithmetic_result, evm_result, from, to, amount, asset) :-
   opcode(step1, "CALLDATALOAD"),
   arithmetic(step2, opcode, first_operand, second_operand, arithmetic_result, evm_result),
   arithmetic_result != evm_result,
   match("ADD", opcode),
-  data_flow(step1, step2),
+  use(step2, step1),
   storage(step3, "SSTORE", _, hash, _, _, _),
   data_flow(step2, step3),
   transfer(step4, hash, from, to, amount),
   data_flow(step1, step4),
   from != to,
   transaction(hash, _, _, _, 1, block),
-  block(block, _, _, timestamp);
+  block(block, _, _, timestamp),
+  asset = "Token";
   opcode(step1, "CALLDATALOAD"),
   arithmetic(step2, opcode, first_operand, second_operand, arithmetic_result, evm_result),
   arithmetic_result != evm_result,
   match("ADD", opcode),
-  data_flow(step1, step2),
+  use(step2, step1),
   call(step3, hash, "CALL", from, to, _, amount, _, 1),
   data_flow(step2, step3),
   transaction(hash, _, _, _, 1, block),
-  block(block, _, _, timestamp);
+  block(block, _, _, timestamp),
+  asset = "Ether";
   opcode(step1, "CALLDATALOAD"),
   arithmetic(step2, opcode, first_operand, second_operand, arithmetic_result, evm_result),
   arithmetic_result != evm_result,
   match("MUL", opcode),
-  data_flow(step1, step2),
+  use(step2, step1),
   storage(step3, "SSTORE", _, hash, _, _, _),
   data_flow(step2, step3),
   transfer(step4, hash, from, to, amount),
   data_flow(step1, step4),
   from != to,
   transaction(hash, _, _, _, 1, block),
-  block(block, _, _, timestamp);
+  block(block, _, _, timestamp),
+  asset = "Token";
   opcode(step1, "CALLDATALOAD"),
   arithmetic(step2, opcode, first_operand, second_operand, arithmetic_result, evm_result),
   arithmetic_result != evm_result,
   match("MUL", opcode),
-  data_flow(step1, step2),
+  use(step2, step1),
   call(step3, hash, "CALL", from, to, _, amount, _, 1),
   data_flow(step2, step3),
   transaction(hash, _, _, _, 1, block),
-  block(block, _, _, timestamp).
+  block(block, _, _, timestamp),
+  asset = "Ether".
 .output IntegerOverflow
 
 /* Integer Underflow */
-.decl IntegerUnderflow(hash:symbol, timestamp:number, step:number, first_operand:Value, second_operand:Value, arithmetic_result:Value, evm_result:Value, from:Address, to:Address, amount:Value)
-IntegerUnderflow(hash, timestamp, step2, first_operand, second_operand, arithmetic_result, evm_result, from, to, amount) :-
+.decl IntegerUnderflow(hash:symbol, timestamp:number, step:number, first_operand:Value, second_operand:Value, arithmetic_result:Value, evm_result:Value, from:Address, to:Address, amount:Value, asset:symbol)
+IntegerUnderflow(hash, timestamp, step2, first_operand, second_operand, arithmetic_result, evm_result, from, to, amount, asset) :-
   opcode(step1, "CALLDATALOAD"),
   arithmetic(step2, "SUB", first_operand, second_operand, arithmetic_result, evm_result),
   arithmetic_result != evm_result,
-  data_flow(step1, step2),
+  use(step2, step1),
   storage(step3, "SSTORE", _, hash, _, _, _),
   data_flow(step2, step3),
   transfer(step4, hash, from, to, amount),
+  !match("0", amount),
   data_flow(step1, step4),
   from != to,
   transaction(hash, _, _, _, 1, block),
-  block(block, _, _, timestamp);
+  block(block, _, _, timestamp),
+  asset = "Token";
   opcode(step1, "CALLDATALOAD"),
   arithmetic(step2, "SUB", first_operand, second_operand, arithmetic_result, evm_result),
   arithmetic_result != evm_result,
-  data_flow(step1, step2),
+  use(step2, step1),
   call(step3, hash, "CALL", from, to, _, amount, _, 1),
+  !match("0", amount),
   data_flow(step2, step3),
   transaction(hash, _, _, _, 1, block),
-  block(block, _, _, timestamp).
+  block(block, _, _, timestamp),
+  asset = "Ether".
 .output IntegerUnderflow
 
 /* Transaction Order Dependency */
