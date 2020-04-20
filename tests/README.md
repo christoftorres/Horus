@@ -80,6 +80,12 @@ SecureLock + CrossFunction Reentrancy (Ropsten)
 python3 horus.py -e -t 0xa735288c921e987c6b3cf94cdef03d8c31284ace1583a16f6a887efab22c4f49
 ```
 
+```
+ERC777 Reentrancy Lendf.Me (Mainnet)
+
+python3 horus.py -e -t 0xae7d664bdfcc54220df4f18d339005c6faf6e62c9ca79c56387bc0389274363b
+```
+
 ###### Unchecked Delegatecall (Parity Wallet Hack 1 - 19.07.2017)
 
 ```
