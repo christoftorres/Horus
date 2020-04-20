@@ -175,9 +175,9 @@ if __name__ == '__main__':
                                     else:
                                         timeline["reentrancy"][d.strftime("%Y-%m-%d")] += 1
                                 elif attack == "CrossFunctionReentrancy":
-                                    if contract not in contracts["cross_function_reentrancy"]:
-                                        print(contract+" "+str(row))
-                                        print("cross_function_reentrancy")
+                                    #if contract not in contracts["cross_function_reentrancy"]:
+                                    #    print(contract+" "+str(row))
+                                    #    print("cross_function_reentrancy")
                                     contracts["cross_function_reentrancy"].add(contract)
                                     transactions["cross_function_reentrancy"].add(row[0])
                                     ether["cross_function_reentrancy"].append(int(row[5]))

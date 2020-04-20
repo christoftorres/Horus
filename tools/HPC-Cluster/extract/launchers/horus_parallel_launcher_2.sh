@@ -5,7 +5,7 @@
 #SBATCH --partition=bigmem # Use the batch partition reserved for passive jobs
 #SBATCH --qos=qos-bigmem
 #SBATCH -J Horus_2          # Set the job name
-#SBATCH -n 100             # Number of tasks (cores)
+#SBATCH -n 50             # Number of tasks (cores)
 #SBATCH -c 1              # 1 core per task
 
 set -x

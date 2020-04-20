@@ -10,7 +10,7 @@ ARGUMENTS      = "arguments"
 LAUNCHERS      = "launchers"
 MAX_ARGUMENTS  = 50000
 WALLTIME       = "0-24:00:00"
-CORES          = 100
+CORES          = 50
 CORES_PER_TASK = 1
 
 if __name__ == "__main__":

@@ -3,8 +3,8 @@ import zipfile
 
 MIN_TRANSACTIONS = 0
 MAX_TRANSACTIONS = 100
-START = 100000
-NUMBER_OF_CONTRACTS = 100000
+START = 0
+NUMBER_OF_CONTRACTS = 250000
 
 SOURCE = '/Users/Christof/Downloads/contracts.zip'
 DESTINATION = '/Users/Christof/Downloads/'

@@ -34,6 +34,7 @@ if __name__ == '__main__':
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/ERC777Reentrancy.csv") == 0 and \
                os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
@@ -74,6 +75,7 @@ if __name__ == '__main__':
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/ERC777Reentrancy.csv") == 0 and \
                os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
@@ -114,6 +116,7 @@ if __name__ == '__main__':
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/ERC777Reentrancy.csv") == 0 and \
                os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
@@ -154,6 +157,7 @@ if __name__ == '__main__':
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/ERC777Reentrancy.csv") == 0 and \
                os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
@@ -194,6 +198,7 @@ if __name__ == '__main__':
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/ERC777Reentrancy.csv") == 0 and \
                os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
@@ -234,6 +239,7 @@ if __name__ == '__main__':
                os.path.getsize("results/DelegatedReentrancy.csv") != 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/ERC777Reentrancy.csv") == 0 and \
                os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
@@ -274,6 +280,7 @@ if __name__ == '__main__':
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/ERC777Reentrancy.csv") == 0 and \
                os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
@@ -314,6 +321,7 @@ if __name__ == '__main__':
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/ERC777Reentrancy.csv") == 0 and \
                os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
@@ -354,6 +362,7 @@ if __name__ == '__main__':
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/ERC777Reentrancy.csv") == 0 and \
                os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
@@ -394,6 +403,7 @@ if __name__ == '__main__':
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/ERC777Reentrancy.csv") == 0 and \
                os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
@@ -434,6 +444,7 @@ if __name__ == '__main__':
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/ERC777Reentrancy.csv") == 0 and \
                os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
@@ -474,6 +485,7 @@ if __name__ == '__main__':
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/ERC777Reentrancy.csv") == 0 and \
                os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
@@ -514,6 +526,89 @@ if __name__ == '__main__':
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/ERC777Reentrancy.csv") == 0 and \
+               os.path.getsize("results/InsufficientGas.csv") == 0 and \
+               os.path.getsize("results/IntegerOverflow.csv") == 0 and \
+               os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
+               os.path.getsize("results/ParityWalletHack1.csv") == 0 and \
+               os.path.getsize("results/ParityWalletHack2.csv") == 0 and \
+               os.path.getsize("results/Reentrancy.csv") == 0 and \
+               os.path.getsize("results/ShortAddress.csv") == 0 and \
+               os.path.getsize("results/TimestampDependence.csv") == 0 and \
+               os.path.getsize("results/TransactionOrderDependency.csv") == 0 and \
+               os.path.getsize("results/TransactionStateDependence.csv") == 0 and \
+               os.path.getsize("results/UncheckedDelegatecall.csv") == 0 and \
+               os.path.getsize("results/UncheckedSignature.csv") == 0 and \
+               os.path.getsize("results/UncheckedSuicide.csv") == 0 and \
+               os.path.getsize("results/UnhandledException.csv") == 0:
+                print("\033[92mPASSED\033[0m")
+            else:
+                print("\033[91m!!! FAILED !!!\033[0m")
+    print("-------------------------------------------------------")
+    shutil.rmtree('facts')
+    shutil.rmtree('results')
+
+    print("Testing 'ERC777 Reentrancy Uniswap'")
+    p = subprocess.Popen(shlex.split("python3 ../horus/horus.py -e -t 0x9cb1d93d6859883361e8c2f9941f13d6156a1e8daa0ebe801b5d0b5a612723c1"), stdout=subprocess.PIPE, stderr=FNULL)
+    output = str(p.communicate()[0])
+    if "Traceback" in output or "error" in output:
+        print("\033[91m!!! FAILED !!!\033[0m")
+    else:
+        p = subprocess.Popen(shlex.split("python3 ../horus/horus.py -a -d ../horus/analyzer/datalog/attacks.dl"), stdout=subprocess.PIPE, stderr=FNULL)
+        output = str(p.communicate()[0])
+        if "Traceback" in output or "error" in output:
+            print("\033[91m!!! FAILED !!!\033[0m")
+        else:
+            if os.path.getsize("results/BalanceInvariant.csv") == 0 and \
+               os.path.getsize("results/BlockStateDependence.csv") == 0 and \
+               os.path.getsize("results/CallStackDepth.csv") == 0 and \
+               os.path.getsize("results/CreateBasedReentrancy.csv") == 0 and \
+               os.path.getsize("results/CrossFunctionReentrancy.csv") == 0 and \
+               os.path.getsize("results/DelegatedReentrancy.csv") != 0 and \
+               os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
+               os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/ERC777Reentrancy.csv") != 0 and \
+               os.path.getsize("results/InsufficientGas.csv") == 0 and \
+               os.path.getsize("results/IntegerOverflow.csv") == 0 and \
+               os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
+               os.path.getsize("results/ParityWalletHack1.csv") == 0 and \
+               os.path.getsize("results/ParityWalletHack2.csv") == 0 and \
+               os.path.getsize("results/Reentrancy.csv") == 0 and \
+               os.path.getsize("results/ShortAddress.csv") == 0 and \
+               os.path.getsize("results/TimestampDependence.csv") != 0 and \
+               os.path.getsize("results/TransactionOrderDependency.csv") == 0 and \
+               os.path.getsize("results/TransactionStateDependence.csv") == 0 and \
+               os.path.getsize("results/UncheckedDelegatecall.csv") == 0 and \
+               os.path.getsize("results/UncheckedSignature.csv") == 0 and \
+               os.path.getsize("results/UncheckedSuicide.csv") == 0 and \
+               os.path.getsize("results/UnhandledException.csv") == 0:
+                print("\033[92mPASSED\033[0m")
+            else:
+                print("\033[91m!!! FAILED !!!\033[0m")
+    print("-------------------------------------------------------")
+    shutil.rmtree('facts')
+    shutil.rmtree('results')
+
+    print("Testing 'ERC777 Reentrancy Lendf.Me'")
+    p = subprocess.Popen(shlex.split("python3 ../horus/horus.py -e -t 0xae7d664bdfcc54220df4f18d339005c6faf6e62c9ca79c56387bc0389274363b"), stdout=subprocess.PIPE, stderr=FNULL)
+    output = str(p.communicate()[0])
+    if "Traceback" in output or "error" in output:
+        print("\033[91m!!! FAILED !!!\033[0m")
+    else:
+        p = subprocess.Popen(shlex.split("python3 ../horus/horus.py -a -d ../horus/analyzer/datalog/attacks.dl"), stdout=subprocess.PIPE, stderr=FNULL)
+        output = str(p.communicate()[0])
+        if "Traceback" in output or "error" in output:
+            print("\033[91m!!! FAILED !!!\033[0m")
+        else:
+            if os.path.getsize("results/BalanceInvariant.csv") == 0 and \
+               os.path.getsize("results/BlockStateDependence.csv") == 0 and \
+               os.path.getsize("results/CallStackDepth.csv") == 0 and \
+               os.path.getsize("results/CreateBasedReentrancy.csv") == 0 and \
+               os.path.getsize("results/CrossFunctionReentrancy.csv") == 0 and \
+               os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
+               os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
+               os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/ERC777Reentrancy.csv") != 0 and \
                os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
@@ -554,6 +649,7 @@ if __name__ == '__main__':
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/ERC777Reentrancy.csv") == 0 and \
                os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
@@ -594,6 +690,7 @@ if __name__ == '__main__':
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/ERC777Reentrancy.csv") == 0 and \
                os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
@@ -634,6 +731,7 @@ if __name__ == '__main__':
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/ERC777Reentrancy.csv") == 0 and \
                os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") != 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
@@ -674,6 +772,7 @@ if __name__ == '__main__':
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/ERC777Reentrancy.csv") == 0 and \
                os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") != 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
@@ -714,6 +813,7 @@ if __name__ == '__main__':
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/ERC777Reentrancy.csv") == 0 and \
                os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") != 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
@@ -754,6 +854,7 @@ if __name__ == '__main__':
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/ERC777Reentrancy.csv") == 0 and \
                os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") != 0 and \
@@ -794,6 +895,7 @@ if __name__ == '__main__':
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/ERC777Reentrancy.csv") == 0 and \
                os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
@@ -834,6 +936,7 @@ if __name__ == '__main__':
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") != 0 and \
+               os.path.getsize("results/ERC777Reentrancy.csv") == 0 and \
                os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
@@ -874,6 +977,7 @@ if __name__ == '__main__':
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") != 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/ERC777Reentrancy.csv") == 0 and \
                os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
@@ -914,6 +1018,7 @@ if __name__ == '__main__':
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/ERC777Reentrancy.csv") == 0 and \
                os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
@@ -954,6 +1059,7 @@ if __name__ == '__main__':
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/ERC777Reentrancy.csv") == 0 and \
                os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
@@ -994,6 +1100,7 @@ if __name__ == '__main__':
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/ERC777Reentrancy.csv") == 0 and \
                os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
@@ -1034,6 +1141,7 @@ if __name__ == '__main__':
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/ERC777Reentrancy.csv") == 0 and \
                os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
@@ -1074,6 +1182,7 @@ if __name__ == '__main__':
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/ERC777Reentrancy.csv") == 0 and \
                os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
@@ -1114,6 +1223,7 @@ if __name__ == '__main__':
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/ERC777Reentrancy.csv") == 0 and \
                os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
@@ -1154,6 +1264,7 @@ if __name__ == '__main__':
                os.path.getsize("results/DelegatedReentrancy.csv") == 0 and \
                os.path.getsize("results/DoSWithBlockGasLimit.csv") == 0 and \
                os.path.getsize("results/DoSWithUnexpectedThrow.csv") == 0 and \
+               os.path.getsize("results/ERC777Reentrancy.csv") == 0 and \
                os.path.getsize("results/InsufficientGas.csv") == 0 and \
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
