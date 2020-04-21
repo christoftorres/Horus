@@ -46,6 +46,7 @@ data['Timestamp'] = [datetime.strptime(d, "%Y-%m-%d") for d in data['Timestamp']
 
 names = [
     #'Oyente\nv0.0.1',
+    'Manticore\nv0.1.0',
     #'SmartCheck\nv1.0.0',
     'Oyente\nv0.1.0',
     #'Oyente\nv0.2.0',
@@ -61,6 +62,7 @@ names = [
     #'Mythril\nv0.17.0',
     #'Mythril\nv0.18.0',
     'ContractFuzzer\nv1.0.0',
+    #'Manticore\nv0.2.0',
     'Vandal\nv1.0.0',
     'Osiris\nv0.0.1',
     'MadMax\nv1.0.0',
@@ -68,12 +70,15 @@ names = [
     'SmartCheck\nv2.0.0',
     'Securify\nv1.0.0',
     #'Mythril\nv0.20.0',
+    #'Manticore\nv0.3.0',
     #'Mythril\nv0.21.2',
     #'Securify\nv2.0.0',
     #'Mythril\nv0.22.0',
+
 ]
 dates = [
     #'2016-01-08',
+    '2017-04-26',
     #'2017-05-19',
     '2017-06-19',
     #'2017-07-25',
@@ -89,6 +94,7 @@ dates = [
     #'2018-05-08',
     #'2018-06-12',
     '2018-08-08',
+    #'2018-08-10',
     '2018-09-11',
     '2018-09-11',
     '2018-10-24',
@@ -96,6 +102,7 @@ dates = [
     '2019-01-10',
     '2019-01-22',
     #'2019-01-30',
+    #'2019-06-06',
     #'2019-06-19',
     #'2020-01-22',
     #'2020-03-16',
