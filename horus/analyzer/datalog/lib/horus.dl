@@ -9,16 +9,15 @@ data_flow(x, y) :-
   use(y, z),
   data_flow(x, z).
 
-.decl caller_check(step:number, hash:symbol)
-caller_check(step2, hash) :-
-  def(step1, "CALLER"),
-  condition(step2, hash),
-  data_flow(step1, step2).
-
 .decl used_in_condition(step:number, hash:symbol)
 used_in_condition(step1, hash) :-
   condition(step2, hash),
   data_flow(step1, step2).
+
+.decl caller_check(step:number, hash:symbol)
+caller_check(step1, hash) :-
+  def(step1, "CALLER"),
+  used_in_condition(step1, hash).
 
 .decl opcode(step:number, opcode:Opcode)
 opcode(step, opcode) :-

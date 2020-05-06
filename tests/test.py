@@ -654,7 +654,7 @@ if __name__ == '__main__':
                os.path.getsize("results/IntegerOverflow.csv") == 0 and \
                os.path.getsize("results/IntegerUnderflow.csv") == 0 and \
                os.path.getsize("results/ParityWalletHack1.csv") != 0 and \
-               os.path.getsize("results/ParityWalletHack2.csv") != 0 and \
+               os.path.getsize("results/ParityWalletHack2.csv") == 0 and \
                os.path.getsize("results/Reentrancy.csv") == 0 and \
                os.path.getsize("results/ShortAddress.csv") == 0 and \
                os.path.getsize("results/TimestampDependence.csv") != 0 and \

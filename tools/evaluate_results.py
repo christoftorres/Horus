@@ -5,17 +5,27 @@ import os
 import csv
 import sys
 import math
+import json
 import shutil
 import zipfile
 import requests
 import traceback
 
+import decimal
+
+
+from pathlib import Path
 from web3 import Web3
 from tqdm import tqdm
 from datetime import datetime
 from collections import OrderedDict
+from pyetherchain.pyetherchain import EtherChainApi
 
 FOLDER = "/Users/Christof/Downloads/results"
+
+etherchain_api = EtherChainApi()
+
+prices = etherchain_api.get_stats_price_usd()
 
 def variance(x):
      n = len(x)
@@ -25,6 +35,15 @@ def variance(x):
 def standard_deviation(x):
      return(math.sqrt(variance(x)))
 
+def get_one_eth_to_usd(timestamp):
+    one_eth_to_usd = prices[-1]["value"]
+    for index, price in enumerate(prices):
+        if index < len(prices)-1:
+            if prices[index]["time"] <= timestamp and timestamp <= prices[index+1]["time"]:
+                one_eth_to_usd = prices[index]["value"]
+                break
+    return one_eth_to_usd
+
 print("Evaluating results...")
 
 #transactions = []
@@ -33,6 +52,7 @@ print("Evaluating results...")
 
 transactions = {
     "reentrancy": set(),
+    "erc777_reentrancy": set(),
     "cross_function_reentrancy": set(),
     "delegated_reentrancy": set(),
     "create_based_reentrancy": set(),
@@ -59,6 +79,7 @@ transactions = {
 
 contracts = {
     "reentrancy": set(),
+    "erc777_reentrancy": set(),
     "cross_function_reentrancy": set(),
     "delegated_reentrancy": set(),
     "create_based_reentrancy": set(),
@@ -109,11 +130,32 @@ ether = {
     "insufficient_gas": []
 }
 
+tokens = {
+    "integer_overflow_addition": [],
+    "integer_overflow_multiplication": [],
+    "integer_underflow": []
+}
+
+erc20_tokens = {}
+
+usd = {
+    "reentrancy": [],
+    "cross_function_reentrancy": [],
+    "delegated_reentrancy": [],
+    "create_based_reentrancy": [],
+    "integer_overflow_addition": [],
+    "integer_overflow_multiplication": [],
+    "integer_underflow": [],
+    "parity_wallet_hack_1": [],
+    "parity_wallet_hack_2": []
+}
+
 timeline = {
     "reentrancy": {},
-    "cross_function_reentrancy": {},
-    "delegated_reentrancy": {},
-    "create_based_reentrancy": {}
+    "integer_overflow": {},
+    "integer_underflow": {},
+    "parity_wallet_hack_1": {},
+    "parity_wallet_hack_2": {}
 }
 
 contracts_total = set()
@@ -133,271 +175,508 @@ automated_validation = {
     },
 }
 
+vulnerable_deployments = {
+    "reentrancy": {},
+    "integer_overflow": {},
+    "integer_underflow": {},
+    "parity_wallet_hack_1": {},
+    "parity_wallet_hack_2": {}
+}
+
+attackers = {
+    "reentrancy": set(),
+    "erc777_reentrancy": set(),
+    "cross_function_reentrancy": set(),
+    "delegated_reentrancy": set(),
+    "create_based_reentrancy": set(),
+    "unhandled_exception": set(),
+    "transaction_order_dependence": set(),
+    "block_state_dependence": set(),
+    "timestamp_dependence": set(),
+    "transaction_state_dependence": set(),
+    "call_stack_depth": set(),
+    "integer_overflow_addition": set(),
+    "integer_overflow_multiplication": set(),
+    "integer_underflow": set(),
+    "dos_with_unexpected_throw": set(),
+    "dos_with_block_gas_limit": set(),
+    "short_address": set(),
+    "unchecked_delegatecall": set(),
+    "unchecked_suicide": set(),
+    "parity_wallet_hack_1": set(),
+    "parity_wallet_hack_2": set(),
+    "unchecked_signature": set(),
+    "balance_invariant": set(),
+    "insufficient_gas": set()
+}
+
+def add_new_token(contract):
+    w3 = Web3(Web3.HTTPProvider("http://pf.uni.lux:8545"))
+    with open('erc20abi.json') as json_file:
+        abi = json.load(json_file)
+        token = w3.eth.contract(Web3.toChecksumAddress(contract), abi=abi)
+        name = "",
+        symbol = ""
+        decimals = 0
+        try:
+            name = token.functions.name().call()
+        except:
+            pass
+        try:
+            symbol = token.functions.symbol().call()
+        except:
+            pass
+        try:
+            decimals = token.functions.decimals().call()
+        except:
+            pass
+        erc20_tokens[contract] = {"name": name, "symbol": symbol, "decimals": decimals, "amount": 0}
+
+def get_sender(transaction_hash):
+    w3 = Web3(Web3.HTTPProvider("http://pf.uni.lux:8545"))
+    return str(w3.eth.getTransaction(transaction_hash)["from"]).lower()
+
+def get_deployment_timestamp(contract):
+    return int(requests.get('http://api.etherscan.io/api?module=account&action=txlist&address='+contract+'&startblock=0&endblock=99999999&page=1&offset=1&sort=asc&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()["result"][0]["timeStamp"])
+
 if __name__ == '__main__':
-    from pathlib import Path
     pathlist = Path(FOLDER).glob('**/*.zip')
     with tqdm(total=len(list(Path(FOLDER).glob('**/*.zip'))), unit=" contract", leave=False, smoothing=0.1) as pbar:
         for path in pathlist:
             #print(path)
             contract = str(path).split('/')[-1].split('.')[0]
             #print(contract)
-            with zipfile.ZipFile(path) as z:
-                for filename in z.namelist():
-                    if filename.endswith(".csv"):
-                        with z.open(filename) as f:
-                            csv.field_size_limit(sys.maxsize)
-                            from io import StringIO
-                            s = StringIO(f.read().decode("utf-8"))
-                            reader = csv.reader(s, delimiter='\t')
-                            for row in reader:
-                                #print(row)
-                                attack = os.path.splitext(os.path.basename(filename))[0]
-                                #print(attack)
-                                if   attack == "CallStackDepth":
-                                    contracts["call_stack_depth"].add(contract)
-                                    transactions["call_stack_depth"].add(row[0])
-                                    ether["call_stack_depth"].append(int(row[5]))
-                                    contracts_total.add(contract)
-                                    transactions_total.add(row[0])
-                                    ether_total += int(row[5])
-                                elif attack == "Reentrancy":
-                                    #if contract not in contracts["reentrancy"]:
-                                    #    print(contract+" "+str(row))
-                                    contracts["reentrancy"].add(contract)
-                                    transactions["reentrancy"].add(row[0])
-                                    ether["reentrancy"].append(int(row[5]))
-                                    contracts_total.add(contract)
-                                    transactions_total.add(row[0])
-                                    ether_total += int(row[5])
-                                    d = datetime.fromtimestamp(int(row[1]))
-                                    if not d.strftime("%Y-%m-%d") in timeline["reentrancy"]:
-                                        timeline["reentrancy"][d.strftime("%Y-%m-%d")] = 1
-                                    else:
-                                        timeline["reentrancy"][d.strftime("%Y-%m-%d")] += 1
-                                elif attack == "CrossFunctionReentrancy":
-                                    #if contract not in contracts["cross_function_reentrancy"]:
-                                    #    print(contract+" "+str(row))
-                                    #    print("cross_function_reentrancy")
-                                    contracts["cross_function_reentrancy"].add(contract)
-                                    transactions["cross_function_reentrancy"].add(row[0])
-                                    ether["cross_function_reentrancy"].append(int(row[5]))
-                                    contracts_total.add(contract)
-                                    transactions_total.add(row[0])
-                                    ether_total += int(row[5])
-                                    d = datetime.fromtimestamp(int(row[1]))
-                                    if not d.strftime("%Y-%m-%d") in timeline["cross_function_reentrancy"]:
-                                        timeline["cross_function_reentrancy"][d.strftime("%Y-%m-%d")] = 1
-                                    else:
-                                        timeline["cross_function_reentrancy"][d.strftime("%Y-%m-%d")] += 1
-                                elif attack == "DelegatedReentrancy":
-                                    #if contract not in contracts["delegated_reentrancy"]:
-                                    #    print(contract+" "+str(row))
-                                    #    print("delegated_reentrancy")
-                                    contracts["delegated_reentrancy"].add(contract)
-                                    transactions["delegated_reentrancy"].add(row[0])
-                                    ether["delegated_reentrancy"].append(int(row[5]))
-                                    contracts_total.add(contract)
-                                    transactions_total.add(row[0])
-                                    ether_total += int(row[5])
-                                    d = datetime.fromtimestamp(int(row[1]))
-                                    if not d.strftime("%Y-%m-%d") in timeline["delegated_reentrancy"]:
-                                        timeline["delegated_reentrancy"][d.strftime("%Y-%m-%d")] = 1
-                                    else:
-                                        timeline["delegated_reentrancy"][d.strftime("%Y-%m-%d")] += 1
-                                elif attack == "CreateBasedReentrancy":
-                                    #if contract not in contracts["create_based_reentrancy"]:
-                                    #    print(contract+" "+str(row))
-                                    #    print("create_based_reentrancy")
-                                    contracts["create_based_reentrancy"].add(contract)
-                                    transactions["create_based_reentrancy"].add(row[0])
-                                    ether["create_based_reentrancy"].append(int(row[5]))
-                                    contracts_total.add(contract)
-                                    transactions_total.add(row[0])
-                                    ether_total += int(row[5])
-                                    d = datetime.fromtimestamp(int(row[1]))
-                                    if not d.strftime("%Y-%m-%d") in timeline["create_based_reentrancy"]:
-                                        timeline["create_based_reentrancy"][d.strftime("%Y-%m-%d")] = 1
-                                    else:
-                                        timeline["create_based_reentrancy"][d.strftime("%Y-%m-%d")] += 1
-                                elif attack == "UnhandledException":
-                                    #if contract not in contracts["unhandled_exception"]:
-                                    #    print(contract+" "+str(row))
-                                    #    response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+contract+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
-                                    #    if "result" in response and response['result'][0]['SourceCode']:
-                                    #        print(contract)
-                                    contracts["unhandled_exception"].add(contract)
-                                    transactions["unhandled_exception"].add(row[0])
-                                    #ether["unhandled_exception"].append(int(row[5]))
-                                    contracts_total.add(contract)
-                                    transactions_total.add(row[0])
-                                elif attack == "IntegerOverflow":
-                                    if   row[3] == "ADD":
-                                        contracts["integer_overflow_addition"].add(contract)
-                                        transactions["integer_overflow_addition"].add(row[0])
-                                        #ether["integer_overflow_addition"].append(int(row[5]))
+            try:
+                with zipfile.ZipFile(path) as z:
+                    for filename in z.namelist():
+                        if filename.endswith(".csv"):
+                            with z.open(filename) as f:
+                                csv.field_size_limit(sys.maxsize)
+                                from io import StringIO
+                                s = StringIO(f.read().decode("utf-8"))
+                                reader = csv.reader(s, delimiter='\t')
+                                for row in reader:
+                                    #print(row)
+                                    attack = os.path.splitext(os.path.basename(filename))[0]
+                                    #print(attack)
+                                    if   attack == "CallStackDepth":
+                                        contracts["call_stack_depth"].add(contract)
+                                        transactions["call_stack_depth"].add(row[0])
+                                        ether["call_stack_depth"].append(int(row[5]))
                                         contracts_total.add(contract)
                                         transactions_total.add(row[0])
-                                    elif row[3] == "MUL":
-                                        #if contract not in contracts["integer_overflow_multiplication"]:
+                                        ether_total += int(row[5])
+                                    elif attack == "Reentrancy":
+                                        if row[2] not in contracts["reentrancy"]:
+                                            d = datetime.fromtimestamp(get_deployment_timestamp(row[2]))
+                                            if not d.strftime("%Y-%m-%d") in vulnerable_deployments["reentrancy"]:
+                                                vulnerable_deployments["reentrancy"][d.strftime("%Y-%m-%d")] = 1
+                                            else:
+                                                vulnerable_deployments["reentrancy"][d.strftime("%Y-%m-%d")] += 1
+                                        #if contract not in contracts["reentrancy"]:
+                                        #    print("reentrancy: "+contract+" "+str(row))
+                                        attackers["reentrancy"].add(get_sender(row[0]))
+                                        contracts["reentrancy"].add(row[2])
+                                        transactions["reentrancy"].add(row[0])
+                                        ether["reentrancy"].append(int(row[5]))
+                                        contracts_total.add(contract)
+                                        transactions_total.add(row[0])
+                                        ether_total += int(row[5])
+                                        d = datetime.fromtimestamp(int(row[1]))
+                                        one_eth_to_usd = get_one_eth_to_usd(int(row[1]))
+                                        if not d.strftime("%Y-%m-%d") in timeline["reentrancy"]:
+                                            timeline["reentrancy"][d.strftime("%Y-%m-%d")] = {
+                                                "transactions": 1,
+                                                "usd": Web3.fromWei(int(row[5]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
+                                            }
+                                        else:
+                                            timeline["reentrancy"][d.strftime("%Y-%m-%d")]["transactions"] += 1
+                                            timeline["reentrancy"][d.strftime("%Y-%m-%d")]["usd"] += Web3.fromWei(int(row[5]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
+                                    elif attack == "ERC777Reentrancy":
+                                        if row[2] not in contracts["erc777_reentrancy"]:
+                                            d = datetime.fromtimestamp(get_deployment_timestamp(row[2]))
+                                            if not d.strftime("%Y-%m-%d") in vulnerable_deployments["reentrancy"]:
+                                                vulnerable_deployments["reentrancy"][d.strftime("%Y-%m-%d")] = 1
+                                            else:
+                                                vulnerable_deployments["reentrancy"][d.strftime("%Y-%m-%d")] += 1
+                                        #if contract not in contracts["erc777_reentrancy"]:
+                                        #    print("erc777_reentrancy: "+contract+" "+str(row))
+                                        attackers["erc777_reentrancy"].add(get_sender(row[0]))
+                                        contracts["erc777_reentrancy"].add(row[2])
+                                        transactions["erc777_reentrancy"].add(row[0])
+                                        if row[4] == "Ether":
+                                            ether["erc777_reentrancy"].append(int(row[4]))
+                                        else:
+                                            tokens["erc777_reentrancy"].append(int(row[4]))
+                                        contracts_total.add(contract)
+                                        transactions_total.add(row[0])
+                                    elif attack == "CrossFunctionReentrancy":
+                                        if row[2] not in contracts["cross_function_reentrancy"]:
+                                            d = datetime.fromtimestamp(get_deployment_timestamp(row[2]))
+                                            if not d.strftime("%Y-%m-%d") in vulnerable_deployments["reentrancy"]:
+                                                vulnerable_deployments["reentrancy"][d.strftime("%Y-%m-%d")] = 1
+                                            else:
+                                                vulnerable_deployments["reentrancy"][d.strftime("%Y-%m-%d")] += 1
+                                        #if contract not in contracts["cross_function_reentrancy"]:
+                                        #    print("cross_function_reentrancy: "+contract+" "+str(row))
+                                        attackers["cross_function_reentrancy"].add(get_sender(row[0]))
+                                        contracts["cross_function_reentrancy"].add(row[2])
+                                        transactions["cross_function_reentrancy"].add(row[0])
+                                        ether["cross_function_reentrancy"].append(int(row[5]))
+                                        contracts_total.add(contract)
+                                        transactions_total.add(row[0])
+                                        ether_total += int(row[5])
+                                        d = datetime.fromtimestamp(int(row[1]))
+                                        one_eth_to_usd = get_one_eth_to_usd(int(row[1]))
+                                        if not d.strftime("%Y-%m-%d") in timeline["reentrancy"]:
+                                            timeline["reentrancy"][d.strftime("%Y-%m-%d")] = {
+                                                "transactions": 1,
+                                                "usd": Web3.fromWei(int(row[5]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
+                                            }
+                                        else:
+                                            timeline["reentrancy"][d.strftime("%Y-%m-%d")]["transactions"] += 1
+                                            timeline["reentrancy"][d.strftime("%Y-%m-%d")]["usd"] += Web3.fromWei(int(row[5]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
+                                    elif attack == "DelegatedReentrancy":
+                                        if row[2] not in contracts["delegated_reentrancy"]:
+                                            d = datetime.fromtimestamp(get_deployment_timestamp(row[2]))
+                                            if not d.strftime("%Y-%m-%d") in vulnerable_deployments["reentrancy"]:
+                                                vulnerable_deployments["reentrancy"][d.strftime("%Y-%m-%d")] = 1
+                                            else:
+                                                vulnerable_deployments["reentrancy"][d.strftime("%Y-%m-%d")] += 1
+                                        #if contract not in contracts["delegated_reentrancy"]:
+                                        #    print("delegated_reentrancy: "+contract+" "+str(row))
+                                        attackers["delegated_reentrancy"].add(get_sender(row[0]))
+                                        contracts["delegated_reentrancy"].add(row[2])
+                                        transactions["delegated_reentrancy"].add(row[0])
+                                        ether["delegated_reentrancy"].append(int(row[5]))
+                                        contracts_total.add(contract)
+                                        transactions_total.add(row[0])
+                                        ether_total += int(row[5])
+                                        d = datetime.fromtimestamp(int(row[1]))
+                                        one_eth_to_usd = get_one_eth_to_usd(int(row[1]))
+                                        if not d.strftime("%Y-%m-%d") in timeline["reentrancy"]:
+                                            timeline["reentrancy"][d.strftime("%Y-%m-%d")] = {
+                                                "transactions": 1,
+                                                "usd": Web3.fromWei(int(row[5]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
+                                            }
+                                        else:
+                                            timeline["reentrancy"][d.strftime("%Y-%m-%d")]["transactions"] += 1
+                                            timeline["reentrancy"][d.strftime("%Y-%m-%d")]["usd"] += Web3.fromWei(int(row[5]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
+                                    elif attack == "CreateBasedReentrancy":
+                                        if row[2] not in contracts["create_based_reentrancy"]:
+                                            d = datetime.fromtimestamp(get_deployment_timestamp(row[2]))
+                                            if not d.strftime("%Y-%m-%d") in vulnerable_deployments["reentrancy"]:
+                                                vulnerable_deployments["reentrancy"][d.strftime("%Y-%m-%d")] = 1
+                                            else:
+                                                vulnerable_deployments["reentrancy"][d.strftime("%Y-%m-%d")] += 1
+                                        #if contract not in contracts["create_based_reentrancy"]:
+                                        #    print("create_based_reentrancy: "+contract+" "+str(row))
+                                        attackers["create_based_reentrancy"].add(get_sender(row[0]))
+                                        contracts["create_based_reentrancy"].add(row[2])
+                                        transactions["create_based_reentrancy"].add(row[0])
+                                        ether["create_based_reentrancy"].append(int(row[5]))
+                                        contracts_total.add(contract)
+                                        transactions_total.add(row[0])
+                                        ether_total += int(row[5])
+                                        d = datetime.fromtimestamp(int(row[1]))
+                                        one_eth_to_usd = get_one_eth_to_usd(int(row[1]))
+                                        if not d.strftime("%Y-%m-%d") in timeline["reentrancy"]:
+                                            timeline["reentrancy"][d.strftime("%Y-%m-%d")] = {
+                                                "transactions": 1,
+                                                "usd": Web3.fromWei(int(row[5]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
+                                            }
+                                        else:
+                                            timeline["reentrancy"][d.strftime("%Y-%m-%d")]["transactions"] += 1
+                                            timeline["reentrancy"][d.strftime("%Y-%m-%d")]["usd"] += Web3.fromWei(int(row[5]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
+                                    elif attack == "UnhandledException":
+                                        #if contract not in contracts["unhandled_exception"]:
                                         #    print(contract+" "+str(row))
                                         #    response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+contract+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
                                         #    if "result" in response and response['result'][0]['SourceCode']:
                                         #        print(contract)
-                                        contracts["integer_overflow_multiplication"].add(contract)
-                                        transactions["integer_overflow_multiplication"].add(row[0])
-                                        #ether["integer_overflow_multiplication"].append(int(row[5]))
+                                        contracts["unhandled_exception"].add(contract)
+                                        transactions["unhandled_exception"].add(row[0])
+                                        #ether["unhandled_exception"].append(int(row[5]))
                                         contracts_total.add(contract)
                                         transactions_total.add(row[0])
-                                elif attack == "IntegerUnderflow":
-                                    #if contract not in contracts["integer_underflow"]:
-                                    #    print(contract+" "+str(row))
-                                    #    response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+contract+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
-                                    #    if "result" in response and response['result'][0]['SourceCode']:
-                                    #        print(contract)
-                                    contracts["integer_underflow"].add(contract)
-                                    transactions["integer_underflow"].add(row[0])
-                                    #ether["integer_underflow"].append(int(row[5]))
-                                    contracts_total.add(contract)
-                                    transactions_total.add(row[0])
-                                elif attack == "TransactionOrderDependency":
-                                    #if contract not in contracts["transaction_order_dependence"]:
-                                    #    print(contract+" "+str(row))
-                                    #    response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+contract+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
-                                    #    if "result" in response and response['result'][0]['SourceCode']:
-                                    #        print(contract)
-                                    contracts["transaction_order_dependence"].add(contract)
-                                    transactions["transaction_order_dependence"].add(row[0])
-                                    contracts_total.add(contract)
-                                    transactions_total.add(row[0])
-                                elif attack == "UncheckedSuicide":
-                                    #if contract not in contracts["unchecked_suicide"]:
-                                    #    print(contract+" "+str(row))
-                                    #    response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+contract+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
-                                    #    if "result" in response and response['result'][0]['SourceCode']:
-                                    #        if "delegatecall" in response['result'][0]['SourceCode']:
-                                    #            print(contract)
-                                    contracts["unchecked_suicide"].add(contract)
-                                    transactions["unchecked_suicide"].add(row[0])
-                                    contracts_total.add(contract)
-                                    transactions_total.add(row[0])
-                                elif attack == "UncheckedDelegatecall":
-                                    #if contract not in contracts["unchecked_delegatecall"]:
-                                    #    response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+contract+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
-                                    #    if "result" in response and response['result'][0]['SourceCode']:
-                                    #        if "delegatecall" in response['result'][0]['SourceCode']:
-                                    #            print(contract+" "+str(row))
-                                    contracts["unchecked_delegatecall"].add(contract)
-                                    transactions["unchecked_delegatecall"].add(row[0])
-                                    contracts_total.add(contract)
-                                    transactions_total.add(row[0])
-                                elif attack == "ParityWalletHack1":
-                                    if contract not in contracts["parity_wallet_hack_1"]:
-                                        #print(contract+" "+str(row))
-                                        response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+contract+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
-                                        if "result" in response and response['result'][0]['SourceCode']:
-                                            if "function initWallet(" in response['result'][0]['SourceCode'] and \
-                                               "function execute(" in response['result'][0]['SourceCode']:
-                                                automated_validation["parity_wallet_hack_1"]["true_positivies"].append(contract)
+                                    elif attack == "IntegerOverflow":
+                                        if row[3] == "ADD":
+                                            if contract not in contracts["integer_overflow_addition"]:
+                                                print("integer_overflow_addition "+contract+" "+str(row))
+                                            if contract not in contracts["integer_overflow_addition"]:
+                                                d = datetime.fromtimestamp(get_deployment_timestamp(contract))
+                                                if not d.strftime("%Y-%m-%d") in vulnerable_deployments["integer_overflow"]:
+                                                    vulnerable_deployments["integer_overflow"][d.strftime("%Y-%m-%d")] = 1
+                                                else:
+                                                    vulnerable_deployments["integer_overflow"][d.strftime("%Y-%m-%d")] += 1
+                                            if row[11] != "Ether":
+                                            #    print("integer_overflow_addition "+contract+" "+str(row))
+                                                if contract not in erc20_tokens:
+                                                    add_new_token(contract)
+                                                erc20_tokens[contract]["amount"] += int(row[10])
+                                            attackers["integer_overflow_addition"].add(get_sender(row[0]))
+                                            contracts["integer_overflow_addition"].add(contract)
+                                            transactions["integer_overflow_addition"].add(row[0])
+                                            contracts_total.add(contract)
+                                            transactions_total.add(row[0])
+                                            if row[11] == "Ether":
+                                                ether["integer_overflow_addition"].append(int(row[10]))
+                                                d = datetime.fromtimestamp(int(row[1]))
+                                                one_eth_to_usd = get_one_eth_to_usd(int(row[1]))
+                                                if not d.strftime("%Y-%m-%d") in timeline["integer_overflow"]:
+                                                    timeline["integer_overflow"][d.strftime("%Y-%m-%d")] = {
+                                                        "transactions": 1,
+                                                        "usd": Web3.fromWei(int(row[10]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
+                                                    }
+                                                else:
+                                                    timeline["integer_overflow"][d.strftime("%Y-%m-%d")]["transactions"] += 1
+                                                    timeline["integer_overflow"][d.strftime("%Y-%m-%d")]["usd"] += Web3.fromWei(int(row[10]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
                                             else:
-                                                automated_validation["parity_wallet_hack_1"]["false_positives"].append(contract)
-                                        else:
-                                            automated_validation["parity_wallet_hack_1"]["unknown"].append(contract)
-                                    contracts["parity_wallet_hack_1"].add(contract)
-                                    transactions["parity_wallet_hack_1"].add(row[0])
-                                    contracts_total.add(contract)
-                                    transactions_total.add(row[0])
-                                elif attack == "ParityWalletHack2":
-                                    if contract not in contracts["parity_wallet_hack_2"]:
-                                        #print(contract+" "+str(row))
-                                        response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+contract+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
-                                        if "result" in response and response['result'][0]['SourceCode']:
-                                            if "function initWallet(" in response['result'][0]['SourceCode'] and \
-                                               "function kill(" in response['result'][0]['SourceCode']:
-                                                automated_validation["parity_wallet_hack_2"]["true_positivies"].append(contract)
+                                                tokens["integer_overflow_addition"].append(int(row[10]))
+                                        elif row[3] != "MUL":
+                                            if contract not in contracts["integer_overflow_multiplication"]:
+                                                d = datetime.fromtimestamp(get_deployment_timestamp(contract))
+                                                if not d.strftime("%Y-%m-%d") in vulnerable_deployments["integer_overflow"]:
+                                                    vulnerable_deployments["integer_overflow"][d.strftime("%Y-%m-%d")] = 1
+                                                else:
+                                                    vulnerable_deployments["integer_overflow"][d.strftime("%Y-%m-%d")] += 1
+                                            #if contract not in contracts["integer_overflow_multiplication"]:
+                                            if row[11] == "Ether":
+                                            #    print("integer_overflow_multiplication "+contract+" "+str(row))
+                                                if contract not in erc20_tokens:
+                                                    add_new_token(contract)
+                                                erc20_tokens[contract]["amount"] += int(row[10])
+                                            attackers["integer_overflow_multiplication"].add(get_sender(row[0]))
+                                            contracts["integer_overflow_multiplication"].add(contract)
+                                            transactions["integer_overflow_multiplication"].add(row[0])
+                                            contracts_total.add(contract)
+                                            transactions_total.add(row[0])
+                                            if row[11] == "Ether":
+                                                ether["integer_overflow_multiplication"].append(int(row[10]))
+                                                d = datetime.fromtimestamp(int(row[1]))
+                                                one_eth_to_usd = get_one_eth_to_usd(int(row[1]))
+                                                if not d.strftime("%Y-%m-%d") in timeline["integer_overflow"]:
+                                                    timeline["integer_overflow"][d.strftime("%Y-%m-%d")] = {
+                                                        "transactions": 1,
+                                                        "usd": Web3.fromWei(int(row[10]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
+                                                    }
+                                                else:
+                                                    timeline["integer_overflow"][d.strftime("%Y-%m-%d")]["transactions"] += 1
+                                                    timeline["integer_overflow"][d.strftime("%Y-%m-%d")]["usd"] += Web3.fromWei(int(row[10]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
                                             else:
-                                                automated_validation["parity_wallet_hack_2"]["false_positives"].append(contract)
+                                                tokens["integer_overflow_multiplication"].append(int(row[10]))
+                                    elif attack == "IntegerUnderflow":
+                                        #if contract not in contracts["integer_underflow"]:
+                                        #    print("integer_underflow "+contract+" "+str(row))
+                                        if contract not in contracts["integer_underflow"]:
+                                            d = datetime.fromtimestamp(get_deployment_timestamp(contract))
+                                            if not d.strftime("%Y-%m-%d") in vulnerable_deployments["integer_underflow"]:
+                                                vulnerable_deployments["integer_underflow"][d.strftime("%Y-%m-%d")] = 1
+                                            else:
+                                                vulnerable_deployments["integer_underflow"][d.strftime("%Y-%m-%d")] += 1
+                                        if row[10] != "Ether":
+                                            if contract not in erc20_tokens:
+                                                add_new_token(contract)
+                                            erc20_tokens[contract]["amount"] += int(row[9])
+                                        attackers["integer_underflow"].add(get_sender(row[0]))
+                                        contracts["integer_underflow"].add(contract)
+                                        transactions["integer_underflow"].add(row[0])
+                                        contracts_total.add(contract)
+                                        transactions_total.add(row[0])
+                                        if row[10] == "Ether":
+                                            ether["integer_underflow"].append(int(row[9]))
+                                            d = datetime.fromtimestamp(int(row[1]))
+                                            one_eth_to_usd = get_one_eth_to_usd(int(row[1]))
+                                            if not d.strftime("%Y-%m-%d") in timeline["integer_underflow"]:
+                                                timeline["integer_underflow"][d.strftime("%Y-%m-%d")] = {
+                                                    "transactions": 1,
+                                                    "usd": Web3.fromWei(int(row[9]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
+                                                }
+                                            else:
+                                                timeline["integer_underflow"][d.strftime("%Y-%m-%d")]["transactions"] += 1
+                                                timeline["integer_underflow"][d.strftime("%Y-%m-%d")]["usd"] += Web3.fromWei(int(row[9]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
                                         else:
-                                            automated_validation["parity_wallet_hack_2"]["unknown"].append(contract)
-                                    contracts["parity_wallet_hack_2"].add(contract)
-                                    transactions["parity_wallet_hack_2"].add(row[0])
-                                    contracts_total.add(contract)
-                                    transactions_total.add(row[0])
-                                elif attack == "ShortAddress":
-                                    contracts["short_address"].add(contract)
-                                    transactions["short_address"].add(row[0])
-                                    ether["short_address"].append(int(row[5]))
-                                    contracts_total.add(contract)
-                                    transactions_total.add(row[0])
-                                    ether_total += int(row[5])
-                                elif attack == "DoSWithUnexpectedThrow":
-                                    contracts["dos_with_unexpected_throw"].add(contract)
-                                    transactions["dos_with_unexpected_throw"].add(row[0])
-                                    ether["dos_with_unexpected_throw"].append(int(row[5]))
-                                    contracts_total.add(contract)
-                                    transactions_total.add(row[0])
-                                    ether_total += int(row[5])
-                                elif attack == "DoSWithBlockGasLimit":
-                                    contracts["dos_with_block_gas_limit"].add(contract)
-                                    transactions["dos_with_block_gas_limit"].add(row[0])
-                                    ether["dos_with_block_gas_limit"].append(int(row[5]))
-                                    contracts_total.add(contract)
-                                    transactions_total.add(row[0])
-                                    ether_total += int(row[5])
-                                elif attack == "TimestampDependence":
-                                    #if contract not in contracts["timestamp_dependence"]:
-                                    #    response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+contract+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
-                                    #    if "result" in response and response['result'][0]['SourceCode']:
-                                    #        print(contract)
-                                    #        print(contract+" "+row[0]+" "+str(row[4]))
-                                    contracts["timestamp_dependence"].add(contract)
-                                    transactions["timestamp_dependence"].add(row[0])
-                                    ether["timestamp_dependence"].append(int(row[5]))
-                                    contracts_total.add(contract)
-                                    transactions_total.add(row[0])
-                                    ether_total += int(row[5])
-                                elif attack == "TransactionStateDependence":
-                                    #if contract not in contracts["transaction_state_dependence"]:
-                                    #    response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+contract+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
-                                    #    if "result" in response and response['result'][0]['SourceCode']:
-                                    #        print(contract)
-                                    #        print(contract+" "+row[0]+" "+str(row[4]))
-                                    contracts["transaction_state_dependence"].add(contract)
-                                    transactions["transaction_state_dependence"].add(row[0])
-                                    ether["transaction_state_dependence"].append(int(row[5]))
-                                    contracts_total.add(contract)
-                                    transactions_total.add(row[0])
-                                    ether_total += int(row[5])
-                                elif attack == "BlockStateDependence":
-                                    #if contract not in contracts["block_state_dependence"]:
-                                    #    response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+contract+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
-                                    #    if "result" in response and response['result'][0]['SourceCode']:
-                                    #        print(contract)
-                                    contracts["block_state_dependence"].add(contract)
-                                    transactions["block_state_dependence"].add(row[0])
-                                    ether["block_state_dependence"].append(int(row[5]))
-                                    contracts_total.add(contract)
-                                    transactions_total.add(row[0])
-                                    ether_total += int(row[5])
-                                elif attack == "UncheckedSignature":
-                                    contracts["unchecked_signature"].add(contract)
-                                    transactions["unchecked_signature"].add(row[0])
-                                    contracts_total.add(contract)
-                                    transactions_total.add(row[0])
-                                elif attack == "BalanceInvariant":
-                                    contracts["balance_invariant"].add(contract)
-                                    transactions["balance_invariant"].add(row[0])
-                                    contracts_total.add(contract)
-                                    transactions_total.add(row[0])
-                                elif attack == "InsufficientGas":
-                                    #if contract not in contracts["insufficient_gas"]:
-                                    #    print(contract+" "+str(row))
-                                    #    response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+contract+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
-                                    #    if "result" in response and response['result'][0]['SourceCode']:
-                                    #        print(contract)
-                                    contracts["insufficient_gas"].add(contract)
-                                    transactions["insufficient_gas"].add(row[0])
-                                    contracts_total.add(contract)
-                                    transactions_total.add(row[0])
+                                            tokens["integer_underflow"].append(int(row[9]))
+                                    elif attack == "TransactionOrderDependency":
+                                        #if contract not in contracts["transaction_order_dependence"]:
+                                        #    print(contract+" "+str(row))
+                                        #    response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+contract+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
+                                        #    if "result" in response and response['result'][0]['SourceCode']:
+                                        #        print(contract)
+                                        contracts["transaction_order_dependence"].add(contract)
+                                        transactions["transaction_order_dependence"].add(row[0])
+                                        contracts_total.add(contract)
+                                        transactions_total.add(row[0])
+                                    elif attack == "UncheckedSuicide":
+                                        #if contract not in contracts["unchecked_suicide"]:
+                                        #    response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+contract+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
+                                        #    if "result" in response and response['result'][0]['SourceCode']:
+                                        #        print("unchecked_suicide: "+contract+" "+str(row))
+                                        contracts["unchecked_suicide"].add(contract)
+                                        transactions["unchecked_suicide"].add(row[0])
+                                        contracts_total.add(contract)
+                                        transactions_total.add(row[0])
+                                    elif attack == "UncheckedDelegatecall":
+                                        #if contract not in contracts["unchecked_delegatecall"]:
+                                        #    response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+contract+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
+                                        #    if "result" in response and response['result'][0]['SourceCode']:
+                                        #        print("unchecked_delegatecall: "+contract+" "+str(row))
+                                        contracts["unchecked_delegatecall"].add(contract)
+                                        transactions["unchecked_delegatecall"].add(row[0])
+                                        contracts_total.add(contract)
+                                        transactions_total.add(row[0])
+                                    elif attack == "ParityWalletHack1":
+                                        if contract not in contracts["parity_wallet_hack_1"]:
+                                            d = datetime.fromtimestamp(get_deployment_timestamp(contract))
+                                            if not d.strftime("%Y-%m-%d") in vulnerable_deployments["parity_wallet_hack_1"]:
+                                                vulnerable_deployments["parity_wallet_hack_1"][d.strftime("%Y-%m-%d")] = 1
+                                            else:
+                                                vulnerable_deployments["parity_wallet_hack_1"][d.strftime("%Y-%m-%d")] += 1
+                                        if contract not in contracts["parity_wallet_hack_1"]:
+                                            #print("parity_wallet_hack_1: "+contract+" "+str(row))
+                                            response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+contract+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
+                                            if "result" in response and response['result'][0]['SourceCode']:
+                                                if "function initWallet(" in response['result'][0]['SourceCode'] and \
+                                                   "function execute(" in response['result'][0]['SourceCode']:
+                                                    automated_validation["parity_wallet_hack_1"]["true_positivies"].append(contract)
+                                                else:
+                                                    automated_validation["parity_wallet_hack_1"]["false_positives"].append(contract)
+                                            else:
+                                                automated_validation["parity_wallet_hack_1"]["unknown"].append(contract)
+                                        attackers["parity_wallet_hack_1"].add(get_sender(row[0]))
+                                        contracts["parity_wallet_hack_1"].add(contract)
+                                        transactions["parity_wallet_hack_1"].add(row[0])
+                                        ether["parity_wallet_hack_1"].append(int(row[7]))
+                                        contracts_total.add(contract)
+                                        transactions_total.add(row[0])
+                                        d = datetime.fromtimestamp(int(row[3]))
+                                        one_eth_to_usd = get_one_eth_to_usd(int(row[3]))
+                                        if not d.strftime("%Y-%m-%d") in timeline["parity_wallet_hack_1"]:
+                                            timeline["parity_wallet_hack_1"][d.strftime("%Y-%m-%d")] = {
+                                                "transactions": 1,
+                                                "usd": Web3.fromWei(int(row[7]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
+                                            }
+                                        else:
+                                            timeline["parity_wallet_hack_1"][d.strftime("%Y-%m-%d")]["transactions"] += 1
+                                            timeline["parity_wallet_hack_1"][d.strftime("%Y-%m-%d")]["usd"] += Web3.fromWei(int(row[7]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
+                                    elif attack == "ParityWalletHack2":
+                                        if contract not in contracts["parity_wallet_hack_2"]:
+                                            d = datetime.fromtimestamp(get_deployment_timestamp(contract))
+                                            if not d.strftime("%Y-%m-%d") in vulnerable_deployments["parity_wallet_hack_2"]:
+                                                vulnerable_deployments["parity_wallet_hack_2"][d.strftime("%Y-%m-%d")] = 1
+                                            else:
+                                                vulnerable_deployments["parity_wallet_hack_2"][d.strftime("%Y-%m-%d")] += 1
+                                        if contract not in contracts["parity_wallet_hack_2"]:
+                                            #print("parity_wallet_hack_2: "+contract+" "+str(row))
+                                            response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+contract+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
+                                            if "result" in response and response['result'][0]['SourceCode']:
+                                                if "function initWallet(" in response['result'][0]['SourceCode'] and \
+                                                   "function kill(" in response['result'][0]['SourceCode']:
+                                                    automated_validation["parity_wallet_hack_2"]["true_positivies"].append(contract)
+                                                else:
+                                                    automated_validation["parity_wallet_hack_2"]["false_positives"].append(contract)
+                                            else:
+                                                automated_validation["parity_wallet_hack_2"]["unknown"].append(contract)
+                                        attackers["parity_wallet_hack_2"].add(get_sender(row[0]))
+                                        contracts["parity_wallet_hack_2"].add(contract)
+                                        transactions["parity_wallet_hack_2"].add(row[0])
+                                        ether["parity_wallet_hack_2"].append(int(row[8]))
+                                        contracts_total.add(contract)
+                                        transactions_total.add(row[0])
+                                        d = datetime.fromtimestamp(int(row[3]))
+                                        one_eth_to_usd = get_one_eth_to_usd(int(row[3]))
+                                        if not d.strftime("%Y-%m-%d") in timeline["parity_wallet_hack_2"]:
+                                            timeline["parity_wallet_hack_2"][d.strftime("%Y-%m-%d")] = {
+                                                "transactions": 1,
+                                                "usd": Web3.fromWei(int(row[8]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
+                                            }
+                                        else:
+                                            timeline["parity_wallet_hack_2"][d.strftime("%Y-%m-%d")]["transactions"] += 1
+                                            timeline["parity_wallet_hack_2"][d.strftime("%Y-%m-%d")]["usd"] += Web3.fromWei(int(row[8]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
+                                    elif attack == "ShortAddress":
+                                        contracts["short_address"].add(contract)
+                                        transactions["short_address"].add(row[0])
+                                        ether["short_address"].append(int(row[5]))
+                                        contracts_total.add(contract)
+                                        transactions_total.add(row[0])
+                                        ether_total += int(row[5])
+                                    elif attack == "DoSWithUnexpectedThrow":
+                                        #if contract not in contracts["dos_with_unexpected_throw"]:
+                                        #    response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+contract+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
+                                        #    if "result" in response and response['result'][0]['SourceCode']:
+                                        #        print(contract+" "+str(row))
+                                        contracts["dos_with_unexpected_throw"].add(contract)
+                                        transactions["dos_with_unexpected_throw"].add(row[0])
+                                        ether["dos_with_unexpected_throw"].append(int(row[5]))
+                                        contracts_total.add(contract)
+                                        transactions_total.add(row[0])
+                                        ether_total += int(row[5])
+                                    elif attack == "DoSWithBlockGasLimit":
+                                        contracts["dos_with_block_gas_limit"].add(contract)
+                                        transactions["dos_with_block_gas_limit"].add(row[0])
+                                        ether["dos_with_block_gas_limit"].append(int(row[6]))
+                                        contracts_total.add(contract)
+                                        transactions_total.add(row[0])
+                                        ether_total += int(row[6])
+                                    elif attack == "TimestampDependence":
+                                        #if contract not in contracts["timestamp_dependence"]:
+                                        #    response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+contract+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
+                                        #    if "result" in response and response['result'][0]['SourceCode']:
+                                        #        print(contract)
+                                        #        print(contract+" "+row[0]+" "+str(row[4]))
+                                        contracts["timestamp_dependence"].add(contract)
+                                        transactions["timestamp_dependence"].add(row[0])
+                                        ether["timestamp_dependence"].append(int(row[5]))
+                                        contracts_total.add(contract)
+                                        transactions_total.add(row[0])
+                                        ether_total += int(row[5])
+                                    elif attack == "TransactionStateDependence":
+                                        #if contract not in contracts["transaction_state_dependence"]:
+                                        #    response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+contract+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
+                                        #    if "result" in response and response['result'][0]['SourceCode']:
+                                        #        print(contract+" "+str(row))
+                                        contracts["transaction_state_dependence"].add(contract)
+                                        transactions["transaction_state_dependence"].add(row[0])
+                                        ether["transaction_state_dependence"].append(int(row[5]))
+                                        contracts_total.add(contract)
+                                        transactions_total.add(row[0])
+                                        ether_total += int(row[5])
+                                    elif attack == "BlockStateDependence":
+                                        #if contract not in contracts["block_state_dependence"]:
+                                        #    response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+contract+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
+                                        #    if "result" in response and response['result'][0]['SourceCode']:
+                                        #        print(contract)
+                                        contracts["block_state_dependence"].add(contract)
+                                        transactions["block_state_dependence"].add(row[0])
+                                        ether["block_state_dependence"].append(int(row[5]))
+                                        contracts_total.add(contract)
+                                        transactions_total.add(row[0])
+                                        ether_total += int(row[5])
+                                    elif attack == "UncheckedSignature":
+                                        contracts["unchecked_signature"].add(contract)
+                                        transactions["unchecked_signature"].add(row[0])
+                                        contracts_total.add(contract)
+                                        transactions_total.add(row[0])
+                                    elif attack == "BalanceInvariant":
+                                        contracts["balance_invariant"].add(contract)
+                                        transactions["balance_invariant"].add(row[0])
+                                        contracts_total.add(contract)
+                                        transactions_total.add(row[0])
+                                    elif attack == "InsufficientGas":
+                                        #if contract not in contracts["insufficient_gas"]:
+                                        #    print(contract+" "+str(row))
+                                        #    response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+contract+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
+                                        #    if "result" in response and response['result'][0]['SourceCode']:
+                                        #        print(contract)
+                                        contracts["insufficient_gas"].add(contract)
+                                        transactions["insufficient_gas"].add(row[0])
+                                        contracts_total.add(contract)
+                                        transactions_total.add(row[0])
+            except Exception as e:
+                print(e)
+                print(path)
+                traceback.print_exc(file=sys.stdout)
+                pass
             pbar.update(1)
 
     """print("")
@@ -419,57 +698,96 @@ if __name__ == '__main__':
     #print("Median number of retrieval time per transaction: "+str(median(retrieval_times)))
     #print("Max number of retrieval time per transaction: "+str(max(retrieval_times)))
     #print("")"""
-    print(" \t \t \t \t \t \t \t \t Contracts \t Transactions \t Ether")
+    print(" \t \t \t \t \t \t \t \t Contracts \t Transactions \t Leaked Ether \t Locked Ether \t Leaked Tokens")
     print("------------------------------------------------------------------------------------------------------------")
-    print("Number of reentrancy vulnerable contracts: \t \t \t "+str(len(contracts["reentrancy"]))+" \t \t "+str(len(transactions["reentrancy"]))+" \t \t "+str(round(Web3.fromWei(sum(ether["reentrancy"]), 'ether')))+" ETH")
-    print("Number of cross-function reentrancy vulnerable contracts: \t "+str(len(contracts["cross_function_reentrancy"]))+" \t \t "+str(len(transactions["cross_function_reentrancy"]))+" \t \t "+str(round(Web3.fromWei(sum(ether["cross_function_reentrancy"]), 'ether')))+" ETH")
-    print("Number of delegated reentrancy vulnerable contracts: \t \t "+str(len(contracts["delegated_reentrancy"]))+" \t \t "+str(len(transactions["delegated_reentrancy"]))+" \t \t "+str(round(Web3.fromWei(sum(ether["delegated_reentrancy"]), 'ether')))+" ETH")
-    print("Number of create-based reentrancy vulnerable contracts: \t "+str(len(contracts["create_based_reentrancy"]))+" \t \t "+str(len(transactions["create_based_reentrancy"]))+" \t \t "+str(round(Web3.fromWei(sum(ether["create_based_reentrancy"]), 'ether')))+" ETH")
-    print("Number of unhandled exception vulnerable contracts: \t \t "+str(len(contracts["unhandled_exception"]))+" \t \t "+str(len(transactions["unhandled_exception"]))+" \t \t "+str(round(Web3.fromWei(sum(ether["unhandled_exception"]), 'ether')))+" ETH")
-    print("Number of transaction order dependence vulnerable contracts: \t "+str(len(contracts["transaction_order_dependence"]))+" \t \t "+str(len(transactions["transaction_order_dependence"]))+" \t \t "+str(round(Web3.fromWei(sum(ether["transaction_order_dependence"]), 'ether')))+" ETH")
-    print("Number of block state dependence vulnerable contracts: \t \t "+str(len(contracts["block_state_dependence"]))+" \t \t "+str(len(transactions["block_state_dependence"]))+" \t \t "+str(round(Web3.fromWei(sum(ether["block_state_dependence"]), 'ether')))+" ETH")
-    print("Number of timestamp dependence vulnerable contracts: \t \t "+str(len(contracts["timestamp_dependence"]))+" \t \t "+str(len(transactions["timestamp_dependence"]))+" \t \t "+str(round(Web3.fromWei(sum(ether["timestamp_dependence"]), 'ether')))+" ETH")
-    print("Number of transaction state dependence vulnerable contracts: \t "+str(len(contracts["transaction_state_dependence"]))+" \t \t "+str(len(transactions["transaction_state_dependence"]))+" \t \t "+str(round(Web3.fromWei(sum(ether["transaction_state_dependence"]), 'ether')))+" ETH")
-    print("Number of call stack depth vulnerable contracts: \t \t "+str(len(contracts["call_stack_depth"]))+" \t \t "+str(len(transactions["call_stack_depth"]))+" \t \t "+str(round(Web3.fromWei(sum(ether["call_stack_depth"]), 'ether')))+" ETH")
-    print("Number of integer overflow addition vulnerable contracts: \t "+str(len(contracts["integer_overflow_addition"]))+" \t \t "+str(len(transactions["integer_overflow_addition"]))+" \t \t "+str(round(Web3.fromWei(sum(ether["integer_overflow_addition"]), 'ether')))+" ETH")
-    print("Number of integer overflow multiplication vulnerable contracts:  "+str(len(contracts["integer_overflow_multiplication"]))+" \t \t "+str(len(transactions["integer_overflow_multiplication"]))+" \t \t "+str(round(Web3.fromWei(sum(ether["integer_overflow_multiplication"]), 'ether')))+" ETH")
-    print("Number of integer underflow vulnerable contracts: \t \t "+str(len(contracts["integer_underflow"]))+" \t \t "+str(len(transactions["integer_underflow"]))+" \t \t "+str(round(Web3.fromWei(sum(ether["integer_underflow"]), 'ether')))+" ETH")
-    print("Number of DoS with unexpected throw vulnerable contracts: \t "+str(len(contracts["dos_with_unexpected_throw"]))+" \t \t "+str(len(transactions["dos_with_unexpected_throw"]))+" \t \t "+str(round(Web3.fromWei(sum(ether["dos_with_unexpected_throw"]), 'ether')))+" ETH")
-    print("Number of DoS with block gas limit vulnerable contracts: \t "+str(len(contracts["dos_with_block_gas_limit"]))+" \t \t "+str(len(transactions["dos_with_block_gas_limit"]))+" \t \t "+str(round(Web3.fromWei(sum(ether["dos_with_block_gas_limit"]), 'ether')))+" ETH")
-    print("Number of short address vulnerable contracts: \t \t \t "+str(len(contracts["short_address"]))+" \t \t "+str(len(transactions["short_address"]))+" \t \t "+str(round(Web3.fromWei(sum(ether["short_address"]), 'ether')))+" ETH")
-    print("Number of unchecked delegatecall vulnerable contracts: \t \t "+str(len(contracts["unchecked_delegatecall"]))+" \t \t "+str(len(transactions["unchecked_delegatecall"]))+" \t \t "+str(round(Web3.fromWei(sum(ether["unchecked_delegatecall"]), 'ether')))+" ETH")
-    print("Number of unchecked suicide vulnerable contracts: \t \t "+str(len(contracts["unchecked_suicide"]))+" \t \t "+str(len(transactions["unchecked_suicide"]))+" \t \t "+str(round(Web3.fromWei(sum(ether["unchecked_suicide"]), 'ether')))+" ETH")
-    print("Number of Parity wallet hack 1 vulnerable contracts: \t \t "+str(len(contracts["parity_wallet_hack_1"]))+" \t \t "+str(len(transactions["parity_wallet_hack_1"]))+" \t \t "+str(round(Web3.fromWei(sum(ether["parity_wallet_hack_1"]), 'ether')))+" ETH")
-    print("Number of Parity wallet hack 2 vulnerable contracts: \t \t "+str(len(contracts["parity_wallet_hack_2"]))+" \t \t "+str(len(transactions["parity_wallet_hack_2"]))+" \t \t "+str(round(Web3.fromWei(sum(ether["parity_wallet_hack_2"]), 'ether')))+" ETH")
-    print("Number of unchecked signature vulnerable contracts: \t \t "+str(len(contracts["unchecked_signature"]))+" \t \t "+str(len(transactions["unchecked_signature"]))+" \t \t "+str(round(Web3.fromWei(sum(ether["unchecked_signature"]), 'ether')))+" ETH")
-    print("Number of balance invariant vulnerable contracts: \t \t "+str(len(contracts["balance_invariant"]))+" \t \t "+str(len(transactions["balance_invariant"]))+" \t \t "+str(round(Web3.fromWei(sum(ether["balance_invariant"]), 'ether')))+" ETH")
-    print("Number of insufficient gas vulnerable contracts: \t \t "+str(len(contracts["insufficient_gas"]))+" \t \t "+str(len(transactions["insufficient_gas"]))+" \t \t "+str(round(Web3.fromWei(sum(ether["insufficient_gas"]), 'ether')))+" ETH")
+    print("Number of reentrancy vulnerable contracts: \t \t \t "+str(len(contracts["reentrancy"]))+" \t \t "+str(len(transactions["reentrancy"]))+" \t \t "+str(round(Web3.fromWei(sum(ether["reentrancy"]), 'ether')))+" \t \t 0 \t \t 0")
+    print("Number of ERC-777 reentrancy vulnerable contracts: \t \t "+str(len(contracts["erc777_reentrancy"]))+" \t \t "+str(len(transactions["erc777_reentrancy"]))+" \t \t 0 \t \t 0 \t \t 0")
+    print("Number of cross-function reentrancy vulnerable contracts: \t "+str(len(contracts["cross_function_reentrancy"]))+" \t \t "+str(len(transactions["cross_function_reentrancy"]))+" \t \t "+str(round(Web3.fromWei(sum(ether["cross_function_reentrancy"]), 'ether')))+" \t \t 0 \t \t 0")
+    print("Number of delegated reentrancy vulnerable contracts: \t \t "+str(len(contracts["delegated_reentrancy"]))+" \t \t "+str(len(transactions["delegated_reentrancy"]))+" \t \t "+str(round(Web3.fromWei(sum(ether["delegated_reentrancy"]), 'ether')))+" \t \t 0 \t \t 0")
+    print("Number of create-based reentrancy vulnerable contracts: \t "+str(len(contracts["create_based_reentrancy"]))+" \t \t "+str(len(transactions["create_based_reentrancy"]))+" \t \t "+str(round(Web3.fromWei(sum(ether["create_based_reentrancy"]), 'ether')))+" \t \t 0 \t \t 0")
+    print("Number of unhandled exception vulnerable contracts: \t \t "+str(len(contracts["unhandled_exception"]))+" \t \t "+str(len(transactions["unhandled_exception"]))+" \t \t 0 \t \t "+str(round(Web3.fromWei(sum(ether["unhandled_exception"]), 'ether')))+" \t \t 0")
+    print("Number of transaction order dependence vulnerable contracts: \t "+str(len(contracts["transaction_order_dependence"]))+" \t \t "+str(len(transactions["transaction_order_dependence"]))+" \t \t 0 \t \t 0 \t \t 0")
+    print("Number of block state dependence vulnerable contracts: \t \t "+str(len(contracts["block_state_dependence"]))+" \t \t "+str(len(transactions["block_state_dependence"]))+" \t \t 0 \t \t 0 \t \t 0")
+    print("Number of timestamp dependence vulnerable contracts: \t \t "+str(len(contracts["timestamp_dependence"]))+" \t \t "+str(len(transactions["timestamp_dependence"]))+" \t \t 0 \t \t 0 \t \t 0")
+    print("Number of transaction state dependence vulnerable contracts: \t "+str(len(contracts["transaction_state_dependence"]))+" \t \t "+str(len(transactions["transaction_state_dependence"]))+" \t \t 0 \t \t 0 \t \t 0")
+    print("Number of call stack depth vulnerable contracts: \t \t "+str(len(contracts["call_stack_depth"]))+" \t \t "+str(len(transactions["call_stack_depth"]))+" \t \t 0 \t \t "+str(round(Web3.fromWei(sum(ether["call_stack_depth"]), 'ether')))+" \t \t 0")
+    print("Number of integer overflow addition vulnerable contracts: \t "+str(len(contracts["integer_overflow_addition"]))+" \t \t "+str(len(transactions["integer_overflow_addition"]))+" \t \t "+str(round(Web3.fromWei(sum(ether["integer_overflow_addition"]), 'ether')))+" \t \t 0 \t \t "+str(sum(tokens["integer_overflow_addition"])))
+    print("Number of integer overflow multiplication vulnerable contracts:  "+str(len(contracts["integer_overflow_multiplication"]))+" \t \t "+str(len(transactions["integer_overflow_multiplication"]))+" \t \t "+str(round(Web3.fromWei(sum(ether["integer_overflow_multiplication"]), 'ether')))+" \t \t 0 \t \t "+str(sum(tokens["integer_overflow_multiplication"])))
+    print("Number of integer underflow vulnerable contracts: \t \t "+str(len(contracts["integer_underflow"]))+" \t \t "+str(len(transactions["integer_underflow"]))+" \t \t "+str(round(Web3.fromWei(sum(ether["integer_underflow"]), 'ether')))+" \t \t 0 \t \t "+str(sum(tokens["integer_underflow"])))
+    print("Number of DoS with unexpected throw vulnerable contracts: \t "+str(len(contracts["dos_with_unexpected_throw"]))+" \t \t "+str(len(transactions["dos_with_unexpected_throw"]))+" \t \t 0 \t \t "+str(round(Web3.fromWei(sum(ether["dos_with_unexpected_throw"]), 'ether'))))
+    print("Number of DoS with block gas limit vulnerable contracts: \t "+str(len(contracts["dos_with_block_gas_limit"]))+" \t \t "+str(len(transactions["dos_with_block_gas_limit"]))+" \t \t 0 \t \t "+str(round(Web3.fromWei(sum(ether["dos_with_block_gas_limit"]), 'ether'))))
+    print("Number of short address vulnerable contracts: \t \t \t "+str(len(contracts["short_address"]))+" \t \t "+str(len(transactions["short_address"]))+" \t \t 0 \t \t 0 \t \t "+str(round(Web3.fromWei(sum(ether["short_address"]), 'ether'))))
+    print("Number of unchecked delegatecall vulnerable contracts: \t \t "+str(len(contracts["unchecked_delegatecall"]))+" \t \t "+str(len(transactions["unchecked_delegatecall"]))+" \t \t 0 \t \t 0 \t \t 0")
+    print("Number of unchecked suicide vulnerable contracts: \t \t "+str(len(contracts["unchecked_suicide"]))+" \t \t "+str(len(transactions["unchecked_suicide"]))+" \t \t 0 \t \t 0 \t \t 0")
+    print("Number of Parity wallet hack 1 vulnerable contracts: \t \t "+str(len(contracts["parity_wallet_hack_1"]))+" \t \t "+str(len(transactions["parity_wallet_hack_1"]))+" \t \t "+str(round(Web3.fromWei(sum(ether["parity_wallet_hack_1"]), 'ether')))+" \t \t 0 \t \t 0")
+    print("Number of Parity wallet hack 2 vulnerable contracts: \t \t "+str(len(contracts["parity_wallet_hack_2"]))+" \t \t "+str(len(transactions["parity_wallet_hack_2"]))+" \t \t 0 \t \t "+str(round(Web3.fromWei(sum(ether["parity_wallet_hack_2"]), 'ether')))+" \t \t 0")
+    print("Number of unchecked signature vulnerable contracts: \t \t "+str(len(contracts["unchecked_signature"]))+" \t \t "+str(len(transactions["unchecked_signature"]))+" \t \t 0 \t \t 0 \t \t 0")
+    print("Number of balance invariant vulnerable contracts: \t \t "+str(len(contracts["balance_invariant"]))+" \t \t "+str(len(transactions["balance_invariant"]))+" \t \t 0 \t \t 0 \t \t 0")
+    print("Number of insufficient gas vulnerable contracts: \t \t "+str(len(contracts["insufficient_gas"]))+" \t \t "+str(len(transactions["insufficient_gas"]))+" \t \t 0 \t \t 0 \t \t 0")
     print("------------------------------------------------------------------------------------------------------------")
-    print("Total number of vulnerable contracts: \t \t \t \t "+str(len(contracts_total))+"/"+str(len(list(Path(FOLDER).glob('**/*.zip'))))+" \t "+str(len(transactions_total))+" \t \t "+str(round(Web3.fromWei(ether_total, 'ether')))+" ETH")
+    print("Total number of vulnerable contracts: \t \t \t \t "+str(len(contracts_total))+"/"+str(len(list(Path(FOLDER).glob('**/*.zip'))))+" \t "+str(len(transactions_total))+" \t \t "+str(round(Web3.fromWei(ether_total, 'ether'))))
 
     with open('reentrancy_timelime.csv', 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        writer.writerow(['Timestamp', 'Transactions'])
+        writer.writerow(['Timestamp', 'Transactions', 'USD'])
         timeline["reentrancy"] = OrderedDict(sorted(timeline["reentrancy"].items(), key=lambda t: t[0]))
         for date in timeline["reentrancy"]:
-            writer.writerow([date, timeline["reentrancy"][date]])
-    with open('cross_function_reentrancy_timelime.csv', 'w', newline='') as csvfile:
+            writer.writerow([date, timeline["reentrancy"][date]["transactions"], round(timeline["reentrancy"][date]["usd"])])
+    with open('integer_overflow_timelime.csv', 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        writer.writerow(['Timestamp', 'Transactions'])
-        timeline["cross_function_reentrancy"] = OrderedDict(sorted(timeline["cross_function_reentrancy"].items(), key=lambda t: t[0]))
-        for date in timeline["cross_function_reentrancy"]:
-            writer.writerow([date, timeline["cross_function_reentrancy"][date]])
-    with open('delegated_reentrancy_timelime.csv', 'w', newline='') as csvfile:
+        writer.writerow(['Timestamp', 'Transactions', 'USD'])
+        timeline["integer_overflow"] = OrderedDict(sorted(timeline["integer_overflow"].items(), key=lambda t: t[0]))
+        for date in timeline["integer_overflow"]:
+            writer.writerow([date, timeline["integer_overflow"][date]["transactions"], round(timeline["integer_overflow"][date]["usd"])])
+    with open('integer_underflow_timelime.csv', 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        writer.writerow(['Timestamp', 'Transactions'])
-        timeline["delegated_reentrancy"] = OrderedDict(sorted(timeline["delegated_reentrancy"].items(), key=lambda t: t[0]))
-        for date in timeline["delegated_reentrancy"]:
-            writer.writerow([date, timeline["delegated_reentrancy"][date]])
-    with open('create_based_reentrancy_timelime.csv', 'w', newline='') as csvfile:
+        writer.writerow(['Timestamp', 'Transactions', 'USD'])
+        timeline["integer_underflow"] = OrderedDict(sorted(timeline["integer_underflow"].items(), key=lambda t: t[0]))
+        for date in timeline["integer_underflow"]:
+            writer.writerow([date, timeline["integer_underflow"][date]["transactions"], round(timeline["integer_underflow"][date]["usd"])])
+    with open('parity_wallet_hack_1_timelime.csv', 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        writer.writerow(['Timestamp', 'Transactions'])
-        timeline["create_based_reentrancy"] = OrderedDict(sorted(timeline["create_based_reentrancy"].items(), key=lambda t: t[0]))
-        for date in timeline["create_based_reentrancy"]:
-            writer.writerow([date, timeline["create_based_reentrancy"][date]])
+        writer.writerow(['Timestamp', 'Transactions', 'USD'])
+        timeline["parity_wallet_hack_1"] = OrderedDict(sorted(timeline["parity_wallet_hack_1"].items(), key=lambda t: t[0]))
+        for date in timeline["parity_wallet_hack_1"]:
+            writer.writerow([date, timeline["parity_wallet_hack_1"][date]["transactions"], round(timeline["parity_wallet_hack_1"][date]["usd"])])
+    with open('parity_wallet_hack_2_timelime.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        writer.writerow(['Timestamp', 'Transactions', 'USD'])
+        timeline["parity_wallet_hack_2"] = OrderedDict(sorted(timeline["parity_wallet_hack_2"].items(), key=lambda t: t[0]))
+        for date in timeline["parity_wallet_hack_2"]:
+            writer.writerow([date, timeline["parity_wallet_hack_2"][date]["transactions"], round(timeline["parity_wallet_hack_2"][date]["usd"])])
+
+    with open('reentrancy_deployments.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        writer.writerow(['Timestamp', 'Deployments'])
+        vulnerable_deployments["reentrancy"] = OrderedDict(sorted(vulnerable_deployments["reentrancy"].items(), key=lambda t: t[0]))
+        for date in vulnerable_deployments["reentrancy"]:
+            writer.writerow([date, vulnerable_deployments["reentrancy"][date]])
+    with open('integer_overflow_deployments.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        writer.writerow(['Timestamp', 'Deployments'])
+        vulnerable_deployments["integer_overflow"] = OrderedDict(sorted(vulnerable_deployments["integer_overflow"].items(), key=lambda t: t[0]))
+        for date in vulnerable_deployments["integer_overflow"]:
+            writer.writerow([date, vulnerable_deployments["integer_overflow"][date]])
+    with open('integer_underflow_deployments.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        writer.writerow(['Timestamp', 'Deployments'])
+        vulnerable_deployments["integer_underflow"] = OrderedDict(sorted(vulnerable_deployments["integer_underflow"].items(), key=lambda t: t[0]))
+        for date in vulnerable_deployments["integer_underflow"]:
+            writer.writerow([date, vulnerable_deployments["integer_underflow"][date]])
+    with open('parity_wallet_hack_1_deployments.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        writer.writerow(['Timestamp', 'Deployments'])
+        vulnerable_deployments["parity_wallet_hack_1"] = OrderedDict(sorted(vulnerable_deployments["parity_wallet_hack_1"].items(), key=lambda t: t[0]))
+        for date in vulnerable_deployments["parity_wallet_hack_1"]:
+            writer.writerow([date, vulnerable_deployments["parity_wallet_hack_1"][date]])
+    with open('parity_wallet_hack_2_deployments.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        writer.writerow(['Timestamp', 'Deployments'])
+        vulnerable_deployments["parity_wallet_hack_2"] = OrderedDict(sorted(vulnerable_deployments["parity_wallet_hack_2"].items(), key=lambda t: t[0]))
+        for date in vulnerable_deployments["parity_wallet_hack_2"]:
+            writer.writerow([date, vulnerable_deployments["parity_wallet_hack_2"][date]])
 
     #print(automated_validation)
+    #print(erc20_tokens)
