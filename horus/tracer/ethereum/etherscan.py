@@ -5,6 +5,8 @@ import json
 import cfscrape
 import requests
 
+from urllib.parse import urlparse
+
 class Etherscan():
     def __init__(self, api_key, session_cookie=None):
         self.api_key = api_key
@@ -21,28 +23,6 @@ class Etherscan():
     def get_token_transactions(self, address, start_block=0, end_block=99999999, offset=10000):
         response = requests.get("http://api.etherscan.io/api?module=account&action=tokentx&address="+str(address)+"&startblock="+str(start_block)+"&endblock="+str(end_block)+"&page=1&offset="+str(offset)+"&sort=asc&apikey="+str(self.api_key))
         return response.json()["result"]
-
-    def get_geographic_locations(self, labels):
-        geographic_locations = {}
-        for label in labels:
-            label = label.replace(" Exchange", " ")
-            label = label.split(":")[0]
-            label = ''.join(i for i in label if not i.isdigit())
-            print(label)
-            scraper = cfscrape.create_scraper()
-            content = scraper.get('https://etherscan.io/directory/Exchanges?q='+label).content.decode('utf-8')
-            print(content)
-            website = re.compile('<a href="https://www.artisturba.com/" data-toggle="tooltip" class="btn btn-sm btn-icon btn-soft-secondary rounded-circle" data-original-title="[Website] https://www.artisturba.com/" rel="nofollow" target="_blank"><i class="fas fa-globe btn-icon__inner"></i></a>').findall(content)
-            domain = website
-            response = requests.get('http://ip-api.com/json/'+domain).json()
-            if response["status"] == "success":
-                del response["status"]
-                geographic_locations[domain] = response
-            else:
-                print(response)
-        with open('geographic_locations.json', 'w') as jsonfile:
-            json.dump(geographic_locations, jsonfile)
-        return geographic_locations
 
     def get_labels(self):
         if os.path.isfile('labeled_accounts.json'):
@@ -94,6 +74,44 @@ class Etherscan():
             json.dump(categories, jsonfile)
         return labeled_accounts
 
+    def get_geographic_locations_of_exchanges(self, labels):
+        geographic_locations = {}
+        for label in labels:
+            label = label.split(":")[0]
+            label = label.replace(" Exchange", " ")
+            if " " in label:
+                label = label.split(" ")[0]+''.join(i for i in label.split(" ")[1] if not i.isdigit())
+            print(label)
+            scraper = cfscrape.create_scraper()
+            content = scraper.get('https://etherscan.io/directory/Exchanges?q='+label).content.decode('utf-8')
+            website = re.compile('><a href=".+?" data-toggle="tooltip" class="btn btn-sm btn-icon btn-soft-secondary rounded-circle" data-original-title="\[Website\] (.+?)" rel="nofollow" target="_blank">').findall(content)
+            if len(website) > 0:
+                website = website[0]
+                print(website)
+                domain = urlparse(website).netloc.replace("www.", "")
+                print(domain)
+                try:
+                    response = requests.get('http://ip-api.com/json/'+domain).json()
+                    if response["status"] == "success":
+                        del response["status"]
+                        geographic_locations[label] = response
+                    else:
+                        domain = "www."+domain
+                        response = requests.get('http://ip-api.com/json/'+domain).json()
+                        if response["status"] == "success":
+                            del response["status"]
+                            geographic_locations[label] = response
+                        else:
+                            print(response)
+                except:
+                    geographic_locations[label] = None
+                    pass
+            else:
+                geographic_locations[label] = None
+        with open('geographic_locations.json', 'w') as jsonfile:
+            json.dump(geographic_locations, jsonfile)
+        return geographic_locations
+
 
 if os.path.isfile('../labeled_accounts.json'):
     with open('../labeled_accounts.json') as json_file:
@@ -104,4 +122,4 @@ if os.path.isfile('../labeled_accounts.json'):
                 for label in labeled_accounts[account]["labels"]:
                     exchanges.append(label)
         print(len(exchanges))
-        Etherscan(None).get_geographic_locations(['upbit.com'])
+        Etherscan(None).get_geographic_locations_of_exchanges(exchanges)
