@@ -13,7 +13,7 @@ import traceback
 
 import decimal
 
-
+from io import StringIO
 from pathlib import Path
 from web3 import Web3
 from tqdm import tqdm
@@ -210,6 +210,8 @@ attackers = {
     "insufficient_gas": set()
 }
 
+results = []
+
 def add_new_token(contract):
     w3 = Web3(Web3.HTTPProvider("http://pf.uni.lux:8545"))
     with open('erc20abi.json') as json_file:
@@ -240,41 +242,67 @@ def get_deployment_timestamp(contract):
     return int(requests.get('http://api.etherscan.io/api?module=account&action=txlist&address='+contract+'&startblock=0&endblock=99999999&page=1&offset=1&sort=asc&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()["result"][0]["timeStamp"])
 
 if __name__ == '__main__':
+    os.mkdir('results')
+    call_stack_depth_results_file = open('results/call_stack_depth.csv', 'w')
+    call_stack_depth_results_writer = csv.writer(call_stack_depth_results_file, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    reentrancy_results_file = open('results/reentrancy.csv', 'w')
+    reentrancy_results_writer = csv.writer(reentrancy_results_file, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    delegated_reentrancy_results_file = open('results/delegated_reentrancy.csv', 'w')
+    delegated_reentrancy_results_writer = csv.writer(delegated_reentrancy_results_file, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    integer_overflow_addition_results_file = open('results/integer_overflow_addition.csv', 'w')
+    integer_overflow_addition_results_writer = csv.writer(integer_overflow_addition_results_file, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    integer_underflow_results_file = open('results/integer_underflow.csv', 'w')
+    integer_underflow_results_writer = csv.writer(integer_underflow_results_file, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    parity_wallet_hack_1_results_file = open('results/parity_wallet_hack_1.csv', 'w')
+    parity_wallet_hack_1_results_writer = csv.writer(parity_wallet_hack_1_results_file, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    parity_wallet_hack_2_results_file = open('results/parity_wallet_hack_2.csv', 'w')
+    parity_wallet_hack_2_results_writer = csv.writer(parity_wallet_hack_2_results_file, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+
     pathlist = Path(FOLDER).glob('**/*.zip')
     with tqdm(total=len(list(Path(FOLDER).glob('**/*.zip'))), unit=" contract", leave=False, smoothing=0.1) as pbar:
         for path in pathlist:
-            #print(path)
             contract = str(path).split('/')[-1].split('.')[0]
-            #print(contract)
             try:
                 with zipfile.ZipFile(path) as z:
                     for filename in z.namelist():
                         if filename.endswith(".csv"):
                             with z.open(filename) as f:
                                 csv.field_size_limit(sys.maxsize)
-                                from io import StringIO
                                 s = StringIO(f.read().decode("utf-8"))
                                 reader = csv.reader(s, delimiter='\t')
                                 for row in reader:
-                                    #print(row)
                                     attack = os.path.splitext(os.path.basename(filename))[0]
-                                    #print(attack)
                                     if   attack == "CallStackDepth":
+                                        contract = row[3]
+                                        attackers["call_stack_depth"].add(get_sender(row[0]))
                                         contracts["call_stack_depth"].add(contract)
                                         transactions["call_stack_depth"].add(row[0])
                                         ether["call_stack_depth"].append(int(row[5]))
                                         contracts_total.add(contract)
                                         transactions_total.add(row[0])
                                         ether_total += int(row[5])
+                                        d = datetime.fromtimestamp(int(row[1]))
+                                        one_eth_to_usd = get_one_eth_to_usd(int(row[1]))
+                                        if not d.strftime("%Y-%m-%d") in timeline["reentrancy"]:
+                                            timeline["call_stack_depth"][d.strftime("%Y-%m-%d")] = {
+                                                "transactions": 1,
+                                                "usd": Web3.fromWei(int(row[5]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
+                                            }
+                                        else:
+                                            timeline["call_stack_depth"][d.strftime("%Y-%m-%d")]["transactions"] += 1
+                                            timeline["call_stack_depth"][d.strftime("%Y-%m-%d")]["usd"] += Web3.fromWei(int(row[5]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
+                                        row.insert(0, get_sender(row[0]))
+                                        row.insert(0, contract)
+                                        call_stack_depth_results_writer.writerow(row)
+
                                     elif attack == "Reentrancy":
-                                        if row[2] not in contracts["reentrancy"]:
-                                            d = datetime.fromtimestamp(get_deployment_timestamp(row[2]))
+                                        contract = row[2]
+                                        if contract not in contracts["reentrancy"]:
+                                            d = datetime.fromtimestamp(get_deployment_timestamp(contract))
                                             if not d.strftime("%Y-%m-%d") in vulnerable_deployments["reentrancy"]:
                                                 vulnerable_deployments["reentrancy"][d.strftime("%Y-%m-%d")] = 1
                                             else:
                                                 vulnerable_deployments["reentrancy"][d.strftime("%Y-%m-%d")] += 1
-                                        #if contract not in contracts["reentrancy"]:
-                                        #    print("reentrancy: "+contract+" "+str(row))
                                         attackers["reentrancy"].add(get_sender(row[0]))
                                         contracts["reentrancy"].add(row[2])
                                         transactions["reentrancy"].add(row[0])
@@ -292,17 +320,20 @@ if __name__ == '__main__':
                                         else:
                                             timeline["reentrancy"][d.strftime("%Y-%m-%d")]["transactions"] += 1
                                             timeline["reentrancy"][d.strftime("%Y-%m-%d")]["usd"] += Web3.fromWei(int(row[5]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
+                                        row.insert(0, get_sender(row[0]))
+                                        row.insert(0, contract)
+                                        reentrancy_results_writer.writerow(row)
+
                                     elif attack == "ERC777Reentrancy":
-                                        if row[2] not in contracts["erc777_reentrancy"]:
-                                            d = datetime.fromtimestamp(get_deployment_timestamp(row[2]))
+                                        contract = row[2]
+                                        if contract not in contracts["erc777_reentrancy"]:
+                                            d = datetime.fromtimestamp(get_deployment_timestamp(contract))
                                             if not d.strftime("%Y-%m-%d") in vulnerable_deployments["reentrancy"]:
                                                 vulnerable_deployments["reentrancy"][d.strftime("%Y-%m-%d")] = 1
                                             else:
                                                 vulnerable_deployments["reentrancy"][d.strftime("%Y-%m-%d")] += 1
-                                        #if contract not in contracts["erc777_reentrancy"]:
-                                        #    print("erc777_reentrancy: "+contract+" "+str(row))
                                         attackers["erc777_reentrancy"].add(get_sender(row[0]))
-                                        contracts["erc777_reentrancy"].add(row[2])
+                                        contracts["erc777_reentrancy"].add(contract)
                                         transactions["erc777_reentrancy"].add(row[0])
                                         if row[4] == "Ether":
                                             ether["erc777_reentrancy"].append(int(row[4]))
@@ -337,16 +368,15 @@ if __name__ == '__main__':
                                             timeline["reentrancy"][d.strftime("%Y-%m-%d")]["transactions"] += 1
                                             timeline["reentrancy"][d.strftime("%Y-%m-%d")]["usd"] += Web3.fromWei(int(row[5]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
                                     elif attack == "DelegatedReentrancy":
-                                        if row[2] not in contracts["delegated_reentrancy"]:
-                                            d = datetime.fromtimestamp(get_deployment_timestamp(row[2]))
+                                        contract = row[2]
+                                        if contract not in contracts["delegated_reentrancy"]:
+                                            d = datetime.fromtimestamp(get_deployment_timestamp(contract))
                                             if not d.strftime("%Y-%m-%d") in vulnerable_deployments["reentrancy"]:
                                                 vulnerable_deployments["reentrancy"][d.strftime("%Y-%m-%d")] = 1
                                             else:
                                                 vulnerable_deployments["reentrancy"][d.strftime("%Y-%m-%d")] += 1
-                                        #if contract not in contracts["delegated_reentrancy"]:
-                                        #    print("delegated_reentrancy: "+contract+" "+str(row))
                                         attackers["delegated_reentrancy"].add(get_sender(row[0]))
-                                        contracts["delegated_reentrancy"].add(row[2])
+                                        contracts["delegated_reentrancy"].add(contract)
                                         transactions["delegated_reentrancy"].add(row[0])
                                         ether["delegated_reentrancy"].append(int(row[5]))
                                         contracts_total.add(contract)
@@ -362,6 +392,10 @@ if __name__ == '__main__':
                                         else:
                                             timeline["reentrancy"][d.strftime("%Y-%m-%d")]["transactions"] += 1
                                             timeline["reentrancy"][d.strftime("%Y-%m-%d")]["usd"] += Web3.fromWei(int(row[5]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
+                                        row.insert(0, get_sender(row[0]))
+                                        row.insert(0, contract)
+                                        delegated_reentrancy_results_writer.writerow(row)
+
                                     elif attack == "CreateBasedReentrancy":
                                         if row[2] not in contracts["create_based_reentrancy"]:
                                             d = datetime.fromtimestamp(get_deployment_timestamp(row[2]))
@@ -399,21 +433,15 @@ if __name__ == '__main__':
                                         #ether["unhandled_exception"].append(int(row[5]))
                                         contracts_total.add(contract)
                                         transactions_total.add(row[0])
+
                                     elif attack == "IntegerOverflow":
                                         if row[3] == "ADD":
-                                            if contract not in contracts["integer_overflow_addition"]:
-                                                print("integer_overflow_addition "+contract+" "+str(row))
                                             if contract not in contracts["integer_overflow_addition"]:
                                                 d = datetime.fromtimestamp(get_deployment_timestamp(contract))
                                                 if not d.strftime("%Y-%m-%d") in vulnerable_deployments["integer_overflow"]:
                                                     vulnerable_deployments["integer_overflow"][d.strftime("%Y-%m-%d")] = 1
                                                 else:
                                                     vulnerable_deployments["integer_overflow"][d.strftime("%Y-%m-%d")] += 1
-                                            if row[11] != "Ether":
-                                            #    print("integer_overflow_addition "+contract+" "+str(row))
-                                                if contract not in erc20_tokens:
-                                                    add_new_token(contract)
-                                                erc20_tokens[contract]["amount"] += int(row[10])
                                             attackers["integer_overflow_addition"].add(get_sender(row[0]))
                                             contracts["integer_overflow_addition"].add(contract)
                                             transactions["integer_overflow_addition"].add(row[0])
@@ -432,7 +460,14 @@ if __name__ == '__main__':
                                                     timeline["integer_overflow"][d.strftime("%Y-%m-%d")]["transactions"] += 1
                                                     timeline["integer_overflow"][d.strftime("%Y-%m-%d")]["usd"] += Web3.fromWei(int(row[10]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
                                             else:
+                                                if contract not in erc20_tokens:
+                                                    add_new_token(contract)
+                                                erc20_tokens[contract]["amount"] += int(row[10])
                                                 tokens["integer_overflow_addition"].append(int(row[10]))
+                                            row.insert(0, get_sender(row[0]))
+                                            row.insert(0, contract)
+                                            integer_overflow_addition_results_writer.writerow(row)
+
                                         elif row[3] != "MUL":
                                             if contract not in contracts["integer_overflow_multiplication"]:
                                                 d = datetime.fromtimestamp(get_deployment_timestamp(contract))
@@ -465,19 +500,14 @@ if __name__ == '__main__':
                                                     timeline["integer_overflow"][d.strftime("%Y-%m-%d")]["usd"] += Web3.fromWei(int(row[10]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
                                             else:
                                                 tokens["integer_overflow_multiplication"].append(int(row[10]))
+
                                     elif attack == "IntegerUnderflow":
-                                        #if contract not in contracts["integer_underflow"]:
-                                        #    print("integer_underflow "+contract+" "+str(row))
                                         if contract not in contracts["integer_underflow"]:
                                             d = datetime.fromtimestamp(get_deployment_timestamp(contract))
                                             if not d.strftime("%Y-%m-%d") in vulnerable_deployments["integer_underflow"]:
                                                 vulnerable_deployments["integer_underflow"][d.strftime("%Y-%m-%d")] = 1
                                             else:
                                                 vulnerable_deployments["integer_underflow"][d.strftime("%Y-%m-%d")] += 1
-                                        if row[10] != "Ether":
-                                            if contract not in erc20_tokens:
-                                                add_new_token(contract)
-                                            erc20_tokens[contract]["amount"] += int(row[9])
                                         attackers["integer_underflow"].add(get_sender(row[0]))
                                         contracts["integer_underflow"].add(contract)
                                         transactions["integer_underflow"].add(row[0])
@@ -496,7 +526,14 @@ if __name__ == '__main__':
                                                 timeline["integer_underflow"][d.strftime("%Y-%m-%d")]["transactions"] += 1
                                                 timeline["integer_underflow"][d.strftime("%Y-%m-%d")]["usd"] += Web3.fromWei(int(row[9]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
                                         else:
+                                            if contract not in erc20_tokens:
+                                                add_new_token(contract)
+                                            erc20_tokens[contract]["amount"] += int(row[9])
                                             tokens["integer_underflow"].append(int(row[9]))
+                                        row.insert(0, get_sender(row[0]))
+                                        row.insert(0, contract)
+                                        integer_underflow_results_writer.writerow(row)
+
                                     elif attack == "TransactionOrderDependency":
                                         #if contract not in contracts["transaction_order_dependence"]:
                                         #    print(contract+" "+str(row))
@@ -525,6 +562,7 @@ if __name__ == '__main__':
                                         transactions["unchecked_delegatecall"].add(row[0])
                                         contracts_total.add(contract)
                                         transactions_total.add(row[0])
+
                                     elif attack == "ParityWalletHack1":
                                         if contract not in contracts["parity_wallet_hack_1"]:
                                             d = datetime.fromtimestamp(get_deployment_timestamp(contract))
@@ -532,8 +570,6 @@ if __name__ == '__main__':
                                                 vulnerable_deployments["parity_wallet_hack_1"][d.strftime("%Y-%m-%d")] = 1
                                             else:
                                                 vulnerable_deployments["parity_wallet_hack_1"][d.strftime("%Y-%m-%d")] += 1
-                                        if contract not in contracts["parity_wallet_hack_1"]:
-                                            #print("parity_wallet_hack_1: "+contract+" "+str(row))
                                             response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+contract+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
                                             if "result" in response and response['result'][0]['SourceCode']:
                                                 if "function initWallet(" in response['result'][0]['SourceCode'] and \
@@ -543,31 +579,34 @@ if __name__ == '__main__':
                                                     automated_validation["parity_wallet_hack_1"]["false_positives"].append(contract)
                                             else:
                                                 automated_validation["parity_wallet_hack_1"]["unknown"].append(contract)
-                                        attackers["parity_wallet_hack_1"].add(get_sender(row[0]))
+                                        attackers["parity_wallet_hack_1"].add(get_sender(row[1]))
                                         contracts["parity_wallet_hack_1"].add(contract)
-                                        transactions["parity_wallet_hack_1"].add(row[0])
-                                        ether["parity_wallet_hack_1"].append(int(row[7]))
+                                        transactions["parity_wallet_hack_1"].add(row[1])
+                                        ether["parity_wallet_hack_1"].append(int(row[6]))
                                         contracts_total.add(contract)
-                                        transactions_total.add(row[0])
-                                        d = datetime.fromtimestamp(int(row[3]))
-                                        one_eth_to_usd = get_one_eth_to_usd(int(row[3]))
+                                        transactions_total.add(row[1])
+                                        d = datetime.fromtimestamp(int(row[4]))
+                                        one_eth_to_usd = get_one_eth_to_usd(int(row[4]))
                                         if not d.strftime("%Y-%m-%d") in timeline["parity_wallet_hack_1"]:
                                             timeline["parity_wallet_hack_1"][d.strftime("%Y-%m-%d")] = {
                                                 "transactions": 1,
-                                                "usd": Web3.fromWei(int(row[7]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
+                                                "usd": Web3.fromWei(int(row[6]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
                                             }
                                         else:
                                             timeline["parity_wallet_hack_1"][d.strftime("%Y-%m-%d")]["transactions"] += 1
-                                            timeline["parity_wallet_hack_1"][d.strftime("%Y-%m-%d")]["usd"] += Web3.fromWei(int(row[7]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
+                                            timeline["parity_wallet_hack_1"][d.strftime("%Y-%m-%d")]["usd"] += Web3.fromWei(int(row[6]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
+                                        row.insert(0, get_sender(row[1]))
+                                        row.insert(0, contract)
+                                        parity_wallet_hack_1_results_writer.writerow(row)
+
                                     elif attack == "ParityWalletHack2":
+                                        contract = row[5]
                                         if contract not in contracts["parity_wallet_hack_2"]:
                                             d = datetime.fromtimestamp(get_deployment_timestamp(contract))
                                             if not d.strftime("%Y-%m-%d") in vulnerable_deployments["parity_wallet_hack_2"]:
                                                 vulnerable_deployments["parity_wallet_hack_2"][d.strftime("%Y-%m-%d")] = 1
                                             else:
                                                 vulnerable_deployments["parity_wallet_hack_2"][d.strftime("%Y-%m-%d")] += 1
-                                        if contract not in contracts["parity_wallet_hack_2"]:
-                                            #print("parity_wallet_hack_2: "+contract+" "+str(row))
                                             response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+contract+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
                                             if "result" in response and response['result'][0]['SourceCode']:
                                                 if "function initWallet(" in response['result'][0]['SourceCode'] and \
@@ -577,22 +616,26 @@ if __name__ == '__main__':
                                                     automated_validation["parity_wallet_hack_2"]["false_positives"].append(contract)
                                             else:
                                                 automated_validation["parity_wallet_hack_2"]["unknown"].append(contract)
-                                        attackers["parity_wallet_hack_2"].add(get_sender(row[0]))
+                                        attackers["parity_wallet_hack_2"].add(get_sender(row[1]))
                                         contracts["parity_wallet_hack_2"].add(contract)
-                                        transactions["parity_wallet_hack_2"].add(row[0])
-                                        ether["parity_wallet_hack_2"].append(int(row[8]))
+                                        transactions["parity_wallet_hack_2"].add(row[1])
+                                        ether["parity_wallet_hack_2"].append(int(row[7]))
                                         contracts_total.add(contract)
-                                        transactions_total.add(row[0])
-                                        d = datetime.fromtimestamp(int(row[3]))
-                                        one_eth_to_usd = get_one_eth_to_usd(int(row[3]))
+                                        transactions_total.add(row[1])
+                                        d = datetime.fromtimestamp(int(row[4]))
+                                        one_eth_to_usd = get_one_eth_to_usd(int(row[4]))
                                         if not d.strftime("%Y-%m-%d") in timeline["parity_wallet_hack_2"]:
                                             timeline["parity_wallet_hack_2"][d.strftime("%Y-%m-%d")] = {
                                                 "transactions": 1,
-                                                "usd": Web3.fromWei(int(row[8]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
+                                                "usd": Web3.fromWei(int(row[7]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
                                             }
                                         else:
                                             timeline["parity_wallet_hack_2"][d.strftime("%Y-%m-%d")]["transactions"] += 1
-                                            timeline["parity_wallet_hack_2"][d.strftime("%Y-%m-%d")]["usd"] += Web3.fromWei(int(row[8]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
+                                            timeline["parity_wallet_hack_2"][d.strftime("%Y-%m-%d")]["usd"] += Web3.fromWei(int(row[7]), 'ether') * decimal.Decimal(float(one_eth_to_usd))
+                                        row.insert(0, get_sender(row[1]))
+                                        row.insert(0, contract)
+                                        parity_wallet_hack_2_results_writer.writerow(row)
+
                                     elif attack == "ShortAddress":
                                         contracts["short_address"].add(contract)
                                         transactions["short_address"].add(row[0])
@@ -678,6 +721,9 @@ if __name__ == '__main__':
                 traceback.print_exc(file=sys.stdout)
                 pass
             pbar.update(1)
+
+    call_stack_depth_results_file.close()
+    integer_overflow_addition_results_file.close()
 
     """print("")
     print("Number of analyzed contracts: "+str(contracts))

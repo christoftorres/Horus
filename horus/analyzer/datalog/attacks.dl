@@ -118,9 +118,9 @@ IntegerOverflow(hash, timestamp, step2, opcode, first_operand, second_operand, a
   arithmetic(step2, opcode, first_operand, second_operand, arithmetic_result, evm_result),
   arithmetic_result != evm_result,
   match("ADD", opcode),
-  use(step2, step1),
+  /*use(step2, step1),*/
   storage(step3, "SSTORE", _, hash, _, _, _),
-  data_flow(step2, step3),
+  /*data_flow(step2, step3),*/
   transfer(_, hash, from, to, amount),
   !match("0", amount),
   transaction(hash, _, _, _, 1, block),
@@ -131,10 +131,10 @@ IntegerOverflow(hash, timestamp, step2, opcode, first_operand, second_operand, a
   arithmetic(step2, opcode, first_operand, second_operand, arithmetic_result, evm_result),
   arithmetic_result != evm_result,
   match("ADD", opcode),
-  use(step2, step1),
+  /*use(step2, step1),*/
   call(step3, hash, "CALL", from, to, _, amount, _, 1),
   !match("0", amount),
-  use(step3, step2),
+  /*use(step3, step2),*/
   transaction(hash, _, _, _, 1, block),
   block(block, _, _, timestamp),
   asset = "Ether";
@@ -143,9 +143,9 @@ IntegerOverflow(hash, timestamp, step2, opcode, first_operand, second_operand, a
   arithmetic(step2, opcode, first_operand, second_operand, arithmetic_result, evm_result),
   arithmetic_result != evm_result,
   match("MUL", opcode),
-  use(step2, step1),
+  /*use(step2, step1),*/
   storage(step3, "SSTORE", _, hash, _, _, _),
-  data_flow(step2, step3),
+  /*data_flow(step2, step3),*/
   transfer(_, hash, from, to, amount),
   !match("0", amount),
   transaction(hash, _, _, _, 1, block),
@@ -156,10 +156,10 @@ IntegerOverflow(hash, timestamp, step2, opcode, first_operand, second_operand, a
   arithmetic(step2, opcode, first_operand, second_operand, arithmetic_result, evm_result),
   arithmetic_result != evm_result,
   match("MUL", opcode),
-  use(step2, step1),
+  /*use(step2, step1),*/
   call(step3, hash, "CALL", from, to, _, amount, _, 1),
   !match("0", amount),
-  use(step3, step2),
+  /*use(step3, step2),*/
   transaction(hash, _, _, _, 1, block),
   block(block, _, _, timestamp),
   asset = "Ether".
@@ -171,9 +171,9 @@ IntegerUnderflow(hash, timestamp, step2, first_operand, second_operand, arithmet
   opcode(step1, "CALLDATALOAD"),
   arithmetic(step2, "SUB", first_operand, second_operand, arithmetic_result, evm_result),
   arithmetic_result != evm_result,
-  use(step2, step1),
+  /*use(step2, step1),*/
   storage(step3, "SSTORE", _, hash, _, _, _),
-  data_flow(step2, step3),
+  /*data_flow(step2, step3),*/
   transfer(_, hash, from, to, amount),
   !match("0", second_operand),
   transaction(hash, _, _, _, 1, block),
@@ -183,10 +183,10 @@ IntegerUnderflow(hash, timestamp, step2, first_operand, second_operand, arithmet
   opcode(step1, "CALLDATALOAD"),
   arithmetic(step2, "SUB", first_operand, second_operand, arithmetic_result, evm_result),
   arithmetic_result != evm_result,
-  use(step2, step1),
+  /*use(step2, step1),*/
   call(step3, hash, "CALL", from, to, _, amount, _, 1),
   !match("0", amount),
-  use(step3, step2),
+  /*use(step3, step2),*/
   transaction(hash, _, _, _, 1, block),
   block(block, _, _, timestamp),
   asset = "Ether".
