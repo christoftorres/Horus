@@ -92,7 +92,7 @@ ERC777 Reentrancy Lendf.Me (Mainnet)
 python3 horus.py -e -t 0xae7d664bdfcc54220df4f18d339005c6faf6e62c9ca79c56387bc0389274363b
 ```
 
-###### Parity Wallet Hack 1 (19.07.2017)
+###### Unchecked Delegatecall (Parity Wallet Hack 1 - 19.07.2017)
 
 ```
 ParityWallet (Mainnet)
@@ -101,7 +101,7 @@ python3 horus.py -e -c 0x91efffb9c6cd3a66474688d0a48aa6ecfe515aa5
 
 python3 horus.py -e -c 0xbec591de75b8699a3ba52f073428822d0bfc0d7e
 ```
-###### Parity Wallet Hack 2 (06.11.2017)
+###### Unchecked Suicide (Parity Wallet Hack 2 - 06.11.2017)
 
 ```
 ParityWallet (Mainnet)
@@ -212,13 +212,3 @@ UGToken (Mainnet)
 
 python3 horus.py -e -t 0x9008d8ca9a5993d060e0dc2ee7d281b7911d1b39ac3503ba3b8ec22f26d8e04f
 ```
-
-###### Block Stuffing
-
-```
-Fomo3D (Mainnet)
-
-python3 horus.py -e -b 6391547
-```
-
-

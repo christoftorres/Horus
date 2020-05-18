@@ -148,7 +148,7 @@ def main():
             blocks = {}
             try:
                 transaction = format_transaction(settings.W3.eth.getTransaction(args.transaction_hash))
-                if transaction["to"] and transaction["gas"] > 21000:
+                if transaction["gas"] > 21000:
                     transactions.append(transaction)
             except Exception as e:
                 print(e)
@@ -163,7 +163,7 @@ def main():
                 block = settings.W3.eth.getBlock(args.block_number)
                 for i in block["transactions"]:
                     transaction = format_transaction(settings.W3.eth.getTransaction(i))
-                    if transaction["to"] and transaction["gas"] > 21000:
+                    if transaction["gas"] > 21000:
                         transactions.append(transaction)
             except:
                 print("Error: Blockchain is not in sync with block number: "+args.block_number[0])
@@ -192,14 +192,14 @@ def main():
                             page += 1
                             for result in api_response["result"]:
                                 transaction = format_transaction(settings.W3.eth.getTransaction(result["hash"]))
-                                if transaction["to"] and transaction["gas"] > 21000:
+                                if transaction["gas"] > 21000:
                                     if not is_block_within_ranges(transaction["blockNumber"], settings.DOS_ATTACK_BLOCK_RANGES):
                                         if not transaction in transactions:
                                             transactions.append(transaction)
                     else:
                         break
-                """# Get the list of "internal" transactions for the given contract address
-                page = 1
+                # Get the list of "internal" transactions for the given contract address
+                """page = 1
                 while True:
                     api_response = requests.get("https://"+api_network+".etherscan.io/api?module=account&action=txlistinternal&address="+args.contract_address+"&startblock=0&endblock="+str(settings.MAX_BLOCK_HEIGHT)+"&page="+str(page)+"&offset=10000&sort=asc&apikey="+settings.ETHERSCAN_API_TOKEN).json()
                     if not api_response or "error" in api_response:
@@ -214,7 +214,7 @@ def main():
                             page += 1
                             for result in api_response["result"]:
                                 transaction = format_transaction(settings.W3.eth.getTransaction(result["hash"]))
-                                if transaction["to"] and transaction["gas"] > 21000:
+                                if transaction["gas"] > 21000:
                                     if not is_block_within_ranges(transaction["blockNumber"], settings.DOS_ATTACK_BLOCK_RANGES):
                                         if not transaction in transactions:
                                             transactions.append(transaction)

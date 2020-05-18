@@ -5,19 +5,19 @@
 CallStackDepth(hash, timestamp, step, caller, callee, amount) :-
   call(step, hash, "CALL", caller, callee, _, amount, depth, _),
   depth > 1024,
-  transaction(hash, _, _, _, _, block),
+  transaction(hash, _, _, _, _, _, _, block),
   block(block, _, _, timestamp).
 .output CallStackDepth
 
 /* Reentrancy */
-.decl Reentrancy(hash:symbol, timestamp:number, caller:Address, callee:Address, depth:number, amount:Value)
-Reentrancy(hash, timestamp, caller, callee, depth1, amount) :-
-  call(step1, hash, "CALL", caller, callee, input_data, amount, depth1, 1),
+.decl Reentrancy(hash:symbol, timestamp:number, step:number, caller:Address, callee:Address, depth:number, amount:Value)
+Reentrancy(hash, timestamp, step2, caller, callee, depth2, amount) :-
+  call(step1, hash, "CALL", caller, callee, input_data, _, depth1, 1),
   call(step2, hash, "CALL", caller, callee, input_data, amount, depth2, 1),
   step1 < step2,
   depth1 < depth2,
   !match("0", amount),
-  transaction(hash, _, _, _, 1, block),
+  transaction(hash, _, _, _, _, _, 1, block),
   block(block, _, _, timestamp).
 .output Reentrancy
 
@@ -32,7 +32,7 @@ ERC777Reentrancy(hash, timestamp, caller, callee, amount, asset) :-
   call(step3, hash, "CALL", callee, from, _, amount, _, 1),
   !match("0", amount),
   step2 < step3,
-  transaction(hash, from, _, _, 1, block),
+  transaction(hash, from, _, _, _, _, 1, block),
   block(block, _, _, timestamp),
   asset = "Ether";
 
@@ -45,41 +45,60 @@ ERC777Reentrancy(hash, timestamp, caller, callee, amount, asset) :-
   transfer(step4, hash, to, callee, amount),
   !match("0", amount),
   step3 < step4,
-  transaction(hash, _, _, _, 1, block),
+  transaction(hash, _, _, _, _, _, 1, block),
   block(block, _, _, timestamp),
   asset = "Token".
 .output ERC777Reentrancy
 
 /* Cross-Function Reentrancy */
-.decl CrossFunctionReentrancy(hash:symbol, step1:number, step2:number, step3:number, timestamp:number, caller:Address, callee:Address, depth:number, amount:Value)
-CrossFunctionReentrancy(hash, timestamp, step1, step2, step3, callee, caller, depth2, amount2) :-
-  call(step0, hash, "CALL", caller, callee, _, amount2, _, 1),
+.decl CrossFunctionReentrancy(hash:symbol, timestamp:number, caller:Address, callee:Address, depth:number, amount:Value)
+CrossFunctionReentrancy(hash, timestamp, callee, caller, depth2, amount) :-
   call(step1, hash, "CALL", caller, callee, input_data1, "0", depth1, 1),
-  call(step2, hash, "CALL", callee, caller, _, amount2, depth2, 1),
-  call(step3, hash, "CALL", caller, callee, input_data3, "0", depth3, 1),
-  step0 < step1,
+  call(step2, hash, "CALL", callee, caller, "", amount, depth2, 1),
+  call(step3, hash, "CALL", caller, callee, input_data2, "0", depth3, 1),
+  storage(step4, "SSTORE", block, hash, _, contract, index),
+  storage(step5, "SSTORE", block, hash, _, contract, index),
   step1 < step2,
   step2 < step3,
+  step3 < step4,
+  step4 < step5,
   depth1 < depth2,
   depth2 < depth3,
-  substr(input_data1, 0, 8) != substr(input_data3, 0, 8),
-  !match("0", amount2),
-  transaction(hash, _, _, _, 1, block),
+  substr(input_data1, 0, 8) != substr(input_data2, 0, 8),
+  !match("0", amount),
+  transaction(hash, _, _, _, _, _, 1, block),
   block(block, _, _, timestamp).
 .output CrossFunctionReentrancy
 
 /* Delegated Reentrancy */
 .decl DelegatedReentrancy(hash:symbol, timestamp:number, caller:Address, callee:Address, depth:number, amount:Value)
-DelegatedReentrancy(hash, timestamp, caller, callee1, depth2, amount2) :-
-  call(step1, hash, "DELEGATECALL", caller, callee1, input_data, amount1, depth1, 1),
-  call(step2, hash, "CALL", callee1, _, _, amount2, depth2, 1),
-  call(step3, hash, "DELEGATECALL", caller, callee1, input_data, amount1, depth3, 1),
+DelegatedReentrancy(hash, timestamp, caller, callee2, depth4, amount) :-
+  call(step1, hash, "DELEGATECALL", caller, callee1, input_data, "0", depth1, 1),
+  call(step2, hash, "CALL", caller, callee2, "", amount, depth2, 1),
+  call(step3, hash, "DELEGATECALL", caller, callee1, input_data, "0", depth3, 1),
+  call(step4, hash, "CALL", caller, callee2, "", amount, depth4, 1),
   step1 < step2,
   step2 < step3,
+  step3 < step4,
   depth1 < depth2,
   depth2 < depth3,
-  !match("0", amount2),
-  transaction(hash, _, _, _, 1, block),
+  depth3 < depth4,
+  !match("0", amount),
+  transaction(hash, _, _, _, _, _, 1, block),
+  block(block, _, _, timestamp);
+
+  call(step1, hash, "CALLCODE", caller, callee1, input_data, "0", depth1, 1),
+  call(step2, hash, "CALL", caller, callee2, "", amount, depth2, 1),
+  call(step3, hash, "CALLCODE", caller, callee1, input_data, "0", depth3, 1),
+  call(step4, hash, "CALL", caller, callee2, "", amount, depth4, 1),
+  step1 < step2,
+  step2 < step3,
+  step3 < step4,
+  depth1 < depth2,
+  depth2 < depth3,
+  depth3 < depth4,
+  !match("0", amount),
+  transaction(hash, _, _, _, _, _, 1, block),
   block(block, _, _, timestamp).
 .output DelegatedReentrancy
 
@@ -97,7 +116,7 @@ CreateBasedReentrancy(hash, timestamp, caller, callee2, depth3, amount) :-
   depth2 < depth3,
   depth1 < depth4,
   !match("0", amount),
-  transaction(hash, _, _, _, 1, block),
+  transaction(hash, _, _, _, _, _, 1, block),
   block(block, _, _, timestamp).
 .output CreateBasedReentrancy
 
@@ -107,7 +126,7 @@ UnhandledException(hash, timestamp, step1, caller, callee, amount) :-
   call(step1, hash, "CALL", caller, callee, _, amount, _, 0),
   !match("0", amount),
   !used_in_condition(step1, hash),
-  transaction(hash, _, _, _, 1, block),
+  transaction(hash, _, _, _, _, _, 1, block),
   block(block, _, _, timestamp).
 .output UnhandledException
 
@@ -115,53 +134,55 @@ UnhandledException(hash, timestamp, step1, caller, callee, amount) :-
 .decl IntegerOverflow(hash:symbol, timestamp:number, step:number, opcode:Opcode, first_operand:Value, second_operand:Value, arithmetic_result:Value, evm_result:Value, from:Address, to:Address, amount:Value, asset:symbol)
 IntegerOverflow(hash, timestamp, step2, opcode, first_operand, second_operand, arithmetic_result, evm_result, from, to, amount, asset) :-
   opcode(step1, "CALLDATALOAD"),
-  arithmetic(step2, opcode, first_operand, second_operand, arithmetic_result, evm_result),
+  arithmetic(step2, "ADD", first_operand, second_operand, arithmetic_result, evm_result),
   arithmetic_result != evm_result,
-  match("ADD", opcode),
-  /*use(step2, step1),*/
   storage(step3, "SSTORE", _, hash, _, _, _),
-  /*data_flow(step2, step3),*/
   transfer(_, hash, from, to, amount),
-  !match("0", amount),
-  transaction(hash, _, _, _, 1, block),
+  second_operand = amount,
+  data_flow(step1, step2),
+  data_flow(step2, step3),
+  transaction(hash, _, _, _, _, _, 1, block),
   block(block, _, _, timestamp),
+  opcode = "ADD",
   asset = "Token";
 
   opcode(step1, "CALLDATALOAD"),
-  arithmetic(step2, opcode, first_operand, second_operand, arithmetic_result, evm_result),
+  arithmetic(step2, "ADD", first_operand, second_operand, arithmetic_result, evm_result),
   arithmetic_result != evm_result,
-  match("ADD", opcode),
-  /*use(step2, step1),*/
-  call(step3, hash, "CALL", from, to, _, amount, _, 1),
+  storage(step3, "SSTORE", _, hash, _, _, _),
+  call(_, hash, "CALL", from, to, "", amount, _, 1),
   !match("0", amount),
-  /*use(step3, step2),*/
-  transaction(hash, _, _, _, 1, block),
+  data_flow(step1, step2),
+  data_flow(step2, step3),
+  transaction(hash, _, _, _, _, _, 1, block),
   block(block, _, _, timestamp),
+  opcode = "ADD",
   asset = "Ether";
 
   opcode(step1, "CALLDATALOAD"),
-  arithmetic(step2, opcode, first_operand, second_operand, arithmetic_result, evm_result),
+  arithmetic(step2, "MUL", first_operand, second_operand, arithmetic_result, evm_result),
   arithmetic_result != evm_result,
-  match("MUL", opcode),
-  /*use(step2, step1),*/
   storage(step3, "SSTORE", _, hash, _, _, _),
-  /*data_flow(step2, step3),*/
   transfer(_, hash, from, to, amount),
-  !match("0", amount),
-  transaction(hash, _, _, _, 1, block),
+  second_operand = amount,
+  data_flow(step1, step2),
+  data_flow(step2, step3),
+  transaction(hash, _, _, _, _, _, 1, block),
   block(block, _, _, timestamp),
+  opcode = "MUL",
   asset = "Token";
 
   opcode(step1, "CALLDATALOAD"),
-  arithmetic(step2, opcode, first_operand, second_operand, arithmetic_result, evm_result),
+  arithmetic(step2, "MUL", first_operand, second_operand, arithmetic_result, evm_result),
   arithmetic_result != evm_result,
-  match("MUL", opcode),
-  /*use(step2, step1),*/
-  call(step3, hash, "CALL", from, to, _, amount, _, 1),
+  storage(step3, "SSTORE", _, hash, _, _, _),
+  call(_, hash, "CALL", from, to, "", amount, _, 1),
   !match("0", amount),
-  /*use(step3, step2),*/
-  transaction(hash, _, _, _, 1, block),
+  data_flow(step1, step2),
+  data_flow(step2, step3),
+  transaction(hash, _, _, _, _, _, 1, block),
   block(block, _, _, timestamp),
+  opcode = "MUL",
   asset = "Ether".
 .output IntegerOverflow
 
@@ -171,30 +192,31 @@ IntegerUnderflow(hash, timestamp, step2, first_operand, second_operand, arithmet
   opcode(step1, "CALLDATALOAD"),
   arithmetic(step2, "SUB", first_operand, second_operand, arithmetic_result, evm_result),
   arithmetic_result != evm_result,
-  /*use(step2, step1),*/
   storage(step3, "SSTORE", _, hash, _, _, _),
-  /*data_flow(step2, step3),*/
   transfer(_, hash, from, to, amount),
-  !match("0", second_operand),
-  transaction(hash, _, _, _, 1, block),
+  second_operand = amount,
+  data_flow(step1, step2),
+  data_flow(step2, step3),
+  transaction(hash, _, _, _, _, _, 1, block),
   block(block, _, _, timestamp),
   asset = "Token";
 
   opcode(step1, "CALLDATALOAD"),
   arithmetic(step2, "SUB", first_operand, second_operand, arithmetic_result, evm_result),
   arithmetic_result != evm_result,
-  /*use(step2, step1),*/
-  call(step3, hash, "CALL", from, to, _, amount, _, 1),
+  storage(step3, "SSTORE", _, hash, _, _, _),
+  call(_, hash, "CALL", from, to, "", amount, _, 1),
   !match("0", amount),
-  /*use(step3, step2),*/
-  transaction(hash, _, _, _, 1, block),
+  data_flow(step1, step2),
+  data_flow(step2, step3),
+  transaction(hash, _, _, _, _, _, 1, block),
   block(block, _, _, timestamp),
   asset = "Ether".
 .output IntegerUnderflow
 
 /* Transaction Order Dependency */
-.decl TransactionOrderDependency(hash1:symbol, hash2:symbol, timestamp:number, block:number)
-TransactionOrderDependency(hash1, hash2, timestamp, block) :-
+.decl TransactionOrderDependency(hash1:symbol, hash2:symbol, timestamp:number, block:number, contract:Address)
+TransactionOrderDependency(hash1, hash2, timestamp, block, contract) :-
   storage(step1, "SSTORE", block, hash1, caller1, contract, index),
   storage(step2, "SLOAD", block, hash2, caller2, contract, index),
   hash1 != hash2,
@@ -210,7 +232,7 @@ UncheckedSuicide(hash, timestamp, step2, caller, contract, destination, amount) 
   selfdestruct(step2, hash, caller, contract, destination, amount),
   data_flow(step1, step2),
   !caller_check(_, hash),
-  transaction(hash, _, _, _, 1, block),
+  transaction(hash, _, _, _, _, _, 1, block),
   block(block, _, _, timestamp).
 .output UncheckedSuicide
 
@@ -219,9 +241,9 @@ UncheckedSuicide(hash, timestamp, step2, caller, contract, destination, amount) 
 UncheckedDelegatecall(hash, timestamp, step2, caller, callee) :-
   opcode(step1, "CALLDATALOAD"),
   call(step2, hash, "DELEGATECALL", caller, callee, _, _, _, 1),
-  data_flow(step2, step1),
+  data_flow(step1, step2),
   !caller_check(_, hash),
-  transaction(hash, _, _, input_data, 1, block),
+  transaction(hash, _, _, input_data, _, _, 1, block),
   contains(substr(callee, 2, strlen(callee)), input_data),
   block(block, _, _, timestamp).
 .output UncheckedDelegatecall
@@ -230,11 +252,11 @@ UncheckedDelegatecall(hash, timestamp, step2, caller, callee) :-
 .decl ParityWalletHack1(hash1:symbol, hash2:symbol, timestamp1:number, timestamp2:number, caller:Address, callee:Address, amount:Value)
 ParityWalletHack1(hash1, hash2, timestamp1, timestamp2, caller, callee, amount) :-
   call(_, hash1, "DELEGATECALL", _, _, _, _, _, 1),
-  transaction(hash1, from, to, input_data1, 1, block1),
+  transaction(hash1, from, to, input_data1, _, _, 1, block1),
   substr(input_data1, 0, 8) = "e46dcfeb",
   block(block1, _, _, timestamp1),
   call(_, hash2, "DELEGATECALL", _, _, _, _, _, 1),
-  transaction(hash2, from, to, input_data2, 1, block2),
+  transaction(hash2, from, to, input_data2, _, _, 1, block2),
   substr(input_data2, 0, 8) = "b61d27f6",
   block(block2, _, _, timestamp2),
   block1 <= block2,
@@ -246,11 +268,11 @@ ParityWalletHack1(hash1, hash2, timestamp1, timestamp2, caller, callee, amount) 
 .decl ParityWalletHack2(hash1:symbol, hash2:symbol, timestamp1:number, timestamp2:number, caller:Address, contract:Address, destination:Address, amount:Value)
 ParityWalletHack2(hash1, hash2, timestamp1, timestamp2, caller, contract, destination, amount) :-
   !call(_, hash1, "DELEGATECALL", _, _, _, _, _, 1),
-  transaction(hash1, from, to, input_data1, 1, block1),
+  transaction(hash1, from, to, input_data1, _, _, 1, block1),
   substr(input_data1, 0, 8) = "e46dcfeb",
   block(block1, _, _, timestamp1),
   !call(_, hash2, "DELEGATECALL", _, _, _, _, _, 1),
-  transaction(hash2, from, to, input_data2, 1, block2),
+  transaction(hash2, from, to, input_data2, _, _, 1, block2),
   substr(input_data2, 0, 8) = "cbf0b0c0",
   block(block2, _, _, timestamp2),
   block1 <= block2,
@@ -259,8 +281,8 @@ ParityWalletHack2(hash1, hash2, timestamp1, timestamp2, caller, contract, destin
 
 /* Short Address */
 .decl ShortAddress(hash:symbol, timestamp:number, step:number, from:Address, to:Address, amount:Value)
-ShortAddress(hash, timestamp, step7, from, to, amount) :-
-  transaction(hash, _, _, input_data, 1, block),
+/*ShortAddress(hash, timestamp, step6, from, to, amount) :-
+  transaction(hash, _, _, input_data, _, _, 1, block),
   size = strlen(input_data) / 2,
   size > 36,
   size < 68,
@@ -273,7 +295,19 @@ ShortAddress(hash, timestamp, step7, from, to, amount) :-
   data_flow(step3, step4),
   storage(step5, "SSTORE", _, hash, _, _, _),
   data_flow(step4, step5),
-  transfer(step7, hash, from, to, amount),
+  transfer(step6, hash, from, to, amount),
+  contains(substr(to, 2, strlen(to)), input_data),
+  block(block, _, _, timestamp).*/
+ShortAddress(hash, timestamp, step6, from, to, amount) :-
+  transaction(hash, _, _, input_data, _, _, 1, block),
+  substr(input_data, 0, 8) = "a9059cbb",
+  strlen(input_data) / 2 < 68,
+  transfer(step6, hash, from, to, amount),
+  block(block, _, _, timestamp);
+  transaction(hash, _, _, input_data, _, _, 1, block),
+  substr(input_data, 0, 8) = "23b872dd",
+  strlen(input_data) / 2 < 100,
+  transfer(step6, hash, from, to, amount),
   block(block, _, _, timestamp).
 .output ShortAddress
 
@@ -288,7 +322,7 @@ DoSWithUnexpectedThrow(hash, timestamp, step3, caller, callee, amount) :-
   throw(step3, hash, _, _, depth3),
   step2 < step3,
   depth1 = depth3,
-  transaction(hash, _, _, _, _, block),
+  transaction(hash, _, _, _, _, _, _, block),
   block(block, _, _, timestamp).
 .output DoSWithUnexpectedThrow
 
@@ -297,7 +331,7 @@ DoSWithUnexpectedThrow(hash, timestamp, step3, caller, callee, amount) :-
 DoSWithBlockGasLimit(hash, timestamp, step, gas_limit, caller, callee, amount) :-
   block(block, gas_used, gas_limit, timestamp),
   gas_used = gas_limit,
-  transaction(hash, _, _, _, _, block),
+  transaction(hash, _, _, _, _, _, _, block),
   call(step, hash, "CALL", caller, callee, _, amount, _, 1),
   !match("0", amount),
   error(hash, "out of gas").
@@ -311,7 +345,7 @@ TimestampDependence(hash, timestamp, step2, caller, callee, amount) :-
   call(step2, hash, "CALL", caller, callee, _, amount, _, 1),
   !match("0", amount),
   step1 < step2,
-  transaction(hash, _, _, _, 1, block),
+  transaction(hash, _, _, _, _, _, 1, block),
   block(block, _, _, timestamp).
 .output TimestampDependence
 
@@ -323,7 +357,7 @@ TransactionStateDependence(hash, timestamp, step2, caller, callee, amount) :-
   call(step2, hash, "CALL", caller, callee, _, amount, _, 1),
   !match("0", amount),
   step1 < step2,
-  transaction(hash, from, _, _, 1, block),
+  transaction(hash, from, _, _, _, _, 1, block),
   callee != from,
   block(block, _, _, timestamp).
 .output TransactionStateDependence
@@ -336,39 +370,43 @@ BlockStateDependence(hash, timestamp, step2, caller, callee, amount) :-
   call(step2, hash, "CALL", caller, callee, _, amount, _, 1),
   !match("0", amount),
   step1 < step2,
-  transaction(hash, _, _, _, 1, block),
+  transaction(hash, _, _, _, _, _, 1, block),
   block(block, _, _, timestamp);
+
   opcode(step2, "COINBASE"),
   used_in_condition(step1, hash),
   call(step3, hash, "CALL", caller, callee, _, amount, _, 1),
   !match("0", amount),
   step1 < step2,
-  transaction(hash, _, _, _, 1, block),
+  transaction(hash, _, _, _, _, _, 1, block),
   block(block, _, _, timestamp);
+
   opcode(step1, "NUMBER"),
   used_in_condition(step1, hash),
   call(step2, hash, "CALL", caller, callee, _, amount, _, 1),
   !match("0", amount),
   step1 < step2,
-  transaction(hash, _, _, _, 1, block),
+  transaction(hash, _, _, _, _, _, 1, block),
   block(block, _, _, timestamp);
+
   opcode(step1, "DIFFICULTY"),
   used_in_condition(step1, hash),
   call(step2, hash, "CALL", caller, callee, _, amount, _, 1),
   !match("0", amount),
   step1 < step2,
-  transaction(hash, _, _, _, 1, block),
+  transaction(hash, _, _, _, _, _, 1, block),
   block(block, _, _, timestamp);
+
   opcode(step1, "GASLIMIT"),
   used_in_condition(step1, hash),
   call(step2, hash, "CALL", caller, callee, _, amount, _, 1),
   !match("0", amount),
   step1 < step2,
-  transaction(hash, _, _, _, 1, block),
+  transaction(hash, _, _, _, _, _, 1, block),
   block(block, _, _, timestamp).
 .output BlockStateDependence
 
-.decl UncheckedSignature(hash:symbol, timestamp:number, step:number, input_data:symbol, from:Address, to:Address, amount:Value)
+/*.decl UncheckedSignature(hash:symbol, timestamp:number, step:number, input_data:symbol, from:Address, to:Address, amount:Value)
 UncheckedSignature(hash, timestamp, step2, input_data, from, to, amount) :-
   opcode(step1, "SHA3"),
   call(step2, hash, "CALL", _, "0x0000000000000000000000000000000000000001", input_data, _, _, 1),
@@ -376,7 +414,7 @@ UncheckedSignature(hash, timestamp, step2, input_data, from, to, amount) :-
   storage(step3, "SSTORE", _, hash, _, _, _),
   !data_flow(step1, step3),
   transfer(_, hash, from, to, amount),
-  transaction(hash, _, _, _, 1, block),
+  transaction(hash, _, _, _, _, _, 1, block),
   block(block, _, _, timestamp).
 .output UncheckedSignature
 
@@ -387,9 +425,9 @@ BalanceInvariant(hash, timestamp, step2) :-
   use(step2, step1),
   throw(step3, hash, _, _, _),
   step2 < step3,
-  transaction(hash, _, _, _, 1, block),
+  transaction(hash, _, _, _, _, _, 1, block),
   block(block, _, _, timestamp).
-.output BalanceInvariant
+.output BalanceInvariant*/
 
 .decl InsufficientGas(hash:symbol, timestamp:number, step:number, caller:Address, callee:Address, amount:Value)
 InsufficientGas(hash, timestamp, step2, caller, callee, amount) :-
@@ -397,6 +435,15 @@ InsufficientGas(hash, timestamp, step2, caller, callee, amount) :-
   call(step2, hash, "CALL", caller, callee, _, amount, _, 0),
   data_flow(step1, step2),
   error(hash, "out of gas"),
-  transaction(hash, _, _, _, _, block),
+  storage(_, "SSTORE", _, hash, _, _, _),
+  transaction(hash, _, _, _, _, _, 1, block),
   block(block, _, _, timestamp).
 .output InsufficientGas
+
+.decl BlockStuffing(hash:symbol, timestamp:number, from:Address, to:Address)
+BlockStuffing(hash1, timestamp, from, to) :-
+  transaction(hash1, from, to, input_data, gas_used, gas_limit, 0, block),
+  transaction(hash2, _, to, input_data, gas_used, gas_limit, 0, block),
+  hash1 != hash2,
+  block(block, _, _, timestamp).
+.output BlockStuffing

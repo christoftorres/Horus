@@ -1,5 +1,5 @@
 # HTTP-RPC host
-RPC_HOST = '10.186.115.17'
+RPC_HOST = 'pf.uni.lux'
 # HTTP-RPC port
 RPC_PORT = 8545 # Mainnet 8546 # Testnet
 # Web3 instance

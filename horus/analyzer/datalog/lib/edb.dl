@@ -11,7 +11,7 @@
 .decl selfdestruct(step:number, transaction_hash:symbol, caller:Address, contract:Address, destination:Address, amount:Value)
 .decl error(transaction_hash:symbol, error_message:symbol)
 .decl block(block:number, gas_used:number, gas_limit:number, timestamp:number)
-.decl transaction(transaction_hash:symbol, from:Address, to:Address, input_data:symbol, status:number, block:number)
+.decl transaction(transaction_hash:symbol, from:Address, to:Address, input_data:symbol, gas_used:number, gas_limit:number, status:number, block:number)
 
 .input def
 .input use

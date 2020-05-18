@@ -32,8 +32,8 @@ class TaintRecord:
     def __init__(self, input={}, value=False, output=None, address=None):
         """ Builds a taint record """
         # Execution environment
-        self.input = input
-        self.value = value
+        #self.input = input
+        #self.value = value
         self.output = output
         self.address = address
         # Machine state
@@ -43,9 +43,9 @@ class TaintRecord:
     def __str__(self):
         return json.dumps(self.__dict__)
 
-    def input_tainted(self):
-        """ Returns taint value of input data"""
-        return self.input
+    #def input_tainted(self):
+    #    """ Returns taint value of input data"""
+    #    return self.input
 
     def value_tainted(self):
         """ Returns taint value of message value"""
@@ -66,8 +66,8 @@ class TaintRecord:
     def clone(self):
         """ Clones this record"""
         clone = TaintRecord()
-        clone.input   = self.input
-        clone.value   = self.value
+        #clone.input   = self.input
+        #clone.value   = self.value
         clone.output  = self.output
         clone.address = self.address
         clone.stack   = self.stack
@@ -93,7 +93,8 @@ class TaintRunner:
                     previous_records = self.call_stack[instruction["depth"]-2]
                     if len(previous_records) > 0:
                         previous_record = previous_records[-1]
-                        records.append(TaintRecord(input=previous_record.input, value=previous_record.value, output=previous_record.output, address=contract))
+                    #    records.append(TaintRecord(input=previous_record.input, value=previous_record.value, output=previous_record.output, address=contract))
+                        records.append(TaintRecord(output=previous_record.output, address=contract))
                     else:
                         records.append(TaintRecord(address=contract))
 
@@ -120,12 +121,13 @@ class TaintRunner:
                         record = [taint]
                         records[-1].stack[-i] = record
                 if instruction["op"] == "CALL":
-                    if not records[-1].output:
-                        records[-1].output = []
-                    records[-1].output += [taint]
-                elif instruction["op"] == "CALLDATACOPY":
-                    records[-1].memory[instruction["stack"][-1]] = []
-                    records[-1].memory[instruction["stack"][-1]].append(taint)
+                    #if not records[-1].output:
+                    #    records[-1].output = []
+                    #records[-1].output += [taint]
+                    records[-1].output = [taint]
+                if instruction["op"] == "CALLDATACOPY":
+                    records[-1].memory[int(instruction["stack"][-1])] = []
+                    records[-1].memory[int(instruction["stack"][-1])].append(taint)
         except:
             traceback.print_exc()
 
@@ -140,14 +142,14 @@ class TaintRunner:
                     if stack:
                         values += stack
                 else:
-                    if instruction["op"].startswith("LOG") or instruction["op"] == "SHA3":
-                        memory = TaintRunner.extract_taint_from_memory(records[-2].memory, int(instruction["stack"][-1], 16), int(instruction["stack"][-2], 16))
-                        if memory:
-                            values += memory
-                    if instruction["op"] == "CALL":
-                        memory = TaintRunner.extract_taint_from_memory(records[-2].memory, int(instruction["stack"][-4], 16), int(instruction["stack"][-5], 16))
-                        if memory:
-                            values += memory
+                    #if instruction["op"] == "LOG3" or instruction["op"] == "SHA3":
+                    #    memory = TaintRunner.extract_taint_from_memory(records[-2].memory, int(instruction["stack"][-1], 16), int(instruction["stack"][-2], 16))
+                    #    if memory:
+                    #        values += memory
+                    #if instruction["op"] == "CALL":
+                    #    memory = TaintRunner.extract_taint_from_memory(records[-2].memory, int(instruction["stack"][-4], 16), int(instruction["stack"][-5], 16))
+                    #    if memory:
+                    #        values += memory
                     for i in range(0, mutator[0]):
                         stack = records[-2].stack[-(i+1)]
                         if stack:
@@ -161,7 +163,7 @@ class TaintRunner:
 
     @staticmethod
     def execute_trace(record, storage, instruction):
-        assert len(record.stack) == len(instruction["stack"])
+        #assert len(record.stack) == len(instruction["stack"])
 
         new_record = record.clone()
         # Apply Change
@@ -235,13 +237,13 @@ class TaintRunner:
     @staticmethod
     def mutate_mload(record, instruction):
         record.stack.pop()
-        index = instruction["stack"][-1]
+        index = int(instruction["stack"][-1])
         record.stack.append(record.memory_tainted(index))
 
     @staticmethod
     def mutate_mstore(record, instruction):
         record.stack.pop()
-        index, value = instruction["stack"][-1], record.stack.pop()
+        index, value = int(instruction["stack"][-1]), record.stack.pop()
         record.memory[index] = value
 
     @staticmethod
@@ -272,9 +274,11 @@ class TaintRunner:
     @staticmethod
     def mutate_sha3(record, instruction):
         record.stack.pop()
-        offset = int(instruction["stack"][-1], 16)
+        #offset = int(instruction["stack"][-1], 16)
+        offset = int(instruction["stack"][-1])
         record.stack.pop()
-        size = int(instruction["stack"][-2], 16)
+        #size = int(instruction["stack"][-2], 16)
+        size = int(instruction["stack"][-2])
         value = TaintRunner.extract_taint_from_memory(record.memory, offset, size)
         record.stack.append(value)
 
@@ -282,38 +286,40 @@ class TaintRunner:
     def mutate_call_data_load(record, instruction):
         record.stack.pop()
         taint = False
-        if record.input:
-            if instruction["stack"][-1] in record.input:
-                taint = record.input[instruction["stack"][-1]]
+        #if record.input:
+        #    if instruction["stack"][-1] in record.input:
+        #        taint = record.input[instruction["stack"][-1]]
         record.stack.append(taint)
 
     @staticmethod
     def mutate_call_value(record, instruction):
-        record.stack.append(record.value)
+        #record.stack.append(record.value)
+        record.stack.append(False)
 
     @staticmethod
     def mutate_copy(record, op, instruction):
         if op == "EXTCODECOPY":
             record.stack.pop()
-            index = instruction["stack"][-2]
-        else:
-            index = instruction["stack"][-1]
+        #    index = int(instruction["stack"][-2])
+        #else:
+        #    index = int(instruction["stack"][-1])
         record.stack.pop()
         record.stack.pop()
-        record.memory[index] = record.stack.pop()
+        #record.memory[index] = record.stack.pop()
 
     @staticmethod
     def mutate_create(record, instruction):
         value = record.stack.pop()
-        offset = int(instruction["stack"][-1], 16)
+        #offset = int(instruction["stack"][-1], 16)
         record.stack.pop()
-        size = int(instruction["stack"][-2], 16)
+        #size = int(instruction["stack"][-2], 16)
         record.stack.pop()
-        taint = TaintRunner.extract_taint_from_memory(record.memory, offset, size)
-        if value and not taint:
-            taint = []
-        if value:
-            taint += value
+        #taint = TaintRunner.extract_taint_from_memory(record.memory, offset, size)
+        #if value and not taint:
+        #    taint = []
+        #if value:
+        #    taint += value
+        taint = False
         record.stack.append(taint)
 
     @staticmethod
@@ -332,25 +338,37 @@ class TaintRunner:
     @staticmethod
     def mutate_return_data_size(record, op, instruction):
         record.stack.append(record.output)
+        #record.stack.append(False)
 
     @staticmethod
     def extract_taint_from_memory(memory, offset, size):
         taint = []
-        length = int(size / 32)
-        for i in range(length):
-            index = hex(offset + i * 32).replace("0x", "").zfill(64)
-            if index in memory:
-                if memory[index]:
-                    for k in memory[index]:
+        #length = int(size / 32)
+        #print(length)
+        #for i in range(length):
+        #    print(i)
+            #index = hex(offset + i * 32).replace("0x", "").zfill(64)
+            #print(index)
+        #    index = offset + i * 32
+        #    print(index)
+        #    if index in memory:
+        #        if memory[index]:
+        #            for k in memory[index]:
+        #                if not k in taint:
+        #                    taint.append(k)
+        #    keys = list(memory.keys())
+        #    print(keys)
+        sorted_memory = collections.OrderedDict(sorted(memory.items()))
+        keys = list(sorted_memory.keys())
+        for j in range(len(keys)):
+            #if offset < int(keys[j], 16) and int(keys[j], 16) < offset + 32:
+            if int(keys[j]) >= offset + size:
+                break
+            if offset <= int(keys[j]):# and int(keys[j]) < offset + 32:
+                if sorted_memory[keys[j]]:
+                    for k in sorted_memory[keys[j]]:
                         if not k in taint:
                             taint.append(k)
-            keys = list(memory.keys())
-            for j in range(len(keys)):
-                if offset < int(keys[j], 16) and int(keys[j], 16) < offset + 32:
-                    if memory[keys[j]]:
-                        for k in memory[keys[j]]:
-                            if not k in taint:
-                                taint.append(k)
         if not taint:
             taint = False
         return taint

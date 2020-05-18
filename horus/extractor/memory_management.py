@@ -21,6 +21,7 @@ class MemoryManager:
             return
 
         if trace[step]["op"] == "CALLDATACOPY":
+            #print("calldatacopy")
             mem_start_position = int(trace[step]["stack"][-1], 16)
             calldata_start_position = int(trace[step]["stack"][-2], 16)
             size = int(trace[step]["stack"][-3], 16)
@@ -32,6 +33,7 @@ class MemoryManager:
             self.memory_write(mem_start_position, size, padded_value)
 
         elif trace[step]["op"] == "CODECOPY":
+            #print("codecopy")
             mem_start_position = int(trace[step]["stack"][-1], 16)
             code_start_position = int(trace[step]["stack"][-2], 16)
             size = int(trace[step]["stack"][-3], 16)
@@ -42,17 +44,20 @@ class MemoryManager:
             self.memory_write(mem_start_position, size, padded_code_bytes)
 
         elif trace[step]["op"] == "EXTCODECOPY":
+            #print("extcodecopy")
             account = force_bytes_to_address(bytes.fromhex(trace[step]["stack"][-1]))
             mem_start_position = int(trace[step]["stack"][-2], 16)
             code_start_position = int(trace[step]["stack"][-3], 16)
             size = int(trace[step]["stack"][-4], 16)
             self.extend_memory(mem_start_position, size)
-            code = settings.W3.eth.getCode(settings.W3.toChecksumAddress(account), transaction["blockNumber"]-1)
+            #code = settings.W3.eth.getCode(settings.W3.toChecksumAddress(account), transaction["blockNumber"]-1)
+            code = b''
             code_bytes = code[code_start_position:code_start_position + size]
             padded_code_bytes = code_bytes.ljust(size, b'\x00')
             self.memory_write(mem_start_position, size, padded_code_bytes)
 
         elif trace[step]["op"] == "RETURNDATACOPY":
+            #print("returndatacopy")
             mem_start_position = int(trace[step]["stack"][-1], 16)
             returndata_start_position = int(trace[step]["stack"][-2], 16)
             size = int(trace[step]["stack"][-3], 16)
@@ -62,6 +67,7 @@ class MemoryManager:
                 self.memory_write(mem_start_position, size, value)
 
         elif trace[step]["op"] == "MSTORE":
+            #print("mstore")
             start_position = int(trace[step]["stack"][-1], 16)
             value = bytes.fromhex(trace[step]["stack"][-2])
             padded_value = value.rjust(32, b'\x00')
@@ -70,6 +76,7 @@ class MemoryManager:
             self.memory_write(start_position, 32, normalized_value)
 
         elif trace[step]["op"] == "MSTORE8":
+            #print("mstore8")
             start_position = int(trace[step]["stack"][-1], 16)
             value = bytes.fromhex(trace[step]["stack"][-2])
             padded_value = value.rjust(1, b'\x00')
@@ -78,6 +85,7 @@ class MemoryManager:
             self.memory_write(start_position, 1, normalized_value)
 
         elif trace[step]["op"] == "RETURN":
+            #print("return")
             start_position = int(trace[step]["stack"][-1], 16)
             size = int(trace[step]["stack"][-2], 16)
             self.extend_memory(start_position, size)
@@ -86,6 +94,7 @@ class MemoryManager:
                 self.call_stack[-2]["output"] = output
 
         elif trace[step]["op"] in ["CREATE", "CREATE2"]:
+            #print("create")
             offset = int(trace[step]["stack"][-2], 16)
             size = int(trace[step]["stack"][-3], 16)
             call_data = self.memory_read_bytes(offset, size)
@@ -93,32 +102,39 @@ class MemoryManager:
             self.call_stack.append({"memory": Memory(), "data": call_data, "code": code, "output": b''})
 
         elif trace[step]["op"] in ["CALL", "CALLCODE"]:
+            #print("call")
             to = normalize_32_byte_hex_address(trace[step]["stack"][-2])
             offset = int(trace[step]["stack"][-4], 16)
             size = int(trace[step]["stack"][-5], 16)
             call_data = self.memory_read_bytes(offset, size)
-            code = settings.W3.eth.getCode(settings.W3.toChecksumAddress(to), transaction["blockNumber"]-1)
+            #code = settings.W3.eth.getCode(settings.W3.toChecksumAddress(to), transaction["blockNumber"]-1)
+            code = b''
             self.call_stack.append({"memory": Memory(), "data": call_data, "code": code, "output": b''})
 
         elif trace[step]["op"] in ["DELEGATECALL", "STATICCALL"]:
+            #print("delegate")
             to = normalize_32_byte_hex_address(trace[step]["stack"][-2])
             offset = int(trace[step]["stack"][-3], 16)
             size = int(trace[step]["stack"][-4], 16)
             call_data = self.memory_read_bytes(offset, size)
-            code = settings.W3.eth.getCode(settings.W3.toChecksumAddress(to), transaction["blockNumber"]-1)
+            #code = settings.W3.eth.getCode(settings.W3.toChecksumAddress(to), transaction["blockNumber"]-1)
+            code = b''
             self.call_stack.append({"memory": Memory(), "data": call_data, "code": code, "output": b''})
 
     #
     # Memory Management
     #
     def extend_memory(self, start_position: int, size: int) -> None:
+        #print("extend_memory")
         validate_uint256(start_position, title="Memory start position")
         validate_uint256(size, title="Memory size")
         if size:
             self.call_stack[-1]["memory"].extend(start_position, size)
 
     def memory_write(self, start_position: int, size: int, value: bytes) -> None:
+        #print("memory write")
         return self.call_stack[-1]["memory"].write(start_position, size, value)
 
     def memory_read_bytes(self, start_position: int, size: int) -> bytes:
+        #print("memory read")
         return self.call_stack[-1]["memory"].read_bytes(start_position, size)

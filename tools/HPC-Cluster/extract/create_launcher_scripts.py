@@ -5,7 +5,7 @@ import os
 import glob
 import shutil
 
-CONTRACTS      = "/Users/Christof/Downloads/contracts/"
+CONTRACTS      = "/Users/Christof/Downloads/contracts"
 ARGUMENTS      = "arguments"
 LAUNCHERS      = "launchers"
 MAX_ARGUMENTS  = 50000
@@ -64,8 +64,8 @@ if __name__ == "__main__":
                 f.write(s)
                 f.close()
                 launcher_script.write('sbatch ./'+os.path.join(LAUNCHERS, "horus_parallel_launcher_"+str(file_counter)+".sh")+'\n')
-            #arguments_file.write('/home/users/cferreira/Horus/contracts/'+os.path.basename(contract)+" "+'/work/projects/horus/facts/'+os.path.splitext(os.path.basename(contract))[0]+"\n")
-            arguments_file.write('/media/external/horus/contracts/'+os.path.basename(contract)+" "+'/media/external/horus/facts/'+os.path.splitext(os.path.basename(contract))[0]+"\n")
+            arguments_file.write('/home/users/cferreira/Horus/contracts/'+os.path.basename(contract)+" "+'/work/projects/horus/facts/'+os.path.splitext(os.path.basename(contract))[0]+"\n")
+            #arguments_file.write('/media/external/horus/contracts/'+os.path.basename(contract)+" "+'/media/external/horus/facts/'+os.path.splitext(os.path.basename(contract))[0]+"\n")
             print(os.path.splitext(os.path.basename(contract))[0])
         arguments_file.close()
 

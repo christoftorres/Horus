@@ -3,6 +3,7 @@
 
 import os
 import re
+import sys
 import http
 import json
 import time
@@ -95,17 +96,43 @@ def convert_hex_to_int(x):
     return x
 
 def request_debug_trace(connection, connection_retries, rpc_host, rpc_port, request_timeout, request_retry_interval, transaction_hash, disable_stack=False, disable_memory=True, disable_storage=True):
-    headers = {"Content-Type": "application/json"}
-    data = json.dumps({"id": 1, "method": "debug_traceTransaction", "params": [transaction_hash, {"disableStack": disable_stack, "disableMemory": disable_memory, "disableStorage": disable_storage}]})
+    data, tracer = None, None
+    with open(os.path.dirname(os.path.realpath(sys.argv[0]))+'/extractor/evm_tracing.js', 'r') as file:
+        tracer = file.read().replace('\n', '')
+    if tracer:
+        data = json.dumps({"id": 1, "method": "debug_traceTransaction", "params": [transaction_hash, {"tracer": tracer, "timeout": str(request_timeout)+"s"}]})
+    else:
+        data = json.dumps({"id": 1, "method": "debug_traceTransaction", "params": [transaction_hash, {"disableStack": disable_stack, "disableMemory": disable_memory, "disableStorage": disable_storage}]})
     tries = 0
+    headers = {"Content-Type": "application/json"}
     while tries < connection_retries:
         try:
             tries += 1
+            import time
+            print("request")
+            s = time.time()
             connection.request('GET', '/', data, headers)
+            e = time.time()
+            print(e-s)
             connection.sock.settimeout(request_timeout)
+            print("getresponse")
+            s = time.time()
             response = connection.getresponse()
+            e = time.time()
+            print(e-s)
             if response.status == 200 and response.reason == "OK":
-                return json.loads(response.read())
+                print("read")
+                s = time.time()
+                r = response.read()
+                e = time.time()
+                print(e-s)
+                print("loads")
+                s = time.time()
+                j = json.loads(r)
+                e = time.time()
+                print(e-s)
+                #print(str((deep_getsizeof(j, set()) / 1024) / 1024)+" MB")
+                return j
             return {"error": {"status": response.status, "reason": response.reason, "data": response.read().decode()}}
         except Exception as e:
             connection.close()
