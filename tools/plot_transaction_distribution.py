@@ -1,19 +1,19 @@
 import matplotlib
 import seaborn
 
+import numpy as np
+
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 
 matplotlib.use('Agg')
 
-plt.figure(figsize=(10,6))
-
-#seaborn.set(font_scale=2.0)
+seaborn.set(font_scale=1.1)
 seaborn.set_style('whitegrid', {'axes.grid' : False})
 
 plt.rcParams['text.latex.preamble']=[r"\usepackage{lmodern}"]
 params = {'text.usetex' : True,
-          'font.size' : 14,
+          'font.size' : 10,
           'font.family' : 'lmodern',
           }
 plt.rcParams.update(params)
@@ -21,13 +21,12 @@ plt.rcParams.update(params)
 fig, ax = plt.subplots()
 
 contracts = [461235, 463494, 107521, 31277, 9087, 2968, 427, 24, 2]
-#transactions = ['(0, 1]', '(1, 10]', '(10, 100]', '(100, 1K]', '10K', '100K', '1M', '10M', '100M']
-transactions = ['1', '10', '100', '1K', '10K', '100K', '1M', '10M', '100M']
+transactions = ['(0, 1]', '(1, 10]', '(10, 100]', '(100, 1K]', '(1K, 10K]', '(10K, 100K]', '(100K, 1M]', '(1M, 10M]', '(10M, 100M]']
 
-ax.bar(transactions, contracts, color="cornflowerblue", edgecolor="blue")
-
+rects = ax.bar(transactions, contracts)
 plt.ylabel("Number of Contracts")
-plt.xlabel("Number of Transactions")
+plt.xlabel("Transaction Ranges")
+plt.xticks(rotation=30)
 
 def human_format(x, pos):
     magnitude = 0
@@ -37,9 +36,30 @@ def human_format(x, pos):
     # add more suffixes if you need them
     return '%.0f%s' % (x, ['', 'K', 'M', 'G', 'T', 'P'][magnitude])
 
-#ax.set_yscale('log')
-#ax.get_yaxis().set_major_formatter(plt.FuncFormatter(lambda x, loc: "{:,}".format(int(x))))
+ax.get_yaxis().set_major_formatter(plt.FuncFormatter(lambda x, loc: "{:,}".format(int(x))))
 ax.yaxis.set_major_formatter(FuncFormatter(human_format))
-axes.spines['right'].set_visible(False)
+ax.get_yaxis().set_ticks([])
+
+def autolabel(rects):
+    """Attach a text label above each bar in *rects*, displaying its height."""
+    for rect in rects:
+        height = rect.get_height()
+        ax.annotate('{:,}'.format(height),
+                    xy=(rect.get_x() + rect.get_width() / 2, height),
+                    xytext=(0, 3),  # 3 points vertical offset
+                    textcoords="offset points",
+                    ha='center', va='bottom')
+
+autolabel(rects)
+
+for i in range(len(rects)):
+    if i > 2:
+        rects[i].set_alpha(0.5)
+
+ax.spines['left'].set_visible(False)
+ax.spines['right'].set_visible(False)
+ax.spines['top'].set_visible(False)
+
 plt.tight_layout()
-plt.savefig("transaction_distribution.pdf", dpi=1000, bbox_inches='tight')
+fig.set_size_inches(6, 3)
+plt.savefig("transaction-chart.pdf", dpi=100, bbox_inches='tight')
