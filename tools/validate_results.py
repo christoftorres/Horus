@@ -68,7 +68,7 @@ if __name__ == "__main__":
         if filename.endswith(".csv"):
             attack = filename.split(".")[0]
             contracts[attack] = set()
-            if not filename.startswith("block_state"):
+            if not filename.startswith("timestamp_dependence") and not filename.startswith("block_state_dependence"):
                 with open(os.path.join(FOLDER, filename)) as file:
                     reader = csv.reader(file)
                     for row in reader:
