@@ -12,7 +12,7 @@ CallStackDepth(hash, timestamp, step, caller, callee, amount) :-
 /* Reentrancy */
 .decl Reentrancy(hash:symbol, timestamp:number, step:number, caller:Address, callee:Address, depth:number, amount:Value)
 Reentrancy(hash, timestamp, step2, caller, callee, depth2, amount) :-
-  call(step1, hash, "CALL", caller, callee, input_data, _, depth1, 1),
+  call(step1, hash, "CALL", caller, callee, input_data, amount, depth1, 1),
   call(step2, hash, "CALL", caller, callee, input_data, amount, depth2, 1),
   step1 < step2,
   depth1 < depth2,
@@ -172,7 +172,7 @@ IntegerOverflow(hash, timestamp, step2, opcode, first_operand, second_operand, a
   opcode = "MUL",
   asset = "Token";
 
-  opcode(step1, "CALLDATALOAD"),
+  /*opcode(step1, "CALLDATALOAD"),
   arithmetic(step2, "MUL", first_operand, second_operand, arithmetic_result, evm_result),
   arithmetic_result != evm_result,
   storage(step3, "SSTORE", _, hash, _, _, _),
@@ -183,7 +183,7 @@ IntegerOverflow(hash, timestamp, step2, opcode, first_operand, second_operand, a
   transaction(hash, _, _, _, _, _, 1, block),
   block(block, _, _, timestamp),
   opcode = "MUL",
-  asset = "Ether".
+  asset = "Ether".*/
 .output IntegerOverflow
 
 /* Integer Underflow */
@@ -251,17 +251,18 @@ UncheckedDelegatecall(hash, timestamp, step2, caller, callee) :-
 /* Parity Wallet Hack 1 */
 .decl ParityWalletHack1(hash1:symbol, hash2:symbol, timestamp1:number, timestamp2:number, caller:Address, callee:Address, amount:Value)
 ParityWalletHack1(hash1, hash2, timestamp1, timestamp2, caller, callee, amount) :-
-  call(_, hash1, "DELEGATECALL", _, _, _, _, _, 1),
   transaction(hash1, from, to, input_data1, _, _, 1, block1),
   substr(input_data1, 0, 8) = "e46dcfeb",
-  block(block1, _, _, timestamp1),
-  call(_, hash2, "DELEGATECALL", _, _, _, _, _, 1),
   transaction(hash2, from, to, input_data2, _, _, 1, block2),
   substr(input_data2, 0, 8) = "b61d27f6",
-  block(block2, _, _, timestamp2),
-  block1 <= block2,
-  call(_, hash2, "CALL", caller, callee, _, amount, _, 1),
-  !match(amount, "0").
+  call(step1, hash1, "DELEGATECALL", _, _, _, _, _, 1),
+  call(step2, hash2, "DELEGATECALL", _, _, _, _, _, 1),
+  step1 < step2,
+  call(step3, hash2, "CALL", caller, callee, _, amount, _, 1),
+  !match(amount, "0"),
+  step2 < step3,
+  block(block1, _, _, timestamp1),
+  block(block2, _, _, timestamp2).
 .output ParityWalletHack1
 
 /* Parity Wallet Hack 2 */

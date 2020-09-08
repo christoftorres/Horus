@@ -9,81 +9,219 @@ import requests
 
 exitFlag = 0
 
-FOLDER = "results"
+global fp
+global tp
+
+#FOLDER = "/Users/christof.torres/Git/Horus/tools/source_code/reentrancy"
+#FOLDER = "/Users/christof.torres/Git/Horus/tools/source_code/cross_function_reentrancy"
+FOLDER = "/Users/christof.torres/Git/Horus/tools/source_code/block_state_dependence"
+#FOLDER = "/Users/christof.torres/Git/Horus/tools/source_code/transaction_state_dependence"
+#FOLDER = "/Users/christof.torres/Git/Horus/tools/source_code/timestamp_dependence"
+#FOLDER = "/Users/christof.torres/Git/Horus/tools/source_code/short_address"
+#FOLDER = "/Users/christof.torres/Git/Horus/tools/source_code/parity_wallet_hack_1"
+#FOLDER = "/Users/christof.torres/Git/Horus/tools/source_code/parity_wallet_hack_2"
+#FOLDER = "/Users/christof.torres/Git/Horus/tools/source_code/unchecked_delegatecall"
+#FOLDER = "/Users/christof.torres/Git/Horus/tools/source_code/unchecked_suicide"
+#FOLDER = "/Users/christof.torres/Git/Horus/tools/source_code/transaction_order_dependence"
+#FOLDER = "/Users/christof.torres/Git/Horus/tools/source_code/integer_underflow"
+#FOLDER = "/Users/christof.torres/Git/Horus/tools/source_code/integer_overflow_addition"
+#FOLDER = "/Users/christof.torres/Git/Horus/tools/source_code/integer_overflow_multiplication"
 
 class searchThread(threading.Thread):
    def __init__(self, threadID, queue):
       threading.Thread.__init__(self)
       self.threadID = threadID
       self.queue = queue
+
    def run(self):
       searchContract(self.queue)
 
 def searchContract(queue):
+    global fp
+    global tp
     while not exitFlag:
         queueLock.acquire()
         if not queue.empty():
-            attack, address = queue.get()
+            attack, filename = queue.get()
             queueLock.release()
-            print('Checking if source code exists for contract: '+str(address))
-            try:
-                response = requests.get('https://api.etherscan.io/api?module=contract&action=getsourcecode&address='+address+'&apikey=VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU').json()
-                if response['status'] == '1' and response['message'] == 'OK':
-                    if response['result'][0]['SourceCode']:
-                        if not os.path.isdir('source_code'):
-                            os.mkdir('source_code')
-                        if not os.path.isdir('source_code/'+attack):
-                            os.mkdir('source_code/'+attack)
+            with open(filename, 'r') as file:
+                source = file.read()
+                if attack == "reentrancy" or attack == "cross_function_reentrancy":
+                    if ".call.value" in source or not "ReentrancyGuard" in source :
+                        print("TP "+filename)
                         writeLock.acquire()
-                        file = open('source_code/'+attack+'/'+str(address)+'.sol', 'w')
-                        file.write(response['result'][0]['SourceCode'])
-                        file.close()
+                        tp += 1
                         writeLock.release()
-                        print('Downloaded source code for contract: '+str(address))
-                else:
-                    print(response['result'])
-            except Exception as e:
-                print(e)
-                pass
+                    else:
+                        print("FP "+filename)
+                        writeLock.acquire()
+                        fp += 1
+                        writeLock.release()
+                elif attack == "transaction_state_dependence":
+                    if "tx.origin" in source:
+                        print("TP "+filename)
+                        writeLock.acquire()
+                        tp += 1
+                        writeLock.release()
+                    else:
+                        print("FP "+filename)
+                        writeLock.acquire()
+                        fp += 1
+                        writeLock.release()
+                elif attack == "timestamp_dependence":
+                    if "block.timestamp" in source or "now" in source:
+                        print("TP "+filename)
+                        writeLock.acquire()
+                        tp += 1
+                        writeLock.release()
+                    else:
+                        print("FP "+filename)
+                        writeLock.acquire()
+                        fp += 1
+                        writeLock.release()
+                elif attack == "short_address":
+                    if "transfer" in source or "transferFrom" in source:
+                        print("TP "+filename)
+                        writeLock.acquire()
+                        tp += 1
+                        writeLock.release()
+                    else:
+                        print("FP "+filename)
+                        writeLock.acquire()
+                        fp += 1
+                        writeLock.release()
+                elif attack == "parity_wallet_hack_1":
+                    if "initWallet" in source and "execute" in source:
+                        print("TP "+filename)
+                        writeLock.acquire()
+                        tp += 1
+                        writeLock.release()
+                    else:
+                        print("FP "+filename)
+                        writeLock.acquire()
+                        fp += 1
+                        writeLock.release()
+                elif attack == "parity_wallet_hack_2":
+                    if "initWallet" in source and "kill" in source:
+                        print("TP "+filename)
+                        writeLock.acquire()
+                        tp += 1
+                        writeLock.release()
+                    else:
+                        print("FP "+filename)
+                        writeLock.acquire()
+                        fp += 1
+                        writeLock.release()
+                elif attack == "block_state_dependence":
+                    if "blockhash" in source or "block.coinbase" in source or "block.difficulty" in source or "block.gaslimit" in source or "block.number" in source:
+                        print("TP "+filename)
+                        writeLock.acquire()
+                        tp += 1
+                        writeLock.release()
+                    else:
+                        print("FP "+filename)
+                        writeLock.acquire()
+                        fp += 1
+                        writeLock.release()
+                elif attack == "unchecked_delegatecall":
+                    if "delegatecall" in source and not "msg.sender" in source:
+                        print("TP "+filename)
+                        writeLock.acquire()
+                        tp += 1
+                        writeLock.release()
+                    else:
+                        print("FP "+filename)
+                        writeLock.acquire()
+                        fp += 1
+                        writeLock.release()
+                elif attack == "unchecked_suicide":
+                    if "selfdestruct" in source or "suicide" in source:
+                        print("TP "+filename)
+                        writeLock.acquire()
+                        tp += 1
+                        writeLock.release()
+                    else:
+                        print("FP "+filename)
+                        writeLock.acquire()
+                        fp += 1
+                        writeLock.release()
+                elif attack == "transaction_order_dependence":
+                    if "transferFrom" in source and "approve" in source:
+                        print("TP "+filename)
+                        writeLock.acquire()
+                        tp += 1
+                        writeLock.release()
+                    else:
+                        print("FP "+filename)
+                        writeLock.acquire()
+                        fp += 1
+                        writeLock.release()
+                elif attack == "integer_underflow":
+                    if "-=" in source or " - " in source:
+                        print("TP "+filename)
+                        writeLock.acquire()
+                        tp += 1
+                        writeLock.release()
+                    else:
+                        print("FP "+filename)
+                        writeLock.acquire()
+                        fp += 1
+                        writeLock.release()
+                elif attack == "integer_overflow_addition":
+                    if "+=" in source or " + " in source:
+                        print("TP "+filename)
+                        writeLock.acquire()
+                        tp += 1
+                        writeLock.release()
+                    else:
+                        print("FP "+filename)
+                        writeLock.acquire()
+                        fp += 1
+                        writeLock.release()
+                elif attack == "integer_overflow_multiplication":
+                    if "*=" in source or not "SafeMath" in source:
+                        print("TP "+filename)
+                        writeLock.acquire()
+                        tp += 1
+                        writeLock.release()
+                    else:
+                        print("FP "+filename)
+                        writeLock.acquire()
+                        fp += 1
+                        writeLock.release()
+
+
         else:
             queueLock.release()
 
 if __name__ == "__main__":
+    global fp
+    global tp
     contractQueue = queue.Queue()
 
     queueLock = threading.Lock()
     writeLock = threading.Lock()
 
+    fp = 0
+    tp = 0
+
     # Create new threads
     threads = []
     threadID = 1
-    for i in range(5):
+    for i in range(100):
         thread = searchThread(threadID, contractQueue)
         thread.start()
         threads.append(thread)
         threadID += 1
 
-    contracts = {}
-    for filename in os.listdir(FOLDER):
-        if filename.endswith(".csv"):
-            attack = filename.split(".")[0]
-            contracts[attack] = set()
-            if not filename.startswith("timestamp_dependence") and not filename.startswith("block_state_dependence"):
-                with open(os.path.join(FOLDER, filename)) as file:
-                    reader = csv.reader(file)
-                    for row in reader:
-                        address = row[0]
-                        if not os.path.isfile('source_code/'+attack+'/'+str(address)+'.sol'):
-                            contracts[attack].add(address)
-
     # Fill the queue with contract addresses
     queueLock.acquire()
-    for attack in contracts:
-        for address in contracts[attack]:
-            contractQueue.put((attack, address))
+    for filename in os.listdir(FOLDER):
+        attack = FOLDER.split("/")[-1]
+        contractQueue.put((attack, FOLDER+"/"+filename))
     queueLock.release()
 
-    print('Searching for '+str(contractQueue.qsize())+' contracts...\n')
+    print('Validating '+str(contractQueue.qsize())+' contracts...\n')
 
     # Wait for queue to empty
     while not contractQueue.empty():
@@ -95,5 +233,9 @@ if __name__ == "__main__":
     # Wait for all threads to complete
     for t in threads:
        t.join()
+
+    print("FP: "+str(fp))
+    print("TP: "+str(tp))
+    print("p: "+str(tp/(tp+fp)))
 
     print('\nDone')

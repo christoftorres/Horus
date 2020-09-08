@@ -12,6 +12,10 @@ class Etherscan():
         self.api_key = api_key
         self.session_cookie = session_cookie
 
+    def get_block_number_by_timestamp(self, timestamp, closest='after'):
+        response = requests.get("https://api.etherscan.io/api?module=block&action=getblocknobytime&timestamp="+str(timestamp)+"&closest="+closest+"&apikey="+str(self.api_key))
+        return int(response.json()["result"])
+
     def get_normal_transactions(self, address, start_block=0, end_block=99999999, offset=10000):
         response = requests.get("http://api.etherscan.io/api?module=account&action=txlist&address="+str(address)+"&startblock="+str(start_block)+"&endblock="+str(end_block)+"&page=1&offset="+str(offset)+"&sort=asc&apikey="+str(self.api_key))
         return response.json()["result"]

@@ -25,7 +25,7 @@ from datetime import datetime
 from collections import OrderedDict
 from pyetherchain.pyetherchain import EtherChainApi
 
-FOLDER = "/Users/Christof/Downloads/results"
+FOLDER = "/Users/christof.torres/Downloads/results"
 
 print("Evaluating results...")
 

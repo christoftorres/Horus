@@ -4,6 +4,8 @@ from datetime import datetime
 from neo4j.exceptions import ClientError
 from neo4j.v1 import GraphDatabase
 
+from web3 import Web3
+
 class Neo4J:
     def __init__(self, uri, user, password):
         self._driver = GraphDatabase.driver(uri, auth=(user, password), max_retry_time=1, encrypted=False)
@@ -14,95 +16,43 @@ class Neo4J:
     @staticmethod
     def _save_normal_transaction(tx, transaction, attacker, labeled_accounts):
         if transaction["from"] == attacker:
-            if transaction["from"] in labeled_accounts:
-                tx.run("""MERGE (t:Normal_Transaction {hash:$hash})
-                            SET t.value=$value
-                            SET t.block=$block
-                            SET t.timestamp=$timestamp
-                          MERGE (a:Attacker {address:$from_address})
-                            SET a.label=$label
-                            SET a.category=$category
-                          MERGE (a)-[:FROM]->(t)""",
-                       hash=transaction["hash"],
-                       value=int(transaction["value"], 16) / 1e18,
-                       block=transaction["blockNumber"],
-                       timestamp=datetime.fromtimestamp(int(transaction["timeStamp"])),
-                       from_address=transaction["from"],
-                       label=labeled_accounts[transaction["from"]]["labels"][0],
-                       category=labeled_accounts[transaction["from"]]["category"])
-            else:
-                tx.run("""MERGE (t:Normal_Transaction {hash:$hash})
-                            SET t.value=$value
-                            SET t.block=$block
-                            SET t.timestamp=$timestamp
-                          MERGE (a:Attacker {address:$from_address})
-                          MERGE (a)-[:FROM]->(t)""",
-                       hash=transaction["hash"],
-                       value=int(transaction["value"], 16) / 1e18,
-                       block=transaction["blockNumber"],
-                       timestamp=datetime.fromtimestamp(int(transaction["timeStamp"])),
-                       from_address=transaction["from"])
+            from_account_type = "Attacker"
+        elif transaction["from"] in labeled_accounts:
+            from_account_type = "Labeled_Account"
         else:
-            if transaction["from"] in labeled_accounts:
-                tx.run("""MERGE (t:Normal_Transaction {hash:$hash})
-                            SET t.value=$value
-                            SET t.block=$block
-                            SET t.timestamp=$timestamp
-                          MERGE (a:Labeled_Account {address:$from_address})
-                            SET a.label=$label
-                            SET a.category=$category
-                          MERGE (a)-[:FROM]->(t)""",
-                       hash=transaction["hash"],
-                       value=int(transaction["value"], 16) / 1e18,
-                       block=transaction["blockNumber"],
-                       timestamp=datetime.fromtimestamp(int(transaction["timeStamp"])),
-                       from_address=transaction["from"],
-                       label=labeled_accounts[transaction["from"]]["labels"][0],
-                       category=labeled_accounts[transaction["from"]]["category"])
-            else:
-                tx.run("""MERGE (t:Normal_Transaction {hash:$hash})
-                            SET t.value=$value
-                            SET t.block=$block
-                            SET t.timestamp=$timestamp
-                          MERGE (a:Account {address:$from_address})
-                          MERGE (a)-[:FROM]->(t)""",
-                       hash=transaction["hash"],
-                       value=int(transaction["value"], 16) / 1e18,
-                       block=transaction["blockNumber"],
-                       timestamp=datetime.fromtimestamp(int(transaction["timeStamp"])),
-                       from_address=transaction["from"])
-        if transaction["to"]:
-            if transaction["to"] in labeled_accounts:
-                if transaction["to"] == attacker:
-                    tx.run("""MERGE (t:Normal_Transaction {hash:$hash})
-                              MERGE (a:Attacker {address:$to_address})
-                                SET a.label=$label
-                                SET a.category=$category
-                              MERGE (a)<-[:TO]-(t)""",
-                           hash=transaction["hash"],
-                           to_address=transaction["to"],
-                           label=labeled_accounts[transaction["to"]]["labels"][0],
-                           category=labeled_accounts[transaction["to"]]["category"])
-                else:
-                    tx.run("""
-                            MATCH (t:Normal_Transaction {hash:$hash})
-                            MERGE (a:Labeled_Account {address:$to_address})
-                              SET a.label=$label
-                              SET a.category=$category
-                            MERGE (a)<-[:TO]-(t)
-                            """,
-                           hash=transaction["hash"],
-                           to_address=transaction["to"],
-                           label=labeled_accounts[transaction["to"]]["labels"][0],
-                           category=labeled_accounts[transaction["to"]]["category"])
-            else:
-                tx.run("""
-                        MATCH (t:Normal_Transaction {hash:$hash})
-                        MERGE (a:Account {address:$to_address})
-                        MERGE (a)<-[:TO]-(t)
-                        """,
-                       hash=transaction["hash"],
-                       to_address=transaction["to"])
+            from_account_type = "Account"
+
+        if transaction["to"] == attacker:
+            to_account_type = "Attacker"
+        elif transaction["to"] in labeled_accounts:
+            to_account_type = "Labeled_Account"
+        else:
+            to_account_type = "Account"
+
+        account_info_from = "{address:'"+transaction["from"]+"'"
+        if from_account_type == "Labeled_Account":
+            account_info_from += ",label:'"+labeled_accounts[transaction["from"]]["labels"][0]+"'"
+            account_info_from += ",category:'"+labeled_accounts[transaction["from"]]["category"]+"'"
+        account_info_from += "}"
+
+        account_info_to = "{address:'"+transaction["to"]+"'"
+        if to_account_type == "Labeled_Account":
+            account_info_to += ",label:'"+labeled_accounts[transaction["to"]]["labels"][0]+"'"
+            account_info_to += ",category:'"+labeled_accounts[transaction["to"]]["category"]+"'"
+        account_info_to += "}"
+
+        tx.run("""MERGE (from:"""+from_account_type+""" """+account_info_from+""")
+                  MERGE (to:"""+to_account_type+""" """+account_info_to+""")
+                  MERGE (from)-[:NORMAL_TRANSACTION {
+                    value:$value,
+                    hash:$hash,
+                    block:$block,
+                    timestamp:$timestamp
+                }]->(to)""",
+               value=str(Web3.fromWei(int(transaction["value"]), 'ether')),
+               hash=transaction["hash"],
+               block=transaction["blockNumber"],
+               timestamp=datetime.fromtimestamp(int(transaction["timeStamp"])))
 
     @staticmethod
     def _save_internal_transaction(tx, transaction, attacker, labeled_accounts):
@@ -382,11 +332,11 @@ class Neo4J:
         with self._driver.session() as session:
             with session.begin_transaction() as tx:
                 try:
-                    print(len(transactions))
-                    transactions = Neo4J._remove_transactions_with_no_value(transactions)
-                    print(len(transactions))
-                    #transactions = Neo4J._group_transactions_with_same_destination_together(transactions)
-                    print(len(transactions))
+                    #print(len(transactions))
+                    #transactions = Neo4J._remove_transactions_with_no_value(transactions)
+                    #print(len(transactions))
+                    transactions = Neo4J._group_transactions_with_same_destination_together(transactions)
+                    #print(len(transactions))
                     for transaction in transactions:
                         Neo4J._save_normal_transaction(tx, transaction, attacker, labeled_accounts)
                 except ClientError as e:
@@ -414,3 +364,16 @@ class Neo4J:
                         Neo4J._save_token_transaction(tx, transaction, attacker, labeled_accounts)
                 except ClientError as e:
                     print(e)
+
+    @staticmethod
+    def _run_cypher_query(tx, query):
+        return tx.run(query)
+
+    def run_cypher_query(self, query):
+        with self._driver.session() as session:
+            with session.begin_transaction() as tx:
+                try:
+                    return Neo4J._run_cypher_query(tx, query)
+                except ClientError as e:
+                    print(e)
+        return None
