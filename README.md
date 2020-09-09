@@ -15,7 +15,7 @@ An analysis tool to detect attacks in Ethereum transactions.
 brew install souffle-lang/souffle/souffle
 ```
 
-Follow the installation instructions on [souffle-lang.github.io](https://souffle-lang.github.io/install) for other operating systems.
+For other operating systems follow the installation instructions on [souffle-lang.github.io](https://souffle-lang.github.io/install).
 
 ## 2. Install Python Dependencies
 
