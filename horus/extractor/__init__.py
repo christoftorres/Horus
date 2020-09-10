@@ -27,7 +27,7 @@ class Extractor:
             def_facts           = open(facts_folder+"/def.facts",           "a")
             use_facts           = open(facts_folder+"/use.facts",           "a")
             arithmetic_facts    = open(facts_folder+"/arithmetic.facts",    "a")
-            bitwise_logic_facts = open(facts_folder+"/bitwise_logic.facts", "a")
+            #bitwise_logic_facts = open(facts_folder+"/bitwise_logic.facts", "a")
             storage_facts       = open(facts_folder+"/storage.facts",       "a")
             condition_facts     = open(facts_folder+"/condition.facts",     "a")
             transfer_facts      = open(facts_folder+"/transfer.facts",      "a")
@@ -322,7 +322,7 @@ class Extractor:
             def_facts.close()
             use_facts.close()
             arithmetic_facts.close()
-            bitwise_logic_facts.close()
+            #bitwise_logic_facts.close()
             storage_facts.close()
             condition_facts.close()
             transfer_facts.close()
@@ -342,9 +342,9 @@ class Extractor:
         print("Extracting facts for transaction "+str(transaction["hash"])+" took %.2f second(s)." % execution_delta)
 
         #if settings.DEBUG_MODE:
-        if True:
-            current, peak = tracemalloc.get_traced_memory()
-            print("Memory usage: %d MB (%d MB)" % (int(current/1024/1024), int(peak/1024/1024)))
+        #if True:
+        #    current, peak = tracemalloc.get_traced_memory()
+        #    print("Memory usage: %d MB (%d MB)" % (int(current/1024/1024), int(peak/1024/1024)))
 
         return step
 

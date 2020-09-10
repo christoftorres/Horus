@@ -157,6 +157,7 @@ def main():
             extractor.extract_facts_from_transactions(connection, transactions, blocks, settings.FACTS_FOLDER, args.compress)
 
         if args.extract and args.block_number:
+            start = time.time()
             transactions = []
             blocks = {}
             try:
@@ -170,11 +171,13 @@ def main():
             print("Retrieving "+str(len(transactions))+" transaction(s).\n")
             extractor = Extractor()
             extractor.extract_facts_from_transactions(connection, transactions, blocks, settings.FACTS_FOLDER, args.compress)
+            ende = time.time() - start
+            print("Zeit %.2f second(s)." % ende)
 
         if args.extract and args.contract_address:
             transactions = []
             blocks = {}
-            if args.contract_address.startswith("0x") and not args.contract_address.endswith(".csv") :
+            if args.contract_address.startswith("0x") and not args.contract_address.endswith(".csv") and not args.contract_address.endswith(".json"):
                 api_network = "api" if network == "mainnet" else "api-"+network
                 # Get the list of "normal" transactions for the given contract address
                 page = 1
@@ -245,8 +248,24 @@ def main():
                             block['gasLimit'] = int(row[6])
                             block['timestamp'] = int(row[7])
                             blocks[transaction['blockNumber']] = block
+            elif args.contract_address.endswith(".json"):
+                with open(args.contract_address, "r") as f:
+                    confirmed_ct_txs = json.load(f)
+                    all_txs = set()
+                    for attack_type, ct_txs in confirmed_ct_txs.items():
+                        if attack_type == "call-injection" or attack_type == "reentrancy" or attack_type == "call-after-destruct" or attack_type == "integer-overflow":
+                            for ct, txs in ct_txs.items():
+                                all_txs.update(txs)
+                    transactions = []
+                    for tx in all_txs:
+                        transaction = format_transaction(settings.W3.eth.getTransaction(tx))
+                        print(transaction)
+                        transactions.append(transaction)
+                    print(len(transactions))
+                    extractor = Extractor()
+                    extractor.extract_facts_from_transactions(connection, transactions, blocks, settings.FACTS_FOLDER, args.compress)
             else:
-                print("Contract requires to be either an address or a CSV file")
+                print("Contract requires to be either an address, a CSV file, or a JOSN file")
                 return
             print("Retrieving "+str(len(transactions))+" transaction(s).\n")
             extractor = Extractor()

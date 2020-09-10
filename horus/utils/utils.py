@@ -108,31 +108,59 @@ def request_debug_trace(connection, connection_retries, rpc_host, rpc_port, requ
     while tries < connection_retries:
         try:
             tries += 1
-            import time
-            print("request")
-            s = time.time()
+            #import time
+            #print("request")
+            #s = time.time()
             connection.request('GET', '/', data, headers)
-            e = time.time()
-            print(e-s)
-            connection.sock.settimeout(request_timeout)
-            print("getresponse")
-            s = time.time()
+            #e = time.time()
+            #print(e-s)
+            #connection.sock.settimeout(request_timeout)
+            #print("getresponse")
+            #s = time.time()
             response = connection.getresponse()
-            e = time.time()
-            print(e-s)
+            #e = time.time()
+            #print(e-s)
             if response.status == 200 and response.reason == "OK":
-                print("read")
-                s = time.time()
+                #print("read")
+                #s = time.time()
                 r = response.read()
-                e = time.time()
-                print(e-s)
-                print("loads")
-                s = time.time()
+                #e = time.time()
+                #print(e-s)
+                #print("loads")
+                #s = time.time()
                 j = json.loads(r)
-                e = time.time()
-                print(e-s)
+                #e = time.time()
+                #print(e-s)
                 #print(str((deep_getsizeof(j, set()) / 1024) / 1024)+" MB")
                 return j
+            return {"error": {"status": response.status, "reason": response.reason, "data": response.read().decode()}}
+        except Exception as e:
+            connection.close()
+            print("Exception: "+str(e))
+            if tries < connection_retries:
+                print("Retrying retrival of trace "+str(transaction_hash)+" in "+str(request_retry_interval)+" seconds.")
+                time.sleep(request_retry_interval)
+                connection = http.client.HTTPConnection(rpc_host, rpc_port)
+            else:
+                return {"error": e}
+
+def request_debug_trace_block(connection, connection_retries, rpc_host, rpc_port, request_timeout, request_retry_interval, block_number, disable_stack=False, disable_memory=True, disable_storage=True):
+    data, tracer = None, None
+    with open(os.path.dirname(os.path.realpath(sys.argv[0]))+'/extractor/evm_tracing.js', 'r') as file:
+        tracer = file.read().replace('\n', '')
+    if tracer:
+        data = json.dumps({"id": 1, "method": "debug_traceBlockByNumber", "params": [block_number, {"tracer": tracer, "timeout": str(request_timeout)+"s"}]})
+    else:
+        data = json.dumps({"id": 1, "method": "debug_traceBlockByNumber", "params": [block_number, {"disableStack": disable_stack, "disableMemory": disable_memory, "disableStorage": disable_storage}]})
+    tries = 0
+    headers = {"Content-Type": "application/json"}
+    while tries < connection_retries:
+        try:
+            tries += 1
+            connection.request('GET', '/', data, headers)
+            response = connection.getresponse()
+            if response.status == 200 and response.reason == "OK":
+                return json.loads(response.read())
             return {"error": {"status": response.status, "reason": response.reason, "data": response.read().decode()}}
         except Exception as e:
             connection.close()
