@@ -17,7 +17,7 @@ args = parser.parse_args()
 etherscan = Etherscan(api_key='VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU', session_cookie='3zd0i5lcokvpjl20bpkon3rk')
 
 graph = Neo4J(uri=args.address, user=args.user, password=args.password)
-#graph.delete_graph()
+graph.delete_graph()
 
 #attacker = '0x04786aada9deea2150deab7b3b8911c309f5ed90'
 #attacker = '0x6a164122d5cf7c840d26e829b46dcc4ed6c0ae48'
@@ -27,30 +27,36 @@ graph = Neo4J(uri=args.address, user=args.user, password=args.password)
 #attacker = '0xb4d30cac5124b46c2df0cf3e3e1be05f42119033'
 #attacker = '0x0e823ffe018727585eaf5bc769fa80472f76c3d7'
 
-hops = 3
+#attacker = '0xbd2250d713bf98b7e00c26e2907370ad30f0891a'
+attacker = '0x60f3fdb85b2f7faaa888ca7afc382c57f6415a81'
+
+block_number = 9892565
+
+hops = 6
 #token = "RMC"
 #token = "SMT"
 #token = "mesh"
 #token = "BEC"
-max_transactions = 10
+max_transactions = 10000
 
 labeled_accounts = etherscan.get_labels()
+offset = 10000
 
 # Normal transactions
 def load_normal_transactions(account, hops, hop=1, start_block=0, visited_accounts=[], direction="forwards"):
     if hop <= hops and account not in visited_accounts:
         visited_accounts.append(account)
-        transactions = etherscan.get_normal_transactions(account, start_block=start_block, offset=100)
+        transactions = etherscan.get_normal_transactions(account, start_block=start_block, offset=offset)
         spaces = ""
         for _ in range(hop-1):
-            spaces += " "
-        print("-> "+spaces+account+" "+str(hop)+" "+str(len(transactions)))
+            spaces += "  "
+        print("-> "+spaces+account+" "+str(hop)+" hops "+str(len(transactions))+" transactions")
         if   direction == "forwards":
-            transactions = [transaction for transaction in transactions if transaction["from"] == account and transaction["to"] != "" and int(transaction["value"]) > 0 and int(transaction["blockNumber"]) > start_block]
+            transactions = [transaction for transaction in transactions if transaction["from"] == account and transaction["to"] != "" and float(transaction["value"]) >= 10000000000000000000 and int(transaction["blockNumber"]) >= block_number]
         elif direction == "backwards":
-            transactions = [transaction for transaction in transactions if transaction["to"] == account]
+            transactions = [transaction for transaction in transactions if transaction["to"] == account and int(transaction["blockNumber"]) <= block_number]
         if len(transactions) <= max_transactions:
-            graph.save_normal_transactions(transactions, attacker, labeled_accounts)
+            graph.save_normal_transactions(transactions, attacker, labeled_accounts, direction)
             for transaction in transactions:
                 if direction == "forwards":
                     load_normal_transactions(transaction["to"], hops, hop+1, start_block, visited_accounts, direction)
@@ -112,8 +118,12 @@ start = time.time()
         count += 1
         if count == 10:
             break"""
-#print("Analyzing normal transactions...")
-#load_normal_transactions(attacker, hops, direction="backwards")
+#print("Analyzing normal transactions backwards...")
+#load_normal_transactions(attacker, 5, visited_accounts=[], direction="backwards")
+
+print("Analyzing normal transactions forwards...")
+load_normal_transactions(attacker, 5, visited_accounts=[], direction="forwards")
+
 """print("Analyzing internal transactions...")
 load_internal_transactions(attacker, hops)"""
 #print("Analyzing token transactions...")
@@ -122,8 +132,10 @@ end = time.time()
 print("Execution time: "+str(end - start))
 
 result = graph.run_cypher_query("MATCH p=shortestPath((attacker:Attacker)-[:NORMAL_TRANSACTION*]-(exchange:Labeled_Account {category:'Exchange'})) RETURN *")
+print(result)
 for record in result:
-    print(record["attacker"]["address"])
-    print(record["exchange"]["address"])
-    print(record["exchange"]["category"])
-    print(record["exchange"]["label"])
+    print(record)
+    #print(record["attacker"]["address"])
+    #print(record["exchange"]["address"])
+    #print(record["exchange"]["category"])
+    #print(record["exchange"]["label"])

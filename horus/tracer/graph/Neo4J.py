@@ -2,19 +2,20 @@
 from datetime import datetime
 
 from neo4j.exceptions import ClientError
-from neo4j.v1 import GraphDatabase
+#from neo4j.v1 import GraphDatabase
+from neo4j import GraphDatabase
 
 from web3 import Web3
 
 class Neo4J:
     def __init__(self, uri, user, password):
-        self._driver = GraphDatabase.driver(uri, auth=(user, password), max_retry_time=1, encrypted=False)
+        self._driver = GraphDatabase.driver(uri, auth=(user, password), encrypted=False)
 
     def close(self):
         self._driver.close()
 
     @staticmethod
-    def _save_normal_transaction(tx, transaction, attacker, labeled_accounts):
+    def _save_normal_transaction(tx, transaction, attacker, labeled_accounts, direction):
         if transaction["from"] == attacker:
             from_account_type = "Attacker"
         elif transaction["from"] in labeled_accounts:
@@ -41,6 +42,11 @@ class Neo4J:
             account_info_to += ",category:'"+labeled_accounts[transaction["to"]]["category"]+"'"
         account_info_to += "}"
 
+        if direction == "forwards":
+            value = str(int(Web3.fromWei(int(transaction["value"]), 'ether')))
+        else:
+            value = str(Web3.fromWei(int(transaction["value"]), 'ether'))
+
         tx.run("""MERGE (from:"""+from_account_type+""" """+account_info_from+""")
                   MERGE (to:"""+to_account_type+""" """+account_info_to+""")
                   MERGE (from)-[:NORMAL_TRANSACTION {
@@ -49,7 +55,7 @@ class Neo4J:
                     block:$block,
                     timestamp:$timestamp
                 }]->(to)""",
-               value=str(Web3.fromWei(int(transaction["value"]), 'ether')),
+               value=value,
                hash=transaction["hash"],
                block=transaction["blockNumber"],
                timestamp=datetime.fromtimestamp(int(transaction["timeStamp"])))
@@ -275,6 +281,20 @@ class Neo4J:
                     print(e)
 
     @staticmethod
+    def _group_transactions_together(transactions):
+        aggregated_transactions = []
+        for i in range(len(transactions)):
+            t = transactions[i]
+            exists = False
+            for a in aggregated_transactions:
+                if a["from"] == t["from"] and a["to"] == t["to"]:
+                    exists = True
+                    a["value"] = str(int(a["value"]) + int(t["value"]))
+            if not exists:
+                aggregated_transactions.append(t)
+        return aggregated_transactions
+
+    @staticmethod
     def _group_transactions_with_same_destination_together(transactions):
         aggregated_transactions = []
         to_addresses = []
@@ -299,7 +319,7 @@ class Neo4J:
                 for j in range(i, len(transactions)):
                     t2 = transactions[j]
                     if t1["from"] == t2["from"] and t1["to"] == t2["to"]:
-                        t1["value"] = str(int(t1["value"]) + int(t2["value"]))
+                        t1["value"] = str(float(t1["value"]) + float(t2["value"]))
                 aggregated_transactions.append(t1)
                 to_addresses.append(t1["to"])
         return aggregated_transactions
@@ -322,23 +342,28 @@ class Neo4J:
         return aggregated_transactions
 
     @staticmethod
-    def _remove_transactions_with_no_value(transactions):
-        return [transaction for transaction in transactions if int(transaction["value"]) > 0]
+    def _remove_transactions_with_no_value(transactions, attacker):
+        return [transaction for transaction in transactions if float(transaction["value"]) > 0 or transaction["from"] == attacker or transaction["to"] == attacker]
+
+    @staticmethod
+    def _filter_transactions_by_value(transactions, attacker, value):
+        return [transaction for transaction in transactions if float(transaction["value"]) >= value]
 
     def _keep_only_token_transactions(transactions, token):
         return [transaction for transaction in transactions if transaction["tokenSymbol"] == token]
 
-    def save_normal_transactions(self, transactions, attacker, labeled_accounts):
+    def save_normal_transactions(self, transactions, attacker, labeled_accounts, direction):
         with self._driver.session() as session:
             with session.begin_transaction() as tx:
                 try:
                     #print(len(transactions))
-                    #transactions = Neo4J._remove_transactions_with_no_value(transactions)
-                    #print(len(transactions))
-                    transactions = Neo4J._group_transactions_with_same_destination_together(transactions)
-                    #print(len(transactions))
+                    transactions = Neo4J._remove_transactions_with_no_value(transactions, attacker)
+                    #transactions = Neo4J._group_transactions_with_same_destination_together(transactions)
+                    transactions = Neo4J._group_transactions_together(transactions)
+                    if direction == "forwards":
+                        transactions = Neo4J._filter_transactions_by_value(transactions, attacker, 10000000000000000000) # 10ETH
                     for transaction in transactions:
-                        Neo4J._save_normal_transaction(tx, transaction, attacker, labeled_accounts)
+                        Neo4J._save_normal_transaction(tx, transaction, attacker, labeled_accounts, direction)
                 except ClientError as e:
                     print(e)
 

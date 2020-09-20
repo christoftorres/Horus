@@ -51,7 +51,7 @@ def main():
         group2.add_argument(
             "-t", "--transaction-hash", type=str, help="transaction hash to be extracted")
         group2.add_argument(
-            "-b", "--block-number", type=int, help="block number to be extracted")
+            "-b", "--block-number", type=str, help="block number or block range to be extracted")
         group2.add_argument(
             "-c", "--contract-address", type=str, help="contract address or CSV file with transactions to be extracted")
 
@@ -157,22 +157,46 @@ def main():
             extractor.extract_facts_from_transactions(connection, transactions, blocks, settings.FACTS_FOLDER, args.compress)
 
         if args.extract and args.block_number:
-            start = time.time()
-            transactions = []
-            blocks = {}
-            try:
-                block = settings.W3.eth.getBlock(args.block_number)
-                for i in block["transactions"]:
-                    transaction = format_transaction(settings.W3.eth.getTransaction(i))
-                    if transaction["gas"] > 21000:
+            if " " in args.block_number:
+                if len(args.block_number.split(" ")) != 2:
+                    parser.error("--block-number has to be a number or a range of two numbers")
+                block_start = args.block_number.split(" ")[0]
+                if not block_start.isnumeric():
+                    parser.error("--block-number has to be a number or a range of two numbers")
+                block_end = args.block_number.split(" ")[1]
+                if not block_end.isnumeric():
+                    parser.error("--block-number has to be a number or a range of two numbers")
+                stats = {"retrieval_times": [], "extraction_times": []}
+                for i in range(int(block_start), int(block_end)+1):
+                    print("Analyzing block "+str(i))
+                    transactions = []
+                    try:
+                        block = settings.W3.eth.getBlock(i)
+                        for j in block["transactions"]:
+                            transaction = format_transaction(settings.W3.eth.getTransaction(j))
+                            transactions.append(transaction)
+                    except:
+                        print("Error: Blockchain is not in sync with block number: "+args.block_number)
+                        return
+                    print("Retrieving "+str(len(transactions))+" transaction(s).\n")
+                    extractor = Extractor()
+                    extractor.extract_facts_from_block(connection, i, transactions, block, settings.FACTS_FOLDER, args.compress, stats)
+            else:
+                if not args.block_number.isnumeric():
+                    parser.error("--block-number has to be a number or a range of two numbers")
+                stats = {"retrieval_times": [], "extraction_times": []}
+                transactions = []
+                try:
+                    block = settings.W3.eth.getBlock(int(args.block_number))
+                    for i in block["transactions"]:
+                        transaction = format_transaction(settings.W3.eth.getTransaction(i))
                         transactions.append(transaction)
-            except:
-                print("Error: Blockchain is not in sync with block number: "+args.block_number[0])
-            print("Retrieving "+str(len(transactions))+" transaction(s).\n")
-            extractor = Extractor()
-            extractor.extract_facts_from_transactions(connection, transactions, blocks, settings.FACTS_FOLDER, args.compress)
-            ende = time.time() - start
-            print("Zeit %.2f second(s)." % ende)
+                except:
+                    print("Error: Blockchain is not in sync with block number: "+args.block_number)
+                    return
+                print("Retrieving "+str(len(transactions))+" transaction(s).\n")
+                extractor = Extractor()
+                extractor.extract_facts_from_block(connection, int(args.block_number), transactions, block, settings.FACTS_FOLDER, args.compress, stats)
 
         if args.extract and args.contract_address:
             transactions = []
@@ -273,10 +297,13 @@ def main():
 
         if args.analyze:
             analyzer = Analyzer()
-            if not os.path.isdir(settings.RESULTS_FOLDER) or not os.listdir(settings.RESULTS_FOLDER):
-                analyzer.analyze_facts(args.number_of_threads, args.profile, settings.FACTS_FOLDER, settings.RESULTS_FOLDER, settings.DATALOG_FILE, args.compress, settings.TMP_FOLDER)
-            else:
-                print("Datalog facts have already been analyzed.")
+            #if not os.path.isdir(settings.RESULTS_FOLDER) or not os.listdir(settings.RESULTS_FOLDER):
+            #    analyzer.analyze_facts(args.number_of_threads, args.profile, settings.FACTS_FOLDER, settings.RESULTS_FOLDER, settings.DATALOG_FILE, args.compress, settings.TMP_FOLDER)
+            #else:
+            #    print("Datalog facts have already been analyzed.")
+
+            analyzer.analyze_facts(args.number_of_threads, args.profile, settings.FACTS_FOLDER, settings.RESULTS_FOLDER, settings.DATALOG_FILE, args.compress, settings.TMP_FOLDER)
+
 
         print("")
     except argparse.ArgumentTypeError as e:

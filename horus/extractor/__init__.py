@@ -160,10 +160,11 @@ class Extractor:
                 #_contract = call_flow_analysis.get_caller()
                 _contract = trace[step]["contract"]
                 _storage_index = trace[step]["stack"][-1]
+                _depth = trace[step]["depth"]
                 if compress:
-                    in_memory_zip.append(facts_folder+"/storage.facts", "%d\t%s\t%d\t%s\t%s\t%s\t%s\r\n" % (step, _opcode, _block_number, _transaction_hash, _caller, _contract, _storage_index))
+                    in_memory_zip.append(facts_folder+"/storage.facts", "%d\t%s\t%d\t%s\t%s\t%s\t%s\t%d\r\n" % (step, _opcode, _block_number, _transaction_hash, _caller, _contract, _storage_index, _depth))
                 else:
-                    storage_facts.write("%d\t%s\t%d\t%s\t%s\t%s\t%s\r\n" % (step, _opcode, _block_number, _transaction_hash, _caller, _contract, _storage_index))
+                    storage_facts.write("%d\t%s\t%d\t%s\t%s\t%s\t%s\t%d\r\n" % (step, _opcode, _block_number, _transaction_hash, _caller, _contract, _storage_index, _depth))
 
             # Condition facts
             elif trace[step]["op"] == "JUMPI":
@@ -347,6 +348,70 @@ class Extractor:
         #    print("Memory usage: %d MB (%d MB)" % (int(current/1024/1024), int(peak/1024/1024)))
 
         return step
+
+    def extract_facts_from_block(self, connection, block_number, transactions, block, facts_folder, compress, stats):
+        if not compress and not os.path.isdir(facts_folder):
+            os.mkdir(facts_folder)
+
+        in_memory_zip = None
+        if compress:
+            in_memory_zip = InMemoryZip()
+            in_memory_zip.append(facts_folder+"/def.facts", "")
+            in_memory_zip.append(facts_folder+"/use.facts", "")
+            in_memory_zip.append(facts_folder+"/arithmetic.facts", "")
+            in_memory_zip.append(facts_folder+"/bitwise_logic.facts", "")
+            in_memory_zip.append(facts_folder+"/storage.facts", "")
+            in_memory_zip.append(facts_folder+"/condition.facts", "")
+            in_memory_zip.append(facts_folder+"/transfer.facts", "")
+            in_memory_zip.append(facts_folder+"/call.facts", "")
+            in_memory_zip.append(facts_folder+"/throw.facts", "")
+            in_memory_zip.append(facts_folder+"/selfdestruct.facts", "")
+            in_memory_zip.append(facts_folder+"/error.facts", "")
+            in_memory_zip.append(facts_folder+"/block.facts", "")
+            in_memory_zip.append(facts_folder+"/transaction.facts", "")
+
+        try:
+            retrieval_begin = time.time()
+            trace_response = request_debug_trace_block(connection, settings.CONNECTION_RETRIES, settings.RPC_HOST, settings.RPC_PORT, settings.REQUEST_TIMEOUT, settings.REQUEST_RETRY_INTERVAL, hex(block_number))
+            retrieval_end = time.time()
+            retrieval_delta = retrieval_end - retrieval_begin
+            stats["retrieval_times"].append(retrieval_delta)
+            if settings.DEBUG_MODE:
+                print("Retrieving block "+str(block_number)+" took %.2f second(s). (%d MB)" % (retrieval_delta, (deep_getsizeof(trace, set()) / 1024) / 1024))
+            else:
+                print("Retrieving block "+str(block_number)+" took %.2f second(s)." % (retrieval_delta))
+            if "error" in trace_response:
+                print("An error occured in retrieving the trace: "+str(trace_response["error"]))
+                raise Exception("An error occured in retrieving the trace: {}".format(trace_response["error"]))
+            else:
+                for index in range(len(trace_response["result"])):
+                    step = 0
+                    trace = {}
+                    max_step = 0
+                    gas_used = 0
+                    taint_runner = TaintRunner()
+
+                    for k in range(len(trace_response["result"][index]["result"]["structLogs"])):
+                        trace[k+step] = trace_response["result"][index]["result"]["structLogs"][k]
+                        max_step = k+step
+                    gas_used = trace_response["result"][index]["result"]["gas"]
+
+                    step = self.extract_facts_from_trace(facts_folder, trace, step, max_step, gas_used, block, transactions[index], taint_runner, stats, compress, in_memory_zip)
+        except Exception as e:
+            raise e
+        finally:
+            if len(stats["retrieval_times"]) > 0 and len(stats["extraction_times"]) > 0:
+                print()
+                print("Retrieval times: \t "+str(min(stats["retrieval_times"]))+"  Min \t "+str(max(stats["retrieval_times"]))+" Max \t "+str(sum(stats["retrieval_times"])/len(stats["retrieval_times"]))+" Mean.")
+                print("Extraction times: \t "+str(min(stats["extraction_times"]))+" Min \t "+str(max(stats["extraction_times"]))+" Max \t "+str(sum(stats["extraction_times"])/len(stats["extraction_times"]))+" Mean.")
+                print()
+
+            if compress:
+                in_memory_zip.append(facts_folder+"/stats.json", json.dumps(stats))
+                in_memory_zip.writetofile(facts_folder+".zip")
+            else:
+                with open(facts_folder+"/stats.json", "w") as jsonfile:
+                    json.dump(stats, jsonfile)
 
     def extract_facts_from_transactions(self, connection, transactions, blocks, facts_folder, compress):
         step = 0
