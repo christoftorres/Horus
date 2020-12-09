@@ -53,27 +53,49 @@ class Analyzer:
             shutil.rmtree(results)
         if not os.path.isdir(results):
             os.mkdir(results)
+
         if facts_folder.endswith(".zip"):
             if tmp_folder:
                 with zipfile.ZipFile(facts_folder, 'r') as zf:
                     zf.extractall(tmp_folder)
                 facts = tmp_folder+os.path.splitext(facts_folder)[0]
             else:
-                with zipfile.ZipFile(facts_folder, 'r') as zf:
-                    zf.extractall(os.path.dirname(facts_folder))
                 facts = os.path.splitext(facts_folder)[0]
+                if not os.path.isdir(facts):
+                    os.mkdir(facts)
+                with zipfile.ZipFile(facts_folder, 'r') as zip_file:
+                    for member in zip_file.namelist():
+                        filename = os.path.basename(member)
+                        if not filename:
+                            continue
+                        source = zip_file.open(member)
+                        target = open(os.path.join(facts, filename), "wb")
+                        with source, target:
+                            shutil.copyfileobj(source, target)
         else:
             facts = facts_folder
+
+        souffle_error = False
         if os.path.isfile(execution_path+"/analyzer/executable/analyzer"):
-            proc = subprocess.Popen(shlex.split(execution_path+"/analyzer/executable/analyzer"+j+p+" -D "+results+" -F "+facts), stdout=subprocess.PIPE)
-            proc.communicate()
+            proc = subprocess.Popen(shlex.split(execution_path+"/analyzer/executable/analyzer"+j+p+" -D "+results+" -F "+facts), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            out, err = proc.communicate()
+            if out:
+                print("Soufflé: "+out.decode('utf-8'))
+            if err:
+                print("Soufflé: "+err.decode('utf-8'))
             analysis_end = time.time()
             analysis_delta = analysis_end - analysis_begin
+            souffle_error = out or err
             print("Analyzing facts took %.2f second(s)." % (analysis_delta))
-        with open(results+"/stats.json", "w") as jsonfile:
-            json.dump(analysis_delta, jsonfile)
-        if facts_folder.endswith(".zip"):
-            shutil.rmtree(facts)
-        if compress:
-            shutil.make_archive(results_folder, 'zip', results)
-            shutil.rmtree(results)
+        if not souffle_error:
+            if analysis_delta:
+                with open(results+"/stats.json", "w") as jsonfile:
+                    json.dump(analysis_delta, jsonfile)
+            if facts_folder.endswith(".zip"):
+                shutil.rmtree(facts)
+            if compress:
+                shutil.make_archive(results_folder, 'zip', results)
+                shutil.rmtree(results)
+        else:
+            if os.path.isdir(results):
+                shutil.rmtree(results)

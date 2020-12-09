@@ -166,6 +166,16 @@ def main():
                 block_end = args.block_number.split(" ")[1]
                 if not block_end.isnumeric():
                     parser.error("--block-number has to be a number or a range of two numbers")
+
+                if args.compress:
+                    if os.path.exists(settings.FACTS_FOLDER+".zip"):
+                        print("Facts have already been extracted for block: "+args.block_number)
+                        return
+                else:
+                    if os.path.exists(settings.FACTS_FOLDER):
+                        print("Facts have already been extracted for block: "+args.block_number)
+                        return
+
                 stats = {"retrieval_times": [], "extraction_times": []}
                 for i in range(int(block_start), int(block_end)+1):
                     print("Analyzing block "+str(i))
@@ -184,19 +194,33 @@ def main():
             else:
                 if not args.block_number.isnumeric():
                     parser.error("--block-number has to be a number or a range of two numbers")
+
+                if args.compress:
+                    if os.path.exists(settings.FACTS_FOLDER+".zip"):
+                        print("Facts have already been extracted for block: "+args.block_number)
+                        return
+                else:
+                    if os.path.exists(settings.FACTS_FOLDER):
+                        print("Facts have already been extracted for block: "+args.block_number)
+                        return
+
                 stats = {"retrieval_times": [], "extraction_times": []}
                 transactions = []
                 try:
                     block = settings.W3.eth.getBlock(int(args.block_number))
                     for i in block["transactions"]:
                         transaction = format_transaction(settings.W3.eth.getTransaction(i))
-                        transactions.append(transaction)
+                        if transaction["gas"] > 21000:
+                            if not is_block_within_ranges(transaction["blockNumber"], settings.DOS_ATTACK_BLOCK_RANGES):
+                                if not transaction in transactions:
+                                    transactions.append(transaction)
                 except:
                     print("Error: Blockchain is not in sync with block number: "+args.block_number)
                     return
                 print("Retrieving "+str(len(transactions))+" transaction(s).\n")
                 extractor = Extractor()
-                extractor.extract_facts_from_block(connection, int(args.block_number), transactions, block, settings.FACTS_FOLDER, args.compress, stats)
+                extractor.extract_facts_from_transactions(connection, transactions, {}, settings.FACTS_FOLDER, args.compress)
+                #extractor.extract_facts_from_block(connection, int(args.block_number), transactions, block, settings.FACTS_FOLDER, args.compress, stats)
 
         if args.extract and args.contract_address:
             transactions = []
@@ -303,13 +327,10 @@ def main():
 
         if args.analyze:
             analyzer = Analyzer()
-            #if not os.path.isdir(settings.RESULTS_FOLDER) or not os.listdir(settings.RESULTS_FOLDER):
-            #    analyzer.analyze_facts(args.number_of_threads, args.profile, settings.FACTS_FOLDER, settings.RESULTS_FOLDER, settings.DATALOG_FILE, args.compress, settings.TMP_FOLDER)
-            #else:
-            #    print("Datalog facts have already been analyzed.")
-
-            analyzer.analyze_facts(args.number_of_threads, args.profile, settings.FACTS_FOLDER, settings.RESULTS_FOLDER, settings.DATALOG_FILE, args.compress, settings.TMP_FOLDER)
-
+            if not os.path.isdir(settings.RESULTS_FOLDER) or not os.listdir(settings.RESULTS_FOLDER):
+                analyzer.analyze_facts(args.number_of_threads, args.profile, settings.FACTS_FOLDER, settings.RESULTS_FOLDER, settings.DATALOG_FILE, args.compress, settings.TMP_FOLDER)
+            else:
+                print("Datalog facts have already been analyzed.")
 
         print("")
     except argparse.ArgumentTypeError as e:

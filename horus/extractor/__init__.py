@@ -13,21 +13,18 @@ import tracemalloc
 from utils.utils import *
 from utils import settings
 from .data_flow_analysis import TaintRunner
-from .memory_management import MemoryManager
 from .call_flow_analysis import CallFlowAnalysis
 from .in_memory_zip import InMemoryZip
 
 class Extractor:
     def extract_facts_from_trace(self, facts_folder, trace, step, max_step, gas_used, block, transaction, taint_runner, stats, compress, in_memory_zip):
-        #if settings.DEBUG_MODE:
-        if True:
+        if settings.DEBUG_MODE:
             tracemalloc.start()
 
         if not compress:
             def_facts           = open(facts_folder+"/def.facts",           "a")
             use_facts           = open(facts_folder+"/use.facts",           "a")
             arithmetic_facts    = open(facts_folder+"/arithmetic.facts",    "a")
-            #bitwise_logic_facts = open(facts_folder+"/bitwise_logic.facts", "a")
             storage_facts       = open(facts_folder+"/storage.facts",       "a")
             condition_facts     = open(facts_folder+"/condition.facts",     "a")
             transfer_facts      = open(facts_folder+"/transfer.facts",      "a")
@@ -39,14 +36,10 @@ class Extractor:
             transaction_facts   = open(facts_folder+"/transaction.facts",   "a")
 
         call_flow_analysis = CallFlowAnalysis(transaction)
-        #memory_manager = MemoryManager(transaction)
         execution_begin = time.time()
 
-        #balances = {}
         first_step = step
         while step in trace:
-            #print(trace[step])
-
             if settings.DEBUG_MODE:
                 if step == first_step:
                     print("")
@@ -68,7 +61,6 @@ class Extractor:
             # Use facts
             if trace[step]["op"] in [
                 "ADD", "SUB", "MUL",                                                        # Arithmetic opcodes
-                #"AND",                                                                      # Bitwise logic opcodes
                 "SHA3",                                                                     # Hash computation opcodes
                 "SSTORE", "SLOAD",                                                          # Storage opcodes
                 "JUMPI",                                                                    # Flow opcodes
@@ -84,13 +76,10 @@ class Extractor:
                         else:
                             use_facts.write("%d\t%d\r\n" % (step, i))
 
-            #taint_runner.propagate_taint(trace[step], call_flow_analysis.get_caller())
             taint_runner.propagate_taint(trace[step], trace[step]["contract"])
 
             # Def facts
             if trace[step]["op"] in [
-                #"ADD", "SUB", "MUL",                                                        # Arithmetic opcodes
-                #"AND",                                                                      # Bitwise logic opcodes
                 "SHA3",                                                                     # Hash computation opcodes
                 "BALANCE", "ORIGIN", "CALLER", "CALLDATALOAD", "CALLDATACOPY",              # Environmental opcodes
                 "BLOCKHASH", "COINBASE", "TIMESTAMP", "NUMBER", "DIFFICULTY", "GASLIMIT",   # Block opcodes
@@ -105,11 +94,8 @@ class Extractor:
 
             # Arithmetic facts
             if trace[step]["op"] in ["ADD", "SUB", "MUL"]:
-            #if trace[step]["op"] in ["ADD", "SUB", "MUL", "DIV"]:
                 _opcode = trace[step]["op"]
-                #_first_operand = int(trace[step]["stack"][-1], 16)
                 _first_operand = int(trace[step]["stack"][-1])
-                #_second_operand = int(trace[step]["stack"][-2], 16)
                 _second_operand = int(trace[step]["stack"][-2])
                 if   trace[step]["op"] == "ADD":
                     _arithmetic_result = _first_operand + _second_operand
@@ -117,17 +103,10 @@ class Extractor:
                     _arithmetic_result = _first_operand - _second_operand
                 elif trace[step]["op"] == "MUL":
                     _arithmetic_result = _first_operand * _second_operand
-                #elif trace[step]["op"] == "DIV":
-                #    if _second_operand != 0:
-                #        _arithmetic_result = int(_first_operand / _second_operand)
-                #    else:
-                #        _arithmetic_result = 0
                 if not "error" in trace[step]:
-                    #_evm_result = int(trace[step + 1]["stack"][-1], 16)
                     _evm_result = int(trace[step + 1]["stack"][-1])
                 else:
                     _evm_result = 0
-
                 if _arithmetic_result != _evm_result:
                     taint_runner.introduce_taint(step, trace[step])
                     if compress:
@@ -138,18 +117,6 @@ class Extractor:
                         in_memory_zip.append(facts_folder+"/arithmetic.facts", "%d\t%s\t%s\t%s\t%s\t%s\r\n" % (step, _opcode, _first_operand, _second_operand, _arithmetic_result, _evm_result))
                     else:
                         arithmetic_facts.write("%d\t%s\t%s\t%s\t%s\t%s\r\n" % (step, _opcode, _first_operand, _second_operand, _arithmetic_result, _evm_result))
-
-            # Bitwise logic facts
-            #elif trace[step]["op"] in ["AND", "OR", "XOR"]:
-            #    _opcode = trace[step]["op"]
-            #    #_first_operand = int(trace[step]["stack"][-1], 16)
-            #    _first_operand = int(trace[step]["stack"][-1])
-            #    #_second_operand = int(trace[step]["stack"][-2], 16)
-            #    _second_operand = int(trace[step]["stack"][-2])
-            #    if compress:
-            #        in_memory_zip.append(facts_folder+"/bitwise_logic.facts", "%d\t%s\t%s\t%s\r\n" % (step, _opcode, _first_operand, _second_operand))
-            #    else:
-            #        bitwise_logic_facts.write("%d\t%s\t%s\t%s\r\n" % (step, _opcode, _first_operand, _second_operand))
 
             # Storage facts
             elif trace[step]["op"] in ["SSTORE", "SLOAD"]:
@@ -181,16 +148,9 @@ class Extractor:
                 # This is the signature (topic) of the following ERC-20 event: Transfer(address,address,uint256)
                 if trace[step]["stack"][-3] == "ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef":
                     _transaction_hash = transaction["hash"]
-                    #offset = int(trace[step]["stack"][-1], 16)
-                    #size = int(trace[step]["stack"][-2], 16)
-                    #print(offset)
-                    #print(size)
-                    #_from = normalize_32_byte_hex_address(trace[step]["stack"][-4])
-                    #_to = normalize_32_byte_hex_address(trace[step]["stack"][-5])
                     _contract = trace[step]["contract"]
                     _from = trace[step]["stack"][-4]
                     _to = trace[step]["stack"][-5]
-                    #_value = int(memory_manager.memory_read_bytes(offset, size).hex(), 16)
                     _value = int(trace[step]["memory"], 16)
                     if compress:
                         in_memory_zip.append(facts_folder+"/transfer.facts", "%d\t%s\t%s\t%s\t%s\t%s\r\n" % (step, _transaction_hash, _contract, _from, _to, _value))
@@ -204,25 +164,20 @@ class Extractor:
                     i += 1
                 _transaction_hash = transaction["hash"]
                 _opcode = trace[step]["op"]
-                #_caller = call_flow_analysis.get_caller()
                 _caller = trace[step]["contract"]
                 if trace[step]["op"] in ["CREATE", "CREATE2"]:
                     if not "error" in trace[step]:
-                        #_callee = normalize_32_byte_hex_address(trace[i]["stack"][-1])
                         _callee = normalize_32_byte_hex_address(hex(int(trace[i]["stack"][-1])))
                     else:
                         _callee = ""
                 else:
-                    #_callee = normalize_32_byte_hex_address(trace[step]["stack"][-2])
                     _callee = trace[step]["stack"][-2]
                 if trace[step]["op"] in ["CREATE", "CREATE2"]:
-                    #_amount = int(trace[step]["stack"][-1], 16)
                     _amount = int(trace[step]["stack"][-1])
 
                 elif trace[step]["op"] in ["DELEGATECALL", "STATICCALL"]:
                     _amount = 0
                 else:
-                    #_amount = int(trace[step]["stack"][-3], 16)
                     _amount = int(trace[step]["stack"][-3])
                 _depth = trace[step]["depth"]
                 if trace[step]["op"] in ["CREATE", "CREATE2"]:
@@ -231,25 +186,10 @@ class Extractor:
                     else:
                         _success = 0
                 elif not "error" in trace[step]:
-                    #_success = int(trace[i]["stack"][-1], 16)
                     _success = int(trace[i]["stack"][-1])
                 else:
                     _success = 0
-                #if trace[step]["op"] in ["CREATE", "CREATE2"]:
-                #    offset = int(trace[step]["stack"][-2], 16)
-                #    size = int(trace[step]["stack"][-3], 16)
-                #elif trace[step]["op"] in ["CALL", "CALLCODE"]:
-                #    offset = int(trace[step]["stack"][-4], 16)
-                #    size = int(trace[step]["stack"][-5], 16)
-                #elif trace[step]["op"] in ["DELEGATECALL", "STATICCALL"]:
-                #    offset = int(trace[step]["stack"][-3], 16)
-                #    size = int(trace[step]["stack"][-4], 16)
-                #_input_data = memory_manager.memory_read_bytes(offset, size).hex()
                 _input_data = trace[step]["memory"].replace("0x", "")
-                #if _caller:
-                #    if _caller not in balances:
-                #        balances[_caller] = settings.W3.eth.getBalance(settings.W3.toChecksumAddress(_caller), transaction["blockNumber"]-1)
-                #    balances[_caller] -= _amount
                 if compress:
                     in_memory_zip.append(facts_folder+"/call.facts", "%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\r\n" % (step, _transaction_hash, _opcode, _caller, _callee, _input_data, _amount, _depth, _success))
                 else:
@@ -259,7 +199,6 @@ class Extractor:
             elif trace[step]["op"] in ["REVERT", "INVALID", "ASSERTFAIL"]:
                 _transaction_hash = transaction["hash"]
                 _opcode = trace[step]["op"]
-                #_caller = call_flow_analysis.get_caller()
                 _caller = trace[step]["contract"]
                 _depth = trace[step]["depth"]
                 if compress:
@@ -271,15 +210,8 @@ class Extractor:
             elif trace[step]["op"] in ["SELFDESTRUCT", "SUICIDE"]:
                 _transaction_hash = transaction["hash"]
                 _caller = transaction["from"]
-                #_destination = normalize_32_byte_hex_address(trace[step]["stack"][-1])
                 _destination = trace[step]["stack"][-1]
-                #_contract = call_flow_analysis.get_caller()
                 _contract = trace[step]["contract"]
-                #if _contract:
-                #    if _contract not in balances:
-                #        _balance = settings.W3.eth.getBalance(settings.W3.toChecksumAddress(_contract), transaction["blockNumber"]-1)
-                #    else:
-                #        _balance = balances[_contract]
                 _balance = trace[step]["stack"][-2]
                 if compress:
                     in_memory_zip.append(facts_folder+"/selfdestruct.facts", "%d\t%s\t%s\t%s\t%s\t%s\r\n" % (step, _transaction_hash, _caller, _contract, _destination, _balance))
@@ -302,8 +234,6 @@ class Extractor:
                 else:
                     error_facts.write("%s\t%s\r\n" % (transaction["hash"], _error_message))
 
-            #call_flow_analysis.analyze_call_flow(step, max_step, trace)
-            #memory_manager.manage_memory(trace, step, transaction)
             step += 1
         taint_runner.clear_machine_state()
 
@@ -329,7 +259,6 @@ class Extractor:
             def_facts.close()
             use_facts.close()
             arithmetic_facts.close()
-            #bitwise_logic_facts.close()
             storage_facts.close()
             condition_facts.close()
             transfer_facts.close()
@@ -348,10 +277,9 @@ class Extractor:
         stats["extraction_times"].append(execution_delta)
         print("Extracting facts for transaction "+str(transaction["hash"])+" took %.2f second(s)." % execution_delta)
 
-        #if settings.DEBUG_MODE:
-        #if True:
-        #    current, peak = tracemalloc.get_traced_memory()
-        #    print("Memory usage: %d MB (%d MB)" % (int(current/1024/1024), int(peak/1024/1024)))
+        if settings.DEBUG_MODE:
+            current, peak = tracemalloc.get_traced_memory()
+            print("Memory usage: %d MB (%d MB)" % (int(current/1024/1024), int(peak/1024/1024)))
 
         return step
 
@@ -365,7 +293,6 @@ class Extractor:
             in_memory_zip.append(facts_folder+"/def.facts", "")
             in_memory_zip.append(facts_folder+"/use.facts", "")
             in_memory_zip.append(facts_folder+"/arithmetic.facts", "")
-            in_memory_zip.append(facts_folder+"/bitwise_logic.facts", "")
             in_memory_zip.append(facts_folder+"/storage.facts", "")
             in_memory_zip.append(facts_folder+"/condition.facts", "")
             in_memory_zip.append(facts_folder+"/transfer.facts", "")
@@ -378,7 +305,7 @@ class Extractor:
 
         try:
             retrieval_begin = time.time()
-            trace_response = request_debug_trace_block(connection, settings.CONNECTION_RETRIES, settings.RPC_HOST, settings.RPC_PORT, settings.REQUEST_TIMEOUT, settings.REQUEST_RETRY_INTERVAL, hex(block_number))
+            trace_response = request_debug_trace_block(connection, settings.CONNECTION_RETRIES, settings.RPC_HOST, settings.RPC_PORT, settings.REQUEST_TIMEOUT, settings.REQUEST_RETRY_INTERVAL, block_number)
             retrieval_end = time.time()
             retrieval_delta = retrieval_end - retrieval_begin
             stats["retrieval_times"].append(retrieval_delta)
@@ -403,6 +330,13 @@ class Extractor:
                     gas_used = trace_response["result"][index]["result"]["gas"]
 
                     step = self.extract_facts_from_trace(facts_folder, trace, step, max_step, gas_used, block, transactions[index], taint_runner, stats, compress, in_memory_zip)
+
+                if compress:
+                    in_memory_zip.append(facts_folder+"/stats.json", json.dumps(stats))
+                    in_memory_zip.writetofile(facts_folder+".zip")
+                else:
+                    with open(facts_folder+"/stats.json", "w") as jsonfile:
+                        json.dump(stats, jsonfile)
         except Exception as e:
             raise e
         finally:
@@ -410,14 +344,7 @@ class Extractor:
                 print()
                 print("Retrieval times: \t "+str(min(stats["retrieval_times"]))+"  Min \t "+str(max(stats["retrieval_times"]))+" Max \t "+str(sum(stats["retrieval_times"])/len(stats["retrieval_times"]))+" Mean.")
                 print("Extraction times: \t "+str(min(stats["extraction_times"]))+" Min \t "+str(max(stats["extraction_times"]))+" Max \t "+str(sum(stats["extraction_times"])/len(stats["extraction_times"]))+" Mean.")
-                print()
-
-            if compress:
-                in_memory_zip.append(facts_folder+"/stats.json", json.dumps(stats))
-                in_memory_zip.writetofile(facts_folder+".zip")
-            else:
-                with open(facts_folder+"/stats.json", "w") as jsonfile:
-                    json.dump(stats, jsonfile)
+                print()            
 
     def extract_facts_from_transactions(self, connection, transactions, blocks, facts_folder, compress):
         step = 0
@@ -476,7 +403,7 @@ class Extractor:
             for transaction in transactions:
                 stats["transactions"].append(transaction["hash"])
                 retrieval_begin = time.time()
-                trace_response = request_debug_trace(connection, settings.CONNECTION_RETRIES, settings.RPC_HOST, settings.RPC_PORT, settings.REQUEST_TIMEOUT, settings.REQUEST_RETRY_INTERVAL, transaction["hash"])
+                trace_response = request_debug_trace_transaction(connection, settings.CONNECTION_RETRIES, settings.RPC_HOST, settings.RPC_PORT, settings.REQUEST_TIMEOUT, settings.REQUEST_RETRY_INTERVAL, transaction["hash"])
                 retrieval_end = time.time()
                 retrieval_delta = retrieval_end - retrieval_begin
                 stats["retrieval_times"].append(retrieval_delta)
@@ -499,13 +426,6 @@ class Extractor:
                 step = self.extract_facts_from_trace(facts_folder, trace, step, max_step, gas_used, block, transaction, taint_runner, stats, compress, in_memory_zip)
                 # Free memory
                 trace = {}
-        except Exception as e:
-            raise e
-        finally:
-            if len(stats["retrieval_times"]) > 0 and len(stats["extraction_times"]) > 0:
-                print()
-                print("Retrieval times: \t "+str(min(stats["retrieval_times"]))+"  Min \t "+str(max(stats["retrieval_times"]))+" Max \t "+str(sum(stats["retrieval_times"])/len(stats["retrieval_times"]))+" Mean.")
-                print("Extraction times: \t "+str(min(stats["extraction_times"]))+" Min \t "+str(max(stats["extraction_times"]))+" Max \t "+str(sum(stats["extraction_times"])/len(stats["extraction_times"]))+" Mean.")
 
             if compress:
                 in_memory_zip.append(facts_folder+"/stats.json", json.dumps(stats))
@@ -513,3 +433,10 @@ class Extractor:
             else:
                 with open(facts_folder+"/stats.json", "w") as jsonfile:
                     json.dump(stats, jsonfile)
+        except Exception as e:
+            raise e
+        finally:
+            if len(stats["retrieval_times"]) > 0 and len(stats["extraction_times"]) > 0:
+                print()
+                print("Retrieval times: \t "+str(min(stats["retrieval_times"]))+"  Min \t "+str(max(stats["retrieval_times"]))+" Max \t "+str(sum(stats["retrieval_times"])/len(stats["retrieval_times"]))+" Mean.")
+                print("Extraction times: \t "+str(min(stats["extraction_times"]))+" Min \t "+str(max(stats["extraction_times"]))+" Max \t "+str(sum(stats["extraction_times"])/len(stats["extraction_times"]))+" Mean.")

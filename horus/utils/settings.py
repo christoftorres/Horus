@@ -1,7 +1,7 @@
 # HTTP-RPC host
-RPC_HOST = 'pf.uni.lux'
+RPC_HOST = 'localhost'
 # HTTP-RPC port
-RPC_PORT = 8545 # Mainnet 8546 # Testnet
+RPC_PORT = 8545
 # Web3 instance
 W3 = None
 # Datalog facts folder
@@ -15,7 +15,7 @@ DEBUG_MODE = False
 # Etherscan API key token
 ETHERSCAN_API_TOKEN = 'VZ7EMQBT4GNH5F6FBV8FKXAFF6GS4MPKAU'
 # Maximum block Height
-MAX_BLOCK_HEIGHT = 9500000
+MAX_BLOCK_HEIGHT = 10000000
 # Block ranges to skip due to DoS attacks
 # https://ethereum.stackexchange.com/questions/9883/why-is-my-node-synchronization-stuck-extremely-slow-at-block-2-306-843/10453
 DOS_ATTACK_BLOCK_RANGES = [
@@ -36,4 +36,3 @@ REQUEST_TIMEOUT = 100
 REQUEST_RETRY_INTERVAL = 60
 # Folder for temporary results
 TMP_FOLDER = None
-#TMP_FOLDER = '/mnt/lscratch/users/cferreira/tmp'

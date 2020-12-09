@@ -4,8 +4,8 @@
 .decl Reentrancy(hash:symbol, timestamp:number, step:number, attacker:Address, caller:Address, callee:Address, depth:number, amount:Value)
 Reentrancy(hash, timestamp, step3, attacker, caller, callee, depth2, amount) :-
   storage(step1,  "SLOAD", hash, _, caller, index, _, depth1),
-  call(step2, hash, _, caller, callee, _,      _, depth1, 1),
-  call(step3, hash, _, caller, callee, _, amount, depth2, 1),
+  call(step2, hash, "CALL", caller, callee, input_data,      _, depth1, 1),
+  call(step3, hash, "CALL", caller, callee, input_data, amount, depth2, 1),
   storage(step4, "SSTORE", hash, _, caller, index, _, depth1),
   depth1 < depth2,
   step1 < step2,
@@ -28,9 +28,9 @@ UniswapHack(hash, block, timestamp, caller, callee, attacker, amount, profit) :-
   call(step4, hash, "CALL", callee, attacker, _, profit, _, 1),
   !match("0", profit),
   step3 < step4,
-  transaction(hash, attacker, _, _, _, _, 1, block),
+  transaction(hash, _, block, attacker, _, _, _, _, 1),
   block(block, _, _, timestamp).
-.output UniswapHack*/
+.output UniswapHack
 
 .decl LendfmeHack(hash:symbol, block:number, timestamp:number, token:Address, amount:Value)
 LendfmeHack(hash, block, timestamp, token, amount) :-
@@ -39,7 +39,7 @@ LendfmeHack(hash, block, timestamp, token, amount) :-
   transfer(_, hash, _, "0x0eee3e3828a45f7601d5f54bf49bb01d1a9df5ea", "0x538359785a8d5ab1a741a0ba94f26a800759d91d", amount),
   transaction(hash, _, block, _, _, _, _, _, 1),
   block(block, _, _, timestamp).
-.output LendfmeHack
+.output LendfmeHack*/
 
 /*.decl ERC777Reentrancy(hash:symbol, timestamp:number, caller:Address, callee:Address, amount:Value, asset:symbol)
 ERC777Reentrancy(hash, timestamp, caller, callee, amount, asset) :-
