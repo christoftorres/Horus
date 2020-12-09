@@ -155,16 +155,19 @@ class Extractor:
             elif trace[step]["op"] in ["SSTORE", "SLOAD"]:
                 _opcode = trace[step]["op"]
                 _transaction_hash = transaction["hash"]
-                _block_number = transaction["blockNumber"]
                 _caller = transaction["from"]
-                #_contract = call_flow_analysis.get_caller()
                 _contract = trace[step]["contract"]
                 _storage_index = trace[step]["stack"][-1]
                 _depth = trace[step]["depth"]
+                _value = 0
+                if _opcode == "SSTORE":
+                    _value = trace[step]["stack"][-2]
+                elif not "error" in trace[step]:
+                    _value = int(trace[step + 1]["stack"][-1])
                 if compress:
-                    in_memory_zip.append(facts_folder+"/storage.facts", "%d\t%s\t%d\t%s\t%s\t%s\t%s\t%d\r\n" % (step, _opcode, _block_number, _transaction_hash, _caller, _contract, _storage_index, _depth))
+                    in_memory_zip.append(facts_folder+"/storage.facts", "%d\t%s\t%s\t%s\t%s\t%s\t%s\t%d\r\n" % (step, _opcode, _transaction_hash, _caller, _contract, _storage_index, _value, _depth))
                 else:
-                    storage_facts.write("%d\t%s\t%d\t%s\t%s\t%s\t%s\t%d\r\n" % (step, _opcode, _block_number, _transaction_hash, _caller, _contract, _storage_index, _depth))
+                    storage_facts.write("%d\t%s\t%s\t%s\t%s\t%s\t%s\t%d\r\n" % (step, _opcode, _transaction_hash, _caller, _contract, _storage_index, _value, _depth))
 
             # Condition facts
             elif trace[step]["op"] == "JUMPI":
@@ -184,14 +187,15 @@ class Extractor:
                     #print(size)
                     #_from = normalize_32_byte_hex_address(trace[step]["stack"][-4])
                     #_to = normalize_32_byte_hex_address(trace[step]["stack"][-5])
+                    _contract = trace[step]["contract"]
                     _from = trace[step]["stack"][-4]
                     _to = trace[step]["stack"][-5]
                     #_value = int(memory_manager.memory_read_bytes(offset, size).hex(), 16)
                     _value = int(trace[step]["memory"], 16)
                     if compress:
-                        in_memory_zip.append(facts_folder+"/transfer.facts", "%d\t%s\t%s\t%s\t%s\r\n" % (step, _transaction_hash, _from, _to, _value))
+                        in_memory_zip.append(facts_folder+"/transfer.facts", "%d\t%s\t%s\t%s\t%s\t%s\r\n" % (step, _transaction_hash, _contract, _from, _to, _value))
                     else:
-                        transfer_facts.write("%d\t%s\t%s\t%s\t%s\r\n" % (step, _transaction_hash, _from, _to, _value))
+                        transfer_facts.write("%d\t%s\t%s\t%s\t%s\t%s\r\n" % (step, _transaction_hash, _contract, _from, _to, _value))
 
             # Call facts
             elif trace[step]["op"] in ["CREATE", "CREATE2", "CALL", "CALLCODE", "DELEGATECALL", "STATICCALL"]:
@@ -314,10 +318,12 @@ class Extractor:
             _status = 1
         else:
             _status = 0
+        if transaction["to"] == None:
+            transaction["to"] = ""
         if compress:
-            in_memory_zip.append(facts_folder+"/transaction.facts", "%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\r\n" % (transaction["hash"], transaction["from"], transaction["to"], transaction["input"].replace("0x", ""), gas_used, transaction["gas"], _status, transaction["blockNumber"]))
+            in_memory_zip.append(facts_folder+"/transaction.facts", "%s\t%d\t%d\t%s\t%s\t%s\t%d\t%d\t%d\r\n" % (transaction["hash"], transaction["transactionIndex"], transaction["blockNumber"], transaction["from"], transaction["to"], transaction["input"].replace("0x", ""), gas_used, transaction["gas"], _status))
         else:
-            transaction_facts.write("%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\r\n" % (transaction["hash"], transaction["from"], transaction["to"], transaction["input"].replace("0x", ""), gas_used, transaction["gas"], _status, transaction["blockNumber"]))
+            transaction_facts.write("%s\t%d\t%d\t%s\t%s\t%s\t%d\t%d\t%d\r\n" % (transaction["hash"], transaction["transactionIndex"], transaction["blockNumber"], transaction["from"], transaction["to"], transaction["input"].replace("0x", ""), gas_used, transaction["gas"], _status))
 
         if not compress:
             def_facts.close()

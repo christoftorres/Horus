@@ -6,7 +6,10 @@
       case "ADD": case "SUB": case "MUL":
         this.structLogs.push({"op": log.op.toString(), "stack": [log.stack.peek(1), log.stack.peek(0)], "depth": log.getDepth(), "contract": toHex(log.contract.getAddress()), "error": log.getError()});
         break;
-      case "SSTORE": case "SLOAD":
+      case "SSTORE":
+        this.structLogs.push({"op": log.op.toString(), "stack": [log.stack.peek(1), log.stack.peek(0)], "depth": log.getDepth(), "contract": toHex(log.contract.getAddress()), "error": log.getError()});
+        break;
+      case "SLOAD":
         this.structLogs.push({"op": log.op.toString(), "stack": [log.stack.peek(0)], "depth": log.getDepth(), "contract": toHex(log.contract.getAddress()), "error": log.getError()});
         break;
       case "CREATE": case "CREATE2":

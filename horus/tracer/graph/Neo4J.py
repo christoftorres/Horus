@@ -49,7 +49,7 @@ class Neo4J:
 
         tx.run("""MERGE (from:"""+from_account_type+""" """+account_info_from+""")
                   MERGE (to:"""+to_account_type+""" """+account_info_to+""")
-                  MERGE (from)-[:NORMAL_TRANSACTION {
+                  MERGE (from)-[:TOKEN_TRANSACTION {
                     value:$value,
                     hash:$hash,
                     block:$block,
@@ -58,6 +58,55 @@ class Neo4J:
                value=value,
                hash=transaction["hash"],
                block=transaction["blockNumber"],
+               timestamp=datetime.fromtimestamp(int(transaction["timeStamp"])))
+
+    @staticmethod
+    def _save_token_transaction2(tx, transaction, attacker, labeled_accounts, direction):
+        if transaction["from"] == attacker:
+            from_account_type = "Attacker"
+        elif transaction["from"] in labeled_accounts:
+            from_account_type = "Labeled_Account"
+        else:
+            from_account_type = "Account"
+
+        if transaction["to"] == attacker:
+            to_account_type = "Attacker"
+        elif transaction["to"] in labeled_accounts:
+            to_account_type = "Labeled_Account"
+        else:
+            to_account_type = "Account"
+
+        account_info_from = "{address:'"+transaction["from"]+"'"
+        if from_account_type == "Labeled_Account":
+            account_info_from += ",label:'"+labeled_accounts[transaction["from"]]["labels"][0]+"'"
+            account_info_from += ",category:'"+labeled_accounts[transaction["from"]]["category"]+"'"
+        account_info_from += "}"
+
+        account_info_to = "{address:'"+transaction["to"]+"'"
+        if to_account_type == "Labeled_Account":
+            account_info_to += ",label:'"+labeled_accounts[transaction["to"]]["labels"][0]+"'"
+            account_info_to += ",category:'"+labeled_accounts[transaction["to"]]["category"]+"'"
+        account_info_to += "}"
+
+        value = str(int(int(transaction["value"]) / (int(10)**int(transaction["tokenDecimal"]))))+" "+transaction["tokenSymbol"]
+
+        tx.run("""MERGE (from:"""+from_account_type+""" """+account_info_from+""")
+                  MERGE (to:"""+to_account_type+""" """+account_info_to+""")
+                  MERGE (from)-[:TOKEN_TRANSACTION {
+                    value:$value,
+                    hash:$hash,
+                    block:$block,
+                    token_name:$token_name,
+                    token_symbol:$token_symbol,
+                    token_decimal:$token_decimal,
+                    timestamp:$timestamp
+                }]->(to)""",
+               value=value,
+               hash=transaction["hash"],
+               block=transaction["blockNumber"],
+               token_name=transaction["tokenName"],
+               token_symbol=transaction["tokenSymbol"],
+               token_decimal=transaction["tokenDecimal"],
                timestamp=datetime.fromtimestamp(int(transaction["timeStamp"])))
 
     @staticmethod
@@ -295,6 +344,20 @@ class Neo4J:
         return aggregated_transactions
 
     @staticmethod
+    def _group_token_transactions_together(transactions):
+        aggregated_transactions = []
+        for i in range(len(transactions)):
+            t = transactions[i]
+            exists = False
+            for a in aggregated_transactions:
+                if a["from"] == t["from"] and a["to"] == t["to"] and a["tokenSymbol"] == t["tokenSymbol"]:
+                    exists = True
+                    a["value"] = str(int(a["value"]) + int(t["value"]))
+            if not exists:
+                aggregated_transactions.append(t)
+        return aggregated_transactions
+
+    @staticmethod
     def _group_transactions_with_same_destination_together(transactions):
         aggregated_transactions = []
         to_addresses = []
@@ -378,15 +441,17 @@ class Neo4J:
                 except ClientError as e:
                     print(e)
 
-    def save_token_transactions(self, transactions, attacker, labeled_accounts, token):
+    def save_token_transactions(self, transactions, attacker, labeled_accounts, token, direction):
         with self._driver.session() as session:
             with session.begin_transaction() as tx:
                 try:
-                    transactions = Neo4J._remove_transactions_with_no_value(transactions)
-                    transactions = Neo4J._group_similar_tokens_together(transactions)
-                    transactions = Neo4J._keep_only_token_transactions(transactions, token)
+                    transactions = Neo4J._remove_transactions_with_no_value(transactions, None)
+                    #transactions = Neo4J._group_similar_tokens_together(transactions)
+                    transactions = Neo4J._group_token_transactions_together(transactions)
+                    #if token:
+                    #    transactions = Neo4J._keep_only_token_transactions(transactions, token)
                     for transaction in transactions:
-                        Neo4J._save_token_transaction(tx, transaction, attacker, labeled_accounts)
+                        Neo4J._save_token_transaction2(tx, transaction, attacker, labeled_accounts, direction)
                 except ClientError as e:
                     print(e)
 

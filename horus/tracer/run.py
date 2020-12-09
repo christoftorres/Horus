@@ -27,20 +27,24 @@ graph.delete_graph()
 #attacker = '0xb4d30cac5124b46c2df0cf3e3e1be05f42119033'
 #attacker = '0x0e823ffe018727585eaf5bc769fa80472f76c3d7'
 
-#attacker = '0xbd2250d713bf98b7e00c26e2907370ad30f0891a'
-attacker = '0x60f3fdb85b2f7faaa888ca7afc382c57f6415a81'
+# Uniswap attacker
+#attacker = '0x60f3fdb85b2f7faaa888ca7afc382c57f6415a81'
+#block_number = 9892565
 
-block_number = 9892565
+# Lendf.me attacker
+attacker = '0xa9bf70a420d364e923c74448d9d817d3f2a77822'
+#block_number = 9899852
+block_number = 9900108
+token = None
 
-hops = 6
 #token = "RMC"
 #token = "SMT"
 #token = "mesh"
 #token = "BEC"
-max_transactions = 10000
+max_transactions = 1000
 
 labeled_accounts = etherscan.get_labels()
-offset = 10000
+offset = 1000
 
 # Normal transactions
 def load_normal_transactions(account, hops, hop=1, start_block=0, visited_accounts=[], direction="forwards"):
@@ -79,32 +83,28 @@ def load_normal_transactions(account, hops, hop=1, start_block=0, visited_accoun
         if len(accounts) > 100:
             accounts = []
         for account in accounts:
-            load_internal_transactions(account, hops, hop+1, visited_accounts)
+            load_internal_transactions(account, hops, hop+1, visited_accounts)"""
 
 # Token transactions
 def load_token_transactions(account, hops, hop=1, start_block=0, visited_accounts=[], direction="forwards"):
     if hop <= hops and account not in visited_accounts:
         visited_accounts.append(account)
-        transactions = etherscan.get_token_transactions(account)
-        print(account+" "+str(hop)+" "+str(len(transactions)))
+        transactions = etherscan.get_token_transactions(account, start_block=start_block, offset=offset)
+        spaces = ""
+        for _ in range(hop-1):
+            spaces += "  "
+        print("-> "+spaces+account+" "+str(hop)+" hops "+str(len(transactions))+" transactions")
         if   direction == "forwards":
-            transactions = [transaction for transaction in transactions if transaction["from"] == account]
+            transactions = [transaction for transaction in transactions if transaction["from"] == account and transaction["to"] != "" and int(transaction["value"]) > 0 and int(transaction["blockNumber"]) >= block_number]
         elif direction == "backwards":
-            transactions = [transaction for transaction in transactions if transaction["to"] == account]
-        if len(transactions) <= 100:
-            graph.save_token_transactions(transactions, attacker, labeled_accounts, token)
-        accounts = []
-        for transaction in transactions:
-            if   direction == "forwards":
-                if transaction["to"] and transaction["to"] not in accounts and transaction["tokenSymbol"] == token:
-                    accounts.append(transaction["to"])
-            elif direction == "backwards":
-                if transaction["from"] and transaction["from"] not in accounts and transaction["tokenSymbol"] == token:
-                    accounts.append(transaction["from"])
-        if len(accounts) > 100:
-            accounts = []
-        for account in accounts:
-            load_token_transactions(account, hops, hop+1, start_block, visited_accounts, direction)"""
+            transactions = [transaction for transaction in transactions if transaction["to"] == account and int(transaction["blockNumber"]) <= block_number]
+        if len(transactions) <= max_transactions:
+            graph.save_token_transactions(transactions, attacker, labeled_accounts, token, direction)
+            for transaction in transactions:
+                if direction == "forwards":
+                    load_token_transactions(transaction["to"], hops, hop+1, start_block, visited_accounts, direction)
+                elif direction == "backwards":
+                    load_token_transactions(transaction["from"], hops, hop+1, start_block, visited_accounts, direction)
 
 count = 0
 start = time.time()
@@ -122,7 +122,8 @@ start = time.time()
 #load_normal_transactions(attacker, 5, visited_accounts=[], direction="backwards")
 
 print("Analyzing normal transactions forwards...")
-load_normal_transactions(attacker, 5, visited_accounts=[], direction="forwards")
+#load_normal_transactions(attacker, 5, visited_accounts=[], direction="forwards")
+load_token_transactions(attacker, 3, visited_accounts=[], direction="forwards")
 
 """print("Analyzing internal transactions...")
 load_internal_transactions(attacker, hops)"""
