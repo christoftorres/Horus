@@ -9,7 +9,7 @@ NUMBER_OF_JOBS = multiprocessing.cpu_count()
 
 def run_analyzer(argument):
     block_number = argument
-    proc = subprocess.Popen(shlex.split('python3 ../../horus/horus.py -a -d ../../horus/analyzer/datalog/attacks.dl -f ../../horus/facts/facts_'+str(block_number)+'.zip -r ../../horus/results/results_'+str(block_number)+' --compress'), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    proc = subprocess.Popen(shlex.split('python3 ../horus/horus.py -a -d ../horus/analyzer/datalog/attacks.dl -f ../horus/facts/facts_'+str(block_number)+'.zip -r ../horus/results/results_'+str(block_number)+' --compress'), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     proc.communicate()
     print("Analyzed facts for: "+str(block_number))
 

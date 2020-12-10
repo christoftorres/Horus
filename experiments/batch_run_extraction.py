@@ -9,7 +9,7 @@ NUMBER_OF_JOBS = multiprocessing.cpu_count()
 
 def run_extractor(argument):
     block_number = argument
-    proc = subprocess.Popen(shlex.split('python3 ../../horus/horus.py -e -b '+str(block_number)+' -f ../../horus/facts/facts_'+str(block_number)+' --host watson.lowland.fun --port 19545 --compress'), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    proc = subprocess.Popen(shlex.split('python3 ../horus/horus.py -e -b '+str(block_number)+' -f ../horus/facts/facts_'+str(block_number)+' --host watson.lowland.fun --port 19545 --compress'), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     proc.communicate()
     print("Extracted facts for: "+str(block_number))
 
