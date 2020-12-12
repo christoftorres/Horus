@@ -33,7 +33,6 @@ def has_dependencies_installed():
         supported_version = '1.7.1'
         if version != supported_version:
             print("You are using souffle version %s. The supported version is %s." % (version, supported_version))
-            return False
     return True
 
 def serialize_web3_object(object):
