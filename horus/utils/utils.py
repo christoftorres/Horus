@@ -24,7 +24,7 @@ def run_command(cmd):
 
 def has_dependencies_installed():
     if not command_exists("souffle --version"):
-        print("souffle is missing. Please install souffle and make sure souffle is in the path.")
+        print("Souffle is missing. Please install souffle and make sure souffle is in the path.")
         return False
     else:
         cmd = "souffle --version"
@@ -99,6 +99,7 @@ def request_debug_trace_transaction(connection, connection_retries, rpc_host, rp
     with open(os.path.dirname(os.path.realpath(sys.argv[0]))+'/extractor/evm_tracing.js', 'r') as file:
         tracer = file.read().replace('\n', '')
     if tracer:
+        print("custom tracing activated")
         data = json.dumps({"id": 1, "method": "debug_traceTransaction", "params": [transaction_hash, {"tracer": tracer, "timeout": str(request_timeout)+"s"}]})
     else:
         data = json.dumps({"id": 1, "method": "debug_traceTransaction", "params": [transaction_hash, {"disableStack": disable_stack, "disableMemory": disable_memory, "disableStorage": disable_storage}]})
