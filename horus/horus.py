@@ -102,12 +102,13 @@ def main():
         if args.extract and (args.transaction_hash or args.block_number or args.contract_address):
             tries = 0
             network = ""
+            print("Connecting to http://"+settings.RPC_HOST+":"+str(settings.RPC_PORT)+"...")
             while not settings.W3 and tries < settings.CONNECTION_RETRIES:
                 try:
                     tries += 1
                     settings.W3 = Web3(Web3.HTTPProvider("http://"+settings.RPC_HOST+":"+str(settings.RPC_PORT)))
                     if settings.W3.isConnected():
-                        if not 'api' in dir(settings.W3):
+                        if not "api" in dir(settings.W3):
                             chain_id = settings.W3.version.network
                             client_info = settings.W3.version.node
                         else:
@@ -178,6 +179,9 @@ def main():
 
                 stats = {"retrieval_times": [], "extraction_times": []}
                 for i in range(int(block_start), int(block_end)+1):
+                    if is_block_within_ranges(i, settings.DOS_ATTACK_BLOCK_RANGES):
+                        print("Error: Skipping block number "+args.block_number+" as it is within DoS attack block ranges.")
+                        continue
                     print("Analyzing block "+str(i))
                     transactions = []
                     try:
@@ -195,6 +199,10 @@ def main():
                 if not args.block_number.isnumeric():
                     parser.error("--block-number has to be a number or a range of two numbers")
 
+                if is_block_within_ranges(int(args.block_number), settings.DOS_ATTACK_BLOCK_RANGES):
+                    print("Error: Skipping block number "+args.block_number+" as it is within DoS attack block ranges.")
+                    return
+
                 if args.compress:
                     if os.path.exists(settings.FACTS_FOLDER+".zip"):
                         print("Facts have already been extracted for block: "+args.block_number)
@@ -210,17 +218,13 @@ def main():
                     block = settings.W3.eth.getBlock(int(args.block_number))
                     for i in block["transactions"]:
                         transaction = format_transaction(settings.W3.eth.getTransaction(i))
-                        if transaction["gas"] > 21000:
-                            if not is_block_within_ranges(transaction["blockNumber"], settings.DOS_ATTACK_BLOCK_RANGES):
-                                if not transaction in transactions:
-                                    transactions.append(transaction)
+                        transactions.append(transaction)
                 except:
                     print("Error: Blockchain is not in sync with block number: "+args.block_number)
                     return
                 print("Retrieving "+str(len(transactions))+" transaction(s).\n")
                 extractor = Extractor()
-                extractor.extract_facts_from_transactions(connection, transactions, {}, settings.FACTS_FOLDER, args.compress)
-                #extractor.extract_facts_from_block(connection, int(args.block_number), transactions, block, settings.FACTS_FOLDER, args.compress, stats)
+                extractor.extract_facts_from_block(connection, int(args.block_number), transactions, block, settings.FACTS_FOLDER, args.compress, stats)
 
         if args.extract and args.contract_address:
             transactions = []

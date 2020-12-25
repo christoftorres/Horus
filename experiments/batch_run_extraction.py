@@ -15,8 +15,11 @@ PORT = 8989
 PASSWORD = b"Ramses II"
 REMOTE_PATH = "/home/cool/chain_data/facts"
 
-RPC_HOST = "watson.lowland.fun"
-RPC_PORT = 19545
+#RPC_HOST = "watson.lowland.fun"
+#RPC_PORT = 19545
+
+RPC_HOST = "pf.uni.lux"
+RPC_PORT = 8545
 
 ############################################
 #                  Server                  #
@@ -47,6 +50,16 @@ def file_exists(file_name):
 
 RemoteManager.register("file_exists", file_exists)
 
+def get_list_of_missing_files(block_range):
+    missing_files = []
+    for i in range(block_range[0], block_range[1]):
+        file_name = REMOTE_PATH+"/facts_"+str(i)+".zip"
+        if not os.path.exists(file_name):
+            missing_files.append(file_name)
+    return missing_files
+
+RemoteManager.register("get_list_of_missing_files", get_list_of_missing_files)
+
 def start_server(port, password):
     print("Listening for incoming connections...")
     mgr = RemoteManager(address=('', port), authkey=password)
@@ -59,13 +72,19 @@ def start_server(port, password):
 
 def run_extractor(argument):
     block_number = argument
+    if argument.startswith(REMOTE_PATH):
+        block_number = int(argument.split("/")[-1].split(".")[0].replace("facts_", ""))
     remote = RemoteManager(address=(HOST, PORT), authkey=PASSWORD)
     remote.connect()
-    exists = remote.file_exists(REMOTE_PATH+"/facts_"+str(block_number)+".zip")._getvalue()
+    exists = False
+    if not argument.startswith(REMOTE_PATH):
+        exists = remote.file_exists(REMOTE_PATH+"/facts_"+str(block_number)+".zip")._getvalue()
     if not exists:
         print("Extracting facts for block "+str(block_number))
-        proc = subprocess.Popen(shlex.split('python3 ../horus/horus.py -e -b '+str(block_number)+' -f ../horus/facts/facts_'+str(block_number)+' --host '+RPC_HOST+' --port '+str(RPC_PORT)+' --compress'), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        proc.communicate()
+        cmd = 'python3 ../horus/horus.py -e -b '+str(block_number)+' -f ../horus/facts/facts_'+str(block_number)+' --host '+RPC_HOST+' --port '+str(RPC_PORT)+' --compress'
+        print(cmd)
+        proc = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, err = proc.communicate()
         if os.path.exists("../horus/facts/facts_"+str(block_number)+".zip"):
             print("Extracted facts for block "+str(block_number))
             fh = None
@@ -83,6 +102,8 @@ def run_extractor(argument):
                 os.remove("../horus/facts/facts_"+str(block_number)+".zip")
         else:
             print("Could not extract facts for block: "+str(block_number))
+            print(out)
+            print(err)
     else:
         print("Facts for block "+str(block_number)+" have already been extracted!")
 
@@ -95,6 +116,11 @@ if __name__ == '__main__':
         start_server(PORT, PASSWORD)
     else:
         #arguments = range(9500001, 10000001)
-        arguments = [9894248, 9894249, 9894250, 9899737, 9899738, 9899739]
+        #arguments = [9894248, 9894249, 9894250, 9899737, 9899738, 9899739]
+        remote = RemoteManager(address=(HOST, PORT), authkey=PASSWORD)
+        remote.connect()
+        arguments = remote.get_list_of_missing_files((9500001, 10000001))._getvalue()
+        print("Number of missing blocks: "+str(len(arguments)))
+        print("Number of jobs: "+str(NUMBER_OF_JOBS))
         with multiprocessing.Pool(NUMBER_OF_JOBS) as pool:
             pool.map(run_extractor, arguments)

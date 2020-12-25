@@ -344,7 +344,7 @@ class Extractor:
                 print()
                 print("Retrieval times: \t "+str(min(stats["retrieval_times"]))+"  Min \t "+str(max(stats["retrieval_times"]))+" Max \t "+str(sum(stats["retrieval_times"])/len(stats["retrieval_times"]))+" Mean.")
                 print("Extraction times: \t "+str(min(stats["extraction_times"]))+" Min \t "+str(max(stats["extraction_times"]))+" Max \t "+str(sum(stats["extraction_times"])/len(stats["extraction_times"]))+" Mean.")
-                print()            
+                print()
 
     def extract_facts_from_transactions(self, connection, transactions, blocks, facts_folder, compress):
         step = 0
@@ -388,7 +388,6 @@ class Extractor:
             in_memory_zip.append(facts_folder+"/def.facts", "")
             in_memory_zip.append(facts_folder+"/use.facts", "")
             in_memory_zip.append(facts_folder+"/arithmetic.facts", "")
-            in_memory_zip.append(facts_folder+"/bitwise_logic.facts", "")
             in_memory_zip.append(facts_folder+"/storage.facts", "")
             in_memory_zip.append(facts_folder+"/condition.facts", "")
             in_memory_zip.append(facts_folder+"/transfer.facts", "")
