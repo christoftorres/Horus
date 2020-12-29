@@ -129,8 +129,12 @@ class Extractor:
                 _value = 0
                 if _opcode == "SSTORE":
                     _value = trace[step]["stack"][-2]
+                    if not trace[step]["stack"][-2].startswith('0x'):
+                        _value = int(trace[step]["stack"][-2])
                 elif not "error" in trace[step]:
-                    _value = int(trace[step + 1]["stack"][-1])
+                    _value = trace[step + 1]["stack"][-1]
+                    if not trace[step + 1]["stack"][-1].startswith('0x'):
+                        _value = int(trace[step + 1]["stack"][-1])
                 if compress:
                     in_memory_zip.append(facts_folder+"/storage.facts", "%d\t%s\t%s\t%s\t%s\t%s\t%s\t%d\r\n" % (step, _opcode, _transaction_hash, _caller, _contract, _storage_index, _value, _depth))
                 else:

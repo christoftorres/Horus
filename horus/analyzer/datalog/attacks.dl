@@ -126,10 +126,7 @@ ParityWalletHack1(hash1, hash2, timestamp1, timestamp2, from, caller, callee, am
   substr(input_data1, 0, 8) = "e46dcfeb",
   transaction(hash2, index2, block2, from, to, input_data2, _, _, 1),
   substr(input_data2, 0, 8) = "b61d27f6",
-  /*call(    _, hash1, "DELEGATECALL", _, _, _, _, _, 1),
-  call(step1, hash2, "DELEGATECALL", _, _, _, _, _, 1),*/
   call(_, hash2, "CALL", caller, callee, _, amount, _, 1),
-  /*step1 < step2,*/
   (block1 < block2;
   block1 = block2, index1 < index2),
   block(block1, _, _, timestamp1),
@@ -139,8 +136,6 @@ ParityWalletHack1(hash1, hash2, timestamp1, timestamp2, from, caller, callee, am
 /* Parity Wallet Hack 2 */
 .decl ParityWalletHack2(hash1:symbol, hash2:symbol, timestamp1:number, timestamp2:number, caller:Address, contract:Address, destination:Address, amount:Value)
 ParityWalletHack2(hash1, hash2, timestamp1, timestamp2, from, contract, destination, amount) :-
-  /*!call(_, hash1, "DELEGATECALL", _, _, _, _, _, 1),*/
-  /*!call(_, hash2, "DELEGATECALL", _, _, _, _, _, 1),*/
   transaction(hash1, index1, block1, from, to, input_data1, _, _, 1),
   substr(input_data1, 0, 8) = "e46dcfeb",
   transaction(hash2, index2, block2, from, to, input_data2, _, _, 1),
@@ -163,7 +158,7 @@ ShortAddress(hash, timestamp, step, attacker, contract, from, to, amount) :-
 .output ShortAddress
 
 /* DoS with Unexpected Throw */
-.decl DoSWithUnexpectedThrow(hash:symbol, timestamp:number, step:number, caller:Address, callee:Address, amount:Value)
+/*.decl DoSWithUnexpectedThrow(hash:symbol, timestamp:number, step:number, caller:Address, callee:Address, amount:Value)
 DoSWithUnexpectedThrow(hash, timestamp, step3, caller, callee, amount) :-
   call(step1, hash, "CALL", caller, callee, _, amount, depth1, 0),
   !match("0", amount),
@@ -175,4 +170,4 @@ DoSWithUnexpectedThrow(hash, timestamp, step3, caller, callee, amount) :-
   depth1 = depth3,
   transaction(hash, _, block, _, _, _, _, _, _),
   block(block, _, _, timestamp).
-.output DoSWithUnexpectedThrow
+.output DoSWithUnexpectedThrow*/
