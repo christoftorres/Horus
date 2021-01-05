@@ -37,7 +37,10 @@ def analyze_block(block_number):
             receipt = w3.eth.getTransactionReceipt(contract["hash"])
             contract["contract_address"] = receipt["contractAddress"]
             contract["gas_used"] = receipt["gasUsed"]
-            contract["status"] = receipt["status"]
+            if "status" in receipt:
+                contract["status"] = receipt["status"]
+            else:
+                contract["status"] = None
 
             contract["bytecode"] = w3.eth.getCode(contract["contract_address"], block_number).hex()
 
@@ -72,11 +75,11 @@ def init_child():
     global w3
     global mongo_connection
 
-    w3 = Web3(Web3.HTTPProvider("http://watson.lowland.fun:19545"))
-    mongo_connection = pymongo.MongoClient("mongodb://localhost:27017", maxPoolSize=None)
+    #w3 = Web3(Web3.HTTPProvider("http://watson.lowland.fun:19545"))
+    #mongo_connection = pymongo.MongoClient("mongodb://localhost:27017", maxPoolSize=None)
 
-    #w3 = Web3(Web3.HTTPProvider("http://pf.uni.lux:8545"))
-    #mongo_connection = pymongo.MongoClient("mongodb://pf.uni.lux:27017", maxPoolSize=None)
+    w3 = Web3(Web3.HTTPProvider("http://pf.uni.lux:8545"))
+    mongo_connection = pymongo.MongoClient("mongodb://pf.uni.lux:27017", maxPoolSize=None)
 
 def main():
     execution_times = []
