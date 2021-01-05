@@ -5,11 +5,14 @@
 Reentrancy(hash, timestamp, step3, attacker, caller, callee, depth2, amount) :-
   storage(step1,  "SLOAD", hash, _, caller, index, _, depth1),
   call(step2, hash, "CALL", caller, callee, input_data,      _, depth1, 1),
-  call(step3, hash, "CALL", caller, callee, input_data, amount, depth2, 1),
-  storage(step4, "SSTORE", hash, _, caller, index, _, depth1),
+  call(step3, hash, "CALL", callee, _, _, _, depth2, 1),
+  call(step4, hash, "CALL", caller, callee, input_data, amount, depth3, 1),
+  storage(step5, "SSTORE", hash, _, caller, index, _, depth1),
   depth1 < depth2,
+  depth2 < depth3,
   step1 < step2,
   step3 < step4,
+  step4 < step5,
   transaction(hash, _, block, attacker, _, _, _, _, 1),
   block(block, _, _, timestamp).
 .output Reentrancy
@@ -86,8 +89,9 @@ IntegerOverflow(hash, timestamp, step4, opcode, first_operand, second_operand, a
   opcode(step1, "CALLDATACOPY")),
   arithmetic(step2, opcode, first_operand, second_operand, arithmetic_result, evm_result),
   arithmetic_result != evm_result,
-  storage(step3, "SSTORE", hash, _, _, _, _, _),
+  storage(step3, "SSTORE", hash, _, _, _, _, 1),
   transfer(step4, hash, contract, from, to, amount),
+  !match("0", amount),
   (amount = first_operand;
   amount = second_operand),
   data_flow(step1, step2),
