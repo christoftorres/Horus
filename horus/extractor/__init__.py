@@ -129,8 +129,12 @@ class Extractor:
                 _value = 0
                 if _opcode == "SSTORE":
                     _value = trace[step]["stack"][-2]
+                    if not trace[step]["stack"][-2].startswith('0x'):
+                        _value = int(trace[step]["stack"][-2])
                 elif not "error" in trace[step]:
-                    _value = int(trace[step + 1]["stack"][-1])
+                    _value = trace[step + 1]["stack"][-1]
+                    if not trace[step + 1]["stack"][-1].startswith('0x'):
+                        _value = int(trace[step + 1]["stack"][-1])
                 if compress:
                     in_memory_zip.append(facts_folder+"/storage.facts", "%d\t%s\t%s\t%s\t%s\t%s\t%s\t%d\r\n" % (step, _opcode, _transaction_hash, _caller, _contract, _storage_index, _value, _depth))
                 else:
@@ -344,7 +348,7 @@ class Extractor:
                 print()
                 print("Retrieval times: \t "+str(min(stats["retrieval_times"]))+"  Min \t "+str(max(stats["retrieval_times"]))+" Max \t "+str(sum(stats["retrieval_times"])/len(stats["retrieval_times"]))+" Mean.")
                 print("Extraction times: \t "+str(min(stats["extraction_times"]))+" Min \t "+str(max(stats["extraction_times"]))+" Max \t "+str(sum(stats["extraction_times"])/len(stats["extraction_times"]))+" Mean.")
-                print()            
+                print()
 
     def extract_facts_from_transactions(self, connection, transactions, blocks, facts_folder, compress):
         step = 0
@@ -388,7 +392,6 @@ class Extractor:
             in_memory_zip.append(facts_folder+"/def.facts", "")
             in_memory_zip.append(facts_folder+"/use.facts", "")
             in_memory_zip.append(facts_folder+"/arithmetic.facts", "")
-            in_memory_zip.append(facts_folder+"/bitwise_logic.facts", "")
             in_memory_zip.append(facts_folder+"/storage.facts", "")
             in_memory_zip.append(facts_folder+"/condition.facts", "")
             in_memory_zip.append(facts_folder+"/transfer.facts", "")
