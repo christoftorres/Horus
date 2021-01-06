@@ -257,7 +257,7 @@ def main():
                     else:
                         break
                 # Get the list of "internal" transactions for the given contract address
-                page = 1
+                """page = 1
                 while True:
                     api_response = requests.get("https://"+api_network+".etherscan.io/api?module=account&action=txlistinternal&address="+args.contract_address+"&startblock=0&endblock="+str(settings.MAX_BLOCK_HEIGHT)+"&page="+str(page)+"&offset=10000&sort=asc&apikey="+settings.ETHERSCAN_API_TOKEN).json()
                     if not api_response or "error" in api_response:
@@ -283,7 +283,7 @@ def main():
                         break
                 # Sort the list of transactions
                 from operator import itemgetter
-                transactions = sorted(transactions, key=itemgetter('blockNumber', 'transactionIndex'))
+                transactions = sorted(transactions, key=itemgetter('blockNumber', 'transactionIndex'))"""
             elif args.contract_address.endswith(".csv"):
                 csv.field_size_limit(sys.maxsize) #https://stackoverflow.com/questions/15063936/csv-error-field-larger-than-field-limit-131072
                 with open(args.contract_address) as csvfile:

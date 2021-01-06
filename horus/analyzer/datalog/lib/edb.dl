@@ -1,6 +1,6 @@
 
-.decl def(step:number, opcode:Opcode)
-.decl use(step1:number, step2:number)
+.decl def(step:number, opcode:Opcode, transaction_hash:symbol)
+.decl use(step1:number, step2:number, transaction_hash:symbol)
 .decl arithmetic(step:number, opcode:Opcode, first_operand:Value, second_operand:Value, arithmetic_result:Value, evm_result:Value)
 .decl storage(step:number, opcode:Opcode, transaction_hash:symbol, caller:Address, contract:Address, storage_index:Value, storage_value:Value, depth:number)
 .decl condition(step:number, transaction_hash:symbol)

@@ -74,7 +74,7 @@ class Extractor:
                         if compress:
                             in_memory_zip.append(facts_folder+"/use.facts", "%d\t%d\r\n" % (step, i))
                         else:
-                            use_facts.write("%d\t%d\r\n" % (step, i))
+                            use_facts.write("%d\t%d\t%s\r\n" % (step, i, transaction["hash"]))
 
             taint_runner.propagate_taint(trace[step], trace[step]["contract"])
 
@@ -90,7 +90,7 @@ class Extractor:
                 if compress:
                     in_memory_zip.append(facts_folder+"/def.facts", "%d\t%s\r\n" % (step, trace[step]["op"]))
                 else:
-                    def_facts.write("%d\t%s\r\n" % (step, trace[step]["op"]))
+                    def_facts.write("%d\t%s\t%s\r\n" % (step, trace[step]["op"], transaction["hash"]))
 
             # Arithmetic facts
             if trace[step]["op"] in ["ADD", "SUB", "MUL"]:
@@ -112,7 +112,7 @@ class Extractor:
                     if compress:
                         in_memory_zip.append(facts_folder+"/def.facts", "%d\t%s\r\n" % (step, trace[step]["op"]))
                     else:
-                        def_facts.write("%d\t%s\r\n" % (step, trace[step]["op"]))
+                        def_facts.write("%d\t%s\t%s\r\n" % (step, trace[step]["op"], transaction["hash"]))
                     if compress:
                         in_memory_zip.append(facts_folder+"/arithmetic.facts", "%d\t%s\t%s\t%s\t%s\t%s\r\n" % (step, _opcode, _first_operand, _second_operand, _arithmetic_result, _evm_result))
                     else:
@@ -274,7 +274,10 @@ class Extractor:
             transaction_facts.close()
 
         if settings.DEBUG_MODE:
-            print("-------------------------------------------------------------------------------------------------------------------")
+            if "pc" in trace[step-1] and "gas" in trace[step-1] and "gasCost" in trace[step-1]:
+                print("-------------------------------------------------------------------------------------------------------------------")
+            else:
+                print("---------------------------------------------------------------------------")
 
         execution_end = time.time()
         execution_delta = execution_end - execution_begin
@@ -346,8 +349,8 @@ class Extractor:
         finally:
             if len(stats["retrieval_times"]) > 0 and len(stats["extraction_times"]) > 0:
                 print()
-                print("Retrieval times: \t "+str(min(stats["retrieval_times"]))+"  Min \t "+str(max(stats["retrieval_times"]))+" Max \t "+str(sum(stats["retrieval_times"])/len(stats["retrieval_times"]))+" Mean.")
-                print("Extraction times: \t "+str(min(stats["extraction_times"]))+" Min \t "+str(max(stats["extraction_times"]))+" Max \t "+str(sum(stats["extraction_times"])/len(stats["extraction_times"]))+" Mean.")
+                print("Retrieval times: \t " +"{:.5f}".format(min(stats["retrieval_times"]))+ "s Min \t "+"{:.5f}".format(max(stats["retrieval_times"]))+ "s Max \t "+"{:.5f}".format(sum(stats["retrieval_times"])/len(stats["retrieval_times"]))+  "s Mean.")
+                print("Extraction times: \t "+"{:.5f}".format(min(stats["extraction_times"]))+"s Min \t "+"{:.5f}".format(max(stats["extraction_times"]))+"s Max \t "+"{:.5f}".format(sum(stats["extraction_times"])/len(stats["extraction_times"]))+"s Mean.")
                 print()
 
     def extract_facts_from_transactions(self, connection, transactions, blocks, facts_folder, compress):
@@ -441,5 +444,6 @@ class Extractor:
         finally:
             if len(stats["retrieval_times"]) > 0 and len(stats["extraction_times"]) > 0:
                 print()
-                print("Retrieval times: \t "+str(min(stats["retrieval_times"]))+"  Min \t "+str(max(stats["retrieval_times"]))+" Max \t "+str(sum(stats["retrieval_times"])/len(stats["retrieval_times"]))+" Mean.")
-                print("Extraction times: \t "+str(min(stats["extraction_times"]))+" Min \t "+str(max(stats["extraction_times"]))+" Max \t "+str(sum(stats["extraction_times"])/len(stats["extraction_times"]))+" Mean.")
+                print("Retrieval times: \t " +"{:.5f}".format(min(stats["retrieval_times"]))+ "s Min \t "+"{:.5f}".format(max(stats["retrieval_times"]))+ "s Max \t "+"{:.5f}".format(sum(stats["retrieval_times"])/len(stats["retrieval_times"]))+  "s Mean.")
+                print("Extraction times: \t "+"{:.5f}".format(min(stats["extraction_times"]))+"s Min \t "+"{:.5f}".format(max(stats["extraction_times"]))+"s Max \t "+"{:.5f}".format(sum(stats["extraction_times"])/len(stats["extraction_times"]))+"s Mean.")
+                print()

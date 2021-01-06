@@ -17,61 +17,6 @@ Reentrancy(hash, timestamp, step3, attacker, caller, callee, depth2, amount) :-
   block(block, _, _, timestamp).
 .output Reentrancy
 
-/* ERC777Reentrancy */
-/*.decl UniswapHack(hash:symbol, block:number, timestamp:number, caller:Address, callee:Address, attacker:Address, amount:Value, profit:Value)
-UniswapHack(hash, block, timestamp, caller, callee, attacker, amount, profit) :-
-  call(step1, hash, "CALL", callee, _, input_data1, amount, _, 1),
-  substr(input_data1, 0, 8) = "f39b5b9b",
-  call(step2, hash, "CALL", caller, callee, input_data2, _, depth1, 1),
-  step1 < step2,
-  substr(input_data2, 0, 8) = "75ab9782",
-  call(step3, hash, "CALL", caller, callee, input_data3, _, depth2, 1),
-  substr(input_data3, 0, 8) = "75ab9782",
-  depth1 < depth2,
-  call(step4, hash, "CALL", callee, attacker, _, profit, _, 1),
-  !match("0", profit),
-  step3 < step4,
-  transaction(hash, _, block, attacker, _, _, _, _, 1),
-  block(block, _, _, timestamp).
-.output UniswapHack
-
-.decl LendfmeHack(hash:symbol, block:number, timestamp:number, token:Address, amount:Value)
-LendfmeHack(hash, block, timestamp, token, amount) :-
-  call(_, hash, "STATICCALL", "0x538359785a8d5ab1a741a0ba94f26a800759d91d", token, "70a082310000000000000000000000000eee3e3828a45f7601d5f54bf49bb01d1a9df5ea", _, 1, 1),
-  call(_, hash, "CALL", "0x0eee3e3828a45f7601d5f54bf49bb01d1a9df5ea", _, _, _, 2, 1),
-  transfer(_, hash, _, "0x0eee3e3828a45f7601d5f54bf49bb01d1a9df5ea", "0x538359785a8d5ab1a741a0ba94f26a800759d91d", amount),
-  transaction(hash, _, block, _, _, _, _, _, 1),
-  block(block, _, _, timestamp).
-.output LendfmeHack*/
-
-/*.decl ERC777Reentrancy(hash:symbol, timestamp:number, caller:Address, callee:Address, amount:Value, asset:symbol)
-ERC777Reentrancy(hash, timestamp, caller, callee, amount, asset) :-
-  call(step1, hash, "CALL", caller, callee, input_data1, _, depth1, 1),
-  substr(input_data1, 0, 8) = "75ab9782",
-  call(step2, hash, "CALL", caller, callee, input_data2, _, depth2, 1),
-  substr(input_data2, 0, 8) = "75ab9782",
-  depth1 < depth2,
-  call(step3, hash, "CALL", callee, from, _, amount, _, 1),
-  !match("0", amount),
-  step2 < step3,
-  transaction(hash, from, _, _, _, _, 1, block),
-  block(block, _, _, timestamp),
-  asset = "Ether";
-
-  call(step1, hash, "CALL", caller, callee, input_data1, _, _, 1),
-  substr(input_data1, 0, 8) = "75ab9782",
-  call(step2, hash, "CALL", caller, callee, input_data2, _, _, 1),
-  substr(input_data2, 0, 8) = "75ab9782",
-  step1 < step2,
-  transfer(step3, hash, callee, to, _),
-  transfer(step4, hash, to, callee, amount),
-  !match("0", amount),
-  step3 < step4,
-  transaction(hash, _, _, _, _, _, 1, block),
-  block(block, _, _, timestamp),
-  asset = "Token".
-.output ERC777Reentrancy*/
-
 /* Unhandled Exception */
 .decl UnhandledException(hash:symbol, timestamp:number, step:number, attacker:Address, caller:Address, callee:Address, amount:Value)
 UnhandledException(hash, timestamp, step1, attacker, caller, callee, amount) :-
@@ -85,8 +30,8 @@ UnhandledException(hash, timestamp, step1, attacker, caller, callee, amount) :-
 /* Integer Overflow */
 .decl IntegerOverflow(hash:symbol, timestamp:number, step:number, opcode:Opcode, first_operand:Value, second_operand:Value, arithmetic_result:Value, evm_result:Value, attacker:Address, contract: Address, from:Address, to:Address, amount:Value)
 IntegerOverflow(hash, timestamp, step4, opcode, first_operand, second_operand, arithmetic_result, evm_result, attacker, contract, from, to, amount) :-
-  (opcode(step1, "CALLDATALOAD");
-  opcode(step1, "CALLDATACOPY")),
+  (opcode(step1, "CALLDATALOAD", hash);
+  opcode(step1, "CALLDATACOPY", hash)),
   arithmetic(step2, opcode, first_operand, second_operand, arithmetic_result, evm_result),
   arithmetic_result != evm_result,
   storage(step3, "SSTORE", hash, _, _, _, _, 1),
@@ -94,34 +39,11 @@ IntegerOverflow(hash, timestamp, step4, opcode, first_operand, second_operand, a
   !match("0", amount),
   (amount = first_operand;
   amount = second_operand),
-  data_flow(step1, step2),
-  data_flow(step2, step3),
+  data_flow(step1, step2, hash),
+  data_flow(step2, step3, hash),
   transaction(hash, _, block, attacker, _, _, _, _, 1),
   block(block, _, _, timestamp).
 .output IntegerOverflow
-
-/* Unchecked Suicide */
-/*.decl UncheckedSuicide(hash:symbol, timestamp:number, step:number, caller:Address, contract:Address, destination:Address, amount:Value)
-UncheckedSuicide(hash, timestamp, step2, caller, contract, destination, amount) :-
-  opcode(step1, "CALLDATALOAD"),
-  selfdestruct(step2, hash, caller, contract, destination, amount),
-  data_flow(step1, step2),
-  !caller_check(_, hash),
-  transaction(hash, _, _, _, _, _, 1, block),
-  block(block, _, _, timestamp).
-.output UncheckedSuicide*/
-
-/* Unchecked Delegatecall */
-/*.decl UncheckedDelegatecall(hash:symbol, timestamp:number, step:number, caller:Address, callee:Address)
-UncheckedDelegatecall(hash, timestamp, step2, caller, callee) :-
-  opcode(step1, "CALLDATALOAD"),
-  call(step2, hash, "DELEGATECALL", caller, callee, _, _, _, 1),
-  data_flow(step1, step2),
-  !caller_check(_, hash),
-  transaction(hash, _, block, _, _, input_data, _, _, 1),
-  contains(substr(callee, 2, strlen(callee)), input_data),
-  block(block, _, _, timestamp).
-.output UncheckedDelegatecall*/
 
 /* Parity Wallet Hack 1 */
 .decl ParityWalletHack1(hash1:symbol, hash2:symbol, timestamp1:number, timestamp2:number, caller:Address, contract:Address, callee:Address, amount:Value)
@@ -158,20 +80,6 @@ ShortAddress(hash, timestamp, step, attacker, contract, from, to, amount) :-
   (substr(input_data, 0, 8) = "a9059cbb", strlen(input_data) / 2 < 68;
   substr(input_data, 0, 8) = "23b872dd", strlen(input_data) / 2 < 100),
   transfer(step, hash, contract, from, to, amount),
+  !match("0", amount),
   block(block, _, _, timestamp).
 .output ShortAddress
-
-/* DoS with Unexpected Throw */
-/*.decl DoSWithUnexpectedThrow(hash:symbol, timestamp:number, step:number, caller:Address, callee:Address, amount:Value)
-DoSWithUnexpectedThrow(hash, timestamp, step3, caller, callee, amount) :-
-  call(step1, hash, "CALL", caller, callee, _, amount, depth1, 0),
-  !match("0", amount),
-  throw(step2, hash, _, _, depth2),
-  step1 < step2,
-  depth1 + 1 = depth2,
-  throw(step3, hash, _, _, depth3),
-  step2 < step3,
-  depth1 = depth3,
-  transaction(hash, _, block, _, _, _, _, _, _),
-  block(block, _, _, timestamp).
-.output DoSWithUnexpectedThrow*/
