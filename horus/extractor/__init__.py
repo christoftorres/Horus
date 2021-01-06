@@ -72,7 +72,7 @@ class Extractor:
                 if values:
                     for i in values:
                         if compress:
-                            in_memory_zip.append(facts_folder+"/use.facts", "%d\t%d\r\n" % (step, i))
+                            in_memory_zip.append(facts_folder+"/use.facts", "%d\t%d\t%s\r\n" % (step, i, transaction["hash"]))
                         else:
                             use_facts.write("%d\t%d\t%s\r\n" % (step, i, transaction["hash"]))
 
@@ -88,7 +88,7 @@ class Extractor:
                ]:
                 taint_runner.introduce_taint(step, trace[step])
                 if compress:
-                    in_memory_zip.append(facts_folder+"/def.facts", "%d\t%s\r\n" % (step, trace[step]["op"]))
+                    in_memory_zip.append(facts_folder+"/def.facts", "%d\t%s\t%s\r\n" % (step, trace[step]["op"], transaction["hash"]))
                 else:
                     def_facts.write("%d\t%s\t%s\r\n" % (step, trace[step]["op"], transaction["hash"]))
 
@@ -110,7 +110,7 @@ class Extractor:
                 if _arithmetic_result != _evm_result:
                     taint_runner.introduce_taint(step, trace[step])
                     if compress:
-                        in_memory_zip.append(facts_folder+"/def.facts", "%d\t%s\r\n" % (step, trace[step]["op"]))
+                        in_memory_zip.append(facts_folder+"/def.facts", "%d\t%s\t%s\r\n" % (step, trace[step]["op"], transaction["hash"]))
                     else:
                         def_facts.write("%d\t%s\t%s\r\n" % (step, trace[step]["op"], transaction["hash"]))
                     if compress:
