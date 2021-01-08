@@ -38,6 +38,42 @@ Reentrancy2(hash, timestamp, step2, step3, step4, attacker, caller, callee, dept
   block(block, _, _, timestamp).
 .output Reentrancy2
 
+/* Reentrancy */
+.decl Reentrancy3(hash:symbol, timestamp:number, step2:number, step4:number, attacker:Address, caller:Address, callee:Address, depth3:number, call_id:number, call_branch2:number, call_branch3:number, amount:Value)
+Reentrancy3(hash, timestamp, step2, step4, attacker, caller, callee, depth1, depth3, call_id, call_branch, amount) :-
+  storage(step1,  "SLOAD", hash, _, caller, index, _, depth1),
+  call(step2, hash, opcode, caller, callee, input_data,      _, depth1, call_id, call_branch, 1),
+  call(step4, hash, opcode, caller, callee, input_data, amount, depth3, call_id, call_branch, 1),
+  storage(step5, "SSTORE", hash, _, caller, index, _, depth1),
+  depth1 < depth3,
+  step1 < step2,
+  step2 < step4,
+  step4 < step5,
+  !match("0", amount),
+  transaction(hash, _, block, attacker, _, _, _, _, 1),
+  block(block, _, _, timestamp).
+.output Reentrancy3
+
+/* Reentrancy */
+.decl Reentrancy4(hash:symbol, timestamp:number, step2:number, step4:number, attacker:Address, caller:Address, callee:Address, depth3:number, call_id:number, call_branch2:number, call_branch3:number, amount:Value)
+Reentrancy4(hash, timestamp, step2, step4, attacker, caller, callee, depth1, depth3, call_id, call_branch, amount) :-
+  storage(step1,  "SLOAD", hash, _, caller, index, _, depth1),
+  call(step2, hash, opcode, caller, callee, input_data,      _, depth1, call_id, call_branch, 1),
+  call(step4, hash, opcode, caller, callee, input_data,      _, depth3, call_id, call_branch, 1),
+  storage(step5, "SSTORE", hash, _, caller, index, _, depth1),
+  depth1 < depth3,
+  step1 < step2,
+  step2 < step4,
+  step4 < step5,
+  transfer(_, hash, _, from, to, amount),
+  !match("0", amount),
+  !match("0x0000000000000000000000000000000000000000", from),
+  !match("0x0000000000000000000000000000000000000000", to),
+  transaction(hash, _, block, attacker, _, _, _, _, 1),
+  block(block, _, _, timestamp).
+.output Reentrancy4
+
+
 /* Unhandled Exception */
 .decl UnhandledException(hash:symbol, timestamp:number, step:number, attacker:Address, caller:Address, callee:Address, amount:Value)
 UnhandledException(hash, timestamp, step1, attacker, caller, callee, amount) :-

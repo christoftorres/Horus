@@ -33,6 +33,11 @@ with open('deployment_timestamps.csv', 'r') as csv_file:
 
 attacks = dict()
 
+from web3 import Web3
+w3 = Web3(Web3.HTTPProvider("http://"+"pf.uni.lux"+":"+str(8545)))
+blocks = []
+blocks_file = open("blocks_to_be_analyzed.txt", "w")
+
 processed_transactions = dict()
 with open('reentrancy_results.csv', 'r') as csv_file:
     csv_reader = csv.reader(csv_file)
@@ -46,8 +51,13 @@ with open('reentrancy_results.csv', 'r') as csv_file:
         attacks[timestamp] += 1
         if not timestamp in deployments:
             deployments[timestamp] = 0
+        block = w3.eth.getTransaction(transaction)["blockNumber"]
+        if block not in blocks:
+            blocks.append(block)
+            blocks_file.write(str(block)+"\n")
         processed_transactions[transaction] = True
 print("Reentrancy: "+str(len(processed_transactions)))
+print(len(blocks))
 
 processed_transactions = dict()
 with open('parity_wallet_hack_1_results.csv', 'r') as csv_file:
@@ -81,10 +91,6 @@ with open('parity_wallet_hack_2_results.csv', 'r') as csv_file:
         processed_transactions[transaction] = True
 print("Parity wallet hack 2: "+str(len(processed_transactions)))
 
-from web3 import Web3
-w3 = Web3(Web3.HTTPProvider("http://"+"pf.uni.lux"+":"+str(8545)))
-blocks = []
-blocks_file = open("blocks.txt", "w")
 processed_transactions = dict()
 with open('integer_overflow_results.csv', 'r') as csv_file:
     csv_reader = csv.reader(csv_file)
@@ -99,7 +105,7 @@ with open('integer_overflow_results.csv', 'r') as csv_file:
         attacks[timestamp] += 1
         if not timestamp in deployments:
             deployments[timestamp] = 0
-        print(transaction)
+        #print(transaction)
         block = w3.eth.getTransaction(transaction)["blockNumber"]
         if block not in blocks:
             blocks.append(block)
@@ -107,7 +113,6 @@ with open('integer_overflow_results.csv', 'r') as csv_file:
         processed_transactions[transaction] = True
 print("Integer overflow: "+str(len(processed_transactions)))
 print(len(blocks))
-blocks_file.close()
 
 processed_transactions = dict()
 with open('unhandled_exception_results.csv', 'r') as csv_file:
@@ -138,8 +143,15 @@ with open('short_address_results.csv', 'r') as csv_file:
         attacks[timestamp] += 1
         if not timestamp in deployments:
             deployments[timestamp] = 0
+        block = w3.eth.getTransaction(transaction)["blockNumber"]
+        if block not in blocks:
+            blocks.append(block)
+            blocks_file.write(str(block)+"\n")
         processed_transactions[transaction] = True
 print("Short address: "+str(len(processed_transactions)))
+print(len(blocks))
+
+blocks_file.close()
 
 for timestamp in deployments:
     if not timestamp in attacks:
