@@ -36,7 +36,7 @@ attacks = dict()
 from web3 import Web3
 w3 = Web3(Web3.HTTPProvider("http://"+"pf.uni.lux"+":"+str(8545)))
 blocks = []
-blocks_file = open("blocks_to_be_analyzed.txt", "w")
+blocks_file = open("blocks_to_be_extracted.txt", "w")
 
 processed_transactions = dict()
 with open('reentrancy_results.csv', 'r') as csv_file:
