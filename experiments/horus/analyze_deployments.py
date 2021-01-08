@@ -106,10 +106,10 @@ with open('integer_overflow_results.csv', 'r') as csv_file:
         if not timestamp in deployments:
             deployments[timestamp] = 0
         #print(transaction)
-        block = w3.eth.getTransaction(transaction)["blockNumber"]
-        if block not in blocks:
-            blocks.append(block)
-            blocks_file.write(str(block)+"\n")
+        #block = w3.eth.getTransaction(transaction)["blockNumber"]
+        #if block not in blocks:
+        #    blocks.append(block)
+        #    blocks_file.write(str(block)+"\n")
         processed_transactions[transaction] = True
 print("Integer overflow: "+str(len(processed_transactions)))
 print(len(blocks))
