@@ -5,7 +5,7 @@
 .decl storage(step:number, opcode:Opcode, transaction_hash:symbol, caller:Address, contract:Address, storage_index:Value, storage_value:Value, depth:number)
 .decl condition(step:number, transaction_hash:symbol)
 .decl transfer(step:number, transaction_hash:symbol, contract:Address, from:Address, to:Address, value:Value)
-.decl call(step:number, transaction_hash:symbol, opcode:Opcode, caller:Address, callee:Address, input_data:symbol, amount:Value, depth:number, success:number)
+.decl call(step:number, transaction_hash:symbol, opcode:Opcode, caller:Address, callee:Address, input_data:symbol, amount:Value, depth:number, call_id:number, call_branch:number, success:number)
 .decl throw(step:number, transaction_hash:symbol, opcode:Opcode, caller:Address, depth:number)
 .decl selfdestruct(step:number, transaction_hash:symbol, caller:Address, contract:Address, destination:Address, amount:Value)
 .decl error(transaction_hash:symbol, error_message:symbol)

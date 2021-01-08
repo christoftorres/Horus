@@ -163,6 +163,10 @@ class Extractor:
 
             # Call facts
             elif trace[step]["op"] in ["CREATE", "CREATE2", "CALL", "CALLCODE", "DELEGATECALL", "STATICCALL"]:
+                call_flow_analysis.analyze_call_flow(step, max_step, trace)
+
+                _call_id = call_flow_analysis.get_call_id()
+                _call_branch = call_flow_analysis.get_call_branch()
                 i = step + 1
                 while i < max_step and trace[step]["depth"] < trace[i]["depth"]:
                     i += 1
@@ -195,9 +199,9 @@ class Extractor:
                     _success = 0
                 _input_data = trace[step]["memory"].replace("0x", "")
                 if compress:
-                    in_memory_zip.append(facts_folder+"/call.facts", "%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\r\n" % (step, _transaction_hash, _opcode, _caller, _callee, _input_data, _amount, _depth, _success))
+                    in_memory_zip.append(facts_folder+"/call.facts", "%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\r\n" % (step, _transaction_hash, _opcode, _caller, _callee, _input_data, _amount, _depth, _call_id, _call_branch, _success))
                 else:
-                    call_facts.write("%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\r\n" % (step, _transaction_hash, _opcode, _caller, _callee, _input_data, _amount, _depth, _success))
+                    call_facts.write("%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\r\n" % (step, _transaction_hash, _opcode, _caller, _callee, _input_data, _amount, _depth, _call_id, _call_branch, _success))
 
             # Throw facts
             elif trace[step]["op"] in ["REVERT", "INVALID", "ASSERTFAIL"]:
