@@ -17,19 +17,20 @@ Reentrancy(hash, timestamp, step3, attacker, caller, callee, depth2, amount) :-
 .output Reentrancy
 
 /* Reentrancy */
-.decl ReentrancyToken(hash:symbol, timestamp:number, step:number, attacker:Address, caller:Address, callee:Address, amount:Value)
-ReentrancyToken(hash, timestamp, step5, attacker, caller, callee, amount) :-
+.decl ReentrancyToken(hash:symbol, timestamp:number, step:number, attacker:Address, contract:Address, from:Address, to:Address, amount:Value)
+ReentrancyToken(hash, timestamp, step5, attacker, contract, from, to, amount) :-
   storage(step1,  "SLOAD", hash, _, caller, index, _, depth1),
   call(step2, hash, opcode, caller, callee, input_data, _, depth1, call_id, call_branch, 1),
   call(step3, hash, opcode, caller, callee, input_data, _, depth2, call_id, call_branch, 1),
   storage(step4, "SSTORE", hash, _, caller, index, _, depth1),
   transfer(step5, hash, contract, from,   to, amount),
-  transfer(    _, hash, contract,   to, from,      _),
+  transfer(step6, hash, contract,   to, from,      _),
   !match("0x0000000000000000000000000000000000000000", from),
   depth1 < depth2,
   step1 < step2,
   step2 < step3,
   step3 < step4,
+  step5 < step6,
   !match("0", amount),
   transaction(hash, _, block, attacker, _, _, _, _, 1),
   block(block, _, _, timestamp).
