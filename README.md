@@ -51,7 +51,7 @@ pip install -r requirements.txt
 
 ### 3. Install Neo4j
 
-Download and install Neo4j from [neo4j.com]https://neo4j.com/download-center).
+Download and install Neo4j from [neo4j.com](https://neo4j.com/download-center).
 
 ## Running Instructions
 
