@@ -11,13 +11,13 @@ A container with the dependencies set up can be found [here](https://hub.docker.
 
 To open the container, install docker and run:
 
-```
+``` shell
 docker pull christoftorres/horus && docker run -i -t christoftorres/horus
 ```
 
 To evaluate a transaction inside the container, run:
 
-```
+``` shell
 cd horus
 python3 horus.py -e -tx 0x0ec3f2488a93839524add10ea229e773f6bc891b4eb4794c3337d4495263790b --host <RPC_HOST> --port <RPC_PORT>
 python3 horus.py -a
