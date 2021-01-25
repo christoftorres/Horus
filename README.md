@@ -7,12 +7,12 @@ An analysis tool to detect attacks and trace stolen assets across Ethereum.  Our
 
 ## Quick Start
 
-A container with the dependencies set up can be found [here](https://hub.docker.com/r/christoftorres/aegis/).
+A container with the dependencies set up can be found [here](https://hub.docker.com/r/christoftorres/horus/).
 
 To open the container, install docker and run:
 
 ```
-docker pull christoftorres/aegis && docker run -i -t christoftorres/aegis
+docker pull christoftorres/horus && docker run -i -t christoftorres/horus
 ```
 
 To evaluate a transaction inside the container, run:
@@ -26,8 +26,8 @@ and you are done!
 ## Custom Docker image build
 
 ```
-docker build -t aegis .
-docker run -it aegis:latest
+docker build -t horus .
+docker run -it horus:latest
 ```
 
 ## Installation Instructions
@@ -67,6 +67,13 @@ python3 horus.py -e -t 0x0ec3f2488a93839524add10ea229e773f6bc891b4eb4794c3337d44
 ``` shell
 cd horus
 python3 horus.py -a
+```
+
+3. Run the <b>tracer</b> on the Datalog results:
+
+``` shell
+cd horus
+python3 horus.py -t
 ```
 
 Run ```python3 horus.py --help``` for a complete list of options.
