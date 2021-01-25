@@ -3,7 +3,7 @@ Horus
 
 ![](https://img.icons8.com/color/200/bastet.png)
 
-An analysis tool to detect attacks in Ethereum transactions.
+An analysis tool to detect attacks analysze the flow of stolen assets in Ethereum.
 
 # Installation Instructions
 
