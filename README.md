@@ -68,7 +68,7 @@ python3 horus.py -e -tx 0x0ec3f2488a93839524add10ea229e773f6bc891b4eb4794c3337d4
 
 ``` shell
 cd horus
-python3 horus.py -a -f <FACTS_FOLDER> -r <RESULTS_FOLDER>
+python3 horus.py -a -f <FACTS_FOLDER> -r <RESULTS_FOLDER> -d <DATALOG_FILE>
 ```
 
 3. Run the <b>tracer</b> on the Datalog results:
