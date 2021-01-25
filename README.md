@@ -19,7 +19,7 @@ To evaluate a transaction inside the container, run:
 
 ```
 cd horus
-python3 horus.py -e -t 0x0ec3f2488a93839524add10ea229e773f6bc891b4eb4794c3337d4495263790b --host <RPC_HOST> --port <RPC_PORT>
+python3 horus.py -e -tx 0x0ec3f2488a93839524add10ea229e773f6bc891b4eb4794c3337d4495263790b --host <RPC_HOST> --port <RPC_PORT>
 python3 horus.py -a
 ```
 
@@ -57,7 +57,7 @@ Download and install Neo4j from [neo4j.com](https://neo4j.com/download-center).
 
 ## Running Instructions
 
-1. Run the <b>extractor</b> on a transaction (```-t```), block (```-b```) or contract (```-c```):
+1. Run the <b>extractor</b> on a transaction (```-tx```), block (```-b```) or contract (```-c```):
 
 ``` shell
 cd horus
@@ -75,7 +75,7 @@ python3 horus.py -a
 
 ``` shell
 cd horus
-python3 horus.py -t
+python3 horus.py -tx
 ```
 
 Run ```python3 horus.py --help``` for a complete list of options.
