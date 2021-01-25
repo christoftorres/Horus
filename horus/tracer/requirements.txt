@@ -1,4 +1,0 @@
-requests
-neo4j-driver
-tqdm
-cfscrape

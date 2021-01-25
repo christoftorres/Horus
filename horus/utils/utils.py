@@ -22,7 +22,7 @@ def run_command(cmd):
     solc_p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=FNULL)
     return solc_p.communicate()[0]
 
-def has_dependencies_installed():
+def has_souffle_installed():
     if not command_exists("souffle --version"):
         print("Souffle is missing. Please install souffle and make sure souffle is in the path.")
         return False
