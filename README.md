@@ -19,7 +19,7 @@ To evaluate a transaction inside the container, run:
 
 ```
 cd horus
-python3 horus.py -e -t 0x0ec3f2488a93839524add10ea229e773f6bc891b4eb4794c3337d4495263790b
+python3 horus.py -e -t 0x0ec3f2488a93839524add10ea229e773f6bc891b4eb4794c3337d4495263790b --host <RPC_HOST> --port <RPC_PORT>
 python3 horus.py -a
 ```
 
