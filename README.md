@@ -5,6 +5,31 @@ Horus
 
 An analysis tool to detect attacks analysze the flow of stolen assets in Ethereum.  Our paper can be found [here](https://orbilu.uni.lu/retrieve/77779/85581/FC_21_Horus_Torres.pdf).
 
+## Quick Start
+
+A container with the dependencies set up can be found [here](https://hub.docker.com/r/christoftorres/aegis/).
+
+To open the container, install docker and run:
+
+```
+docker pull christoftorres/aegis && docker run -i -t christoftorres/aegis
+```
+
+To evaluate a transaction inside the container, run:
+
+```
+python3 aegis/aegis.py -t 0x0ec3f2488a93839524add10ea229e773f6bc891b4eb4794c3337d4495263790b --host <RPC_HOST> --port <RPC_PORT>
+```
+
+and you are done!
+
+## Custom Docker image build
+
+```
+docker build -t aegis .
+docker run -it aegis:latest
+```
+
 ## Installation Instructions
 
 ### 1. Install Soufflé
