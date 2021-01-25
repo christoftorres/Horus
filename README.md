@@ -27,7 +27,7 @@ and you are done!
 
 ## Custom Docker image build
 
-```
+``` shell
 docker build -t horus .
 docker run -it horus:latest
 ```
