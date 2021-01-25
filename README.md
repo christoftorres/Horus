@@ -61,7 +61,7 @@ Download and install Neo4j from [neo4j.com](https://neo4j.com/download-center).
 
 ``` shell
 cd horus
-python3 horus.py -e -t 0x0ec3f2488a93839524add10ea229e773f6bc891b4eb4794c3337d4495263790b
+python3 horus.py -e -tx 0x0ec3f2488a93839524add10ea229e773f6bc891b4eb4794c3337d4495263790b
 ```
 
 2. Run the <b>analyzer</b> on the extracted Datalog facts:
@@ -75,7 +75,7 @@ python3 horus.py -a
 
 ``` shell
 cd horus
-python3 horus.py -tx
+python3 horus.py -t
 ```
 
 Run ```python3 horus.py --help``` for a complete list of options.
