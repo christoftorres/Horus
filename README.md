@@ -49,6 +49,10 @@ cd horus
 pip install -r requirements.txt
 ```
 
+### 3. Install Neo4j
+
+Download and install Neo4j from [neo4j.com]https://neo4j.com/download-center).
+
 ## Running Instructions
 
 1. Run the <b>extractor</b> on a transaction (```-t```), block (```-b```) or contract (```-c```):
