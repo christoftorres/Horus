@@ -3,7 +3,7 @@ Horus
 
 ![](https://img.icons8.com/color/200/bastet.png)
 
-An analysis tool to detect attacks analysze the flow of stolen assets in Ethereum.  Our paper can be found [here](https://orbilu.uni.lu/retrieve/77779/85581/FC_21_Horus_Torres.pdf).
+An analysis tool to detect attacks and trace stolen assets across Ethereum.  Our paper can be found [here](https://orbilu.uni.lu/retrieve/77779/85581/FC_21_Horus_Torres.pdf).
 
 ## Quick Start
 
