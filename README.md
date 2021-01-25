@@ -46,7 +46,7 @@ For other operating systems follow the installation instructions on [souffle-lan
 
 ``` shell
 cd horus
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 
 ### 3. Install Neo4j
