@@ -1,2 +1,0 @@
-class RetriableValueError(ValueError):
-    pass
