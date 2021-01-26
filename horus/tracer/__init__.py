@@ -52,3 +52,23 @@ class Tracer:
                         self.trace_internal_transactions(attacker, transaction["to"], block_number, direction, hops, hop + 1, start_block, visited_accounts)
                     elif direction == "backwards":
                         self.trace_internal_transactions(attacker, transaction["from"], block_number, direction, hops, hop + 1, start_block, visited_accounts)
+
+    def trace_token_transactions(self, attacker, account, block_number, direction, hops, hop=1, start_block=0, visited_accounts=[]):
+        if hop <= hops and account not in visited_accounts:
+            visited_accounts.append(account)
+            transactions = self.etherscan.get_token_transactions(account, start_block=start_block, offset=settings.ETHERSCAN_OFFSET)
+            spaces = ""
+            for _ in range(hop - 1):
+                spaces += "  "
+            print("-> "+spaces+account+" "+str(hop)+" hop(s) "+str(len(transactions))+" transaction(s)")
+            if   direction == "forwards":
+                transactions = [transaction for transaction in transactions if transaction["from"] == account and transaction["to"] != "" and float(transaction["value"]) >= settings.MIN_AMOUNT and int(transaction["blockNumber"]) >= block_number]
+            elif direction == "backwards":
+                transactions = [transaction for transaction in transactions if transaction["to"] == account and int(transaction["blockNumber"]) <= block_number]
+            if len(transactions) <= settings.MAX_TRANSACTIONS:
+                self.graph.store_token_transactions(transactions, attacker, self.labeled_accounts, direction)
+                for transaction in transactions:
+                    if   direction == "forwards":
+                        self.trace_token_transactions(attacker, transaction["to"], block_number, direction, hops, hop + 1, start_block, visited_accounts)
+                    elif direction == "backwards":
+                        self.trace_token_transactions(attacker, transaction["from"], block_number, direction, hops, hop + 1, start_block, visited_accounts)

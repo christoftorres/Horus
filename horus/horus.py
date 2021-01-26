@@ -113,7 +113,7 @@ def main():
         if args.port:
             settings.RPC_PORT = args.port
 
-        if args.extract and (args.transaction_hash or args.block_number or args.contract_address):
+        if args.extract and (args.transaction_hash or args.block_number or args.contract_address) or args.trace:
             tries = 0
             network = ""
             print("Connecting to http://"+settings.RPC_HOST+":"+str(settings.RPC_PORT)+"...")
@@ -356,17 +356,28 @@ def main():
             if args.type != "normal" and args.type != "internal" and args.type != "token":
                 parser.error("--type must be either 'normal', 'internal', or 'token'")
 
-            attacker = '0xa9bf70a420d364e923c74448d9d817d3f2a77822'
-            block_number = 9900108
+            attackers, block_numbers = [], []
+            for filename in os.listdir(settings.RESULTS_FOLDER):
+                if filename.endswith(".csv"):
+                    with open(os.path.join(settings.RESULTS_FOLDER, filename)) as csv_file:
+                        reader = csv.reader(csv_file, delimiter='\t')
+                        for row in reader:
+                            transaction = settings.W3.eth.getTransaction(row[0])
+                            if not transaction["from"].lower() in attackers:
+                                attackers.append(transaction["from"].lower())
+                                block_numbers.append(transaction["blockNumber"])
 
-            print("Tracing "+args.type+" transactions "+args.direction+" for account "+attacker+" for up to "+str(args.hops)+" hops...")
-            print()
-            if   args.type == "normal":
-                tracer.trace_normal_transactions(attacker, attacker, block_number, args.direction, args.hops)
-            elif args.type == "internal":
-                tracer.trace_internal_transactions(attacker, attacker, block_number, args.direction, args.hops)
-            elif args.type == "token":
-                tracer.trace_token_transactions(attacker, attacker, block_number, args.direction, args.hops)
+            print("Found "+str(len(attackers))+" account(s).")
+            for i in range(len(attackers)):
+                attacker, block_number = attackers[i], block_numbers[i]
+                print("Tracing "+args.type+" transactions "+args.direction+" for account "+attacker+" for up to "+str(args.hops)+" hops...")
+                print()
+                if   args.type == "normal":
+                    tracer.trace_normal_transactions(attacker, attacker, block_number, args.direction, args.hops)
+                elif args.type == "internal":
+                    tracer.trace_internal_transactions(attacker, attacker, block_number, args.direction, args.hops)
+                elif args.type == "token":
+                    tracer.trace_token_transactions(attacker, attacker, block_number, args.direction, args.hops)
 
         print()
     except argparse.ArgumentTypeError as e:

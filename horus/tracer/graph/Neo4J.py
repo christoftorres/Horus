@@ -108,7 +108,7 @@ class Neo4J:
                timestamp=datetime.fromtimestamp(int(transaction["timeStamp"])))
 
     @staticmethod
-    def _save_token_transaction2(tx, transaction, attacker, labeled_accounts, direction):
+    def _store_token_transaction(tx, transaction, attacker, labeled_accounts, direction):
         if transaction["from"] == attacker:
             from_account_type = "Attacker"
         elif transaction["from"] in labeled_accounts:
@@ -181,7 +181,7 @@ class Neo4J:
                 aggregated_transactions.append(t)
         return aggregated_transactions
 
-    """@staticmethod
+    @staticmethod
     def _group_token_transactions_together(transactions):
         aggregated_transactions = []
         for i in range(len(transactions)):
@@ -193,54 +193,7 @@ class Neo4J:
                     a["value"] = str(int(a["value"]) + int(t["value"]))
             if not exists:
                 aggregated_transactions.append(t)
-        return aggregated_transactions"""
-
-    """@staticmethod
-    def _group_transactions_with_same_destination_together(transactions):
-        aggregated_transactions = []
-        to_addresses = []
-        for i in range(len(transactions)):
-            t1 = transactions[i]
-            if t1["to"] not in to_addresses:
-                for j in range(i, len(transactions)):
-                    t2 = transactions[j]
-                    if t1["from"] == t2["from"] and t1["to"] == t2["to"]:
-                        t1["value"] = str(int(t1["value"]) + int(t2["value"]))
-                aggregated_transactions.append(t1)
-                to_addresses.append(t1["to"])
-        return aggregated_transactions"""
-
-    """@staticmethod
-    def _group_transactions_with_same_origin_together(transactions):
-        aggregated_transactions = []
-        to_addresses = []
-        for i in range(len(transactions)):
-            t1 = transactions[i]
-            if t1["to"] not in to_addresses:
-                for j in range(i, len(transactions)):
-                    t2 = transactions[j]
-                    if t1["from"] == t2["from"] and t1["to"] == t2["to"]:
-                        t1["value"] = str(float(t1["value"]) + float(t2["value"]))
-                aggregated_transactions.append(t1)
-                to_addresses.append(t1["to"])
-        return aggregated_transactions"""
-
-    """@staticmethod
-    def _group_similar_tokens_together(transactions):
-        aggregated_transactions = []
-        to_addresses = []
-        tokens = []
-        for i in range(len(transactions)):
-            t1 = transactions[i]
-            if t1["to"] not in to_addresses or t1["tokenSymbol"] not in tokens:
-                for j in range(i, len(transactions)):
-                    t2 = transactions[j]
-                    if t1["from"] == t2["from"] and t1["to"] == t2["to"] and t1["tokenSymbol"] == t2["tokenSymbol"]:
-                        t1["value"] = str(int(t1["value"]) + int(t2["value"]))
-                aggregated_transactions.append(t1)
-                to_addresses.append(t1["to"])
-                tokens.append(t1["tokenSymbol"])
-        return aggregated_transactions"""
+        return aggregated_transactions
 
     @staticmethod
     def _remove_transactions_with_no_value(transactions, attacker):
@@ -249,9 +202,6 @@ class Neo4J:
     @staticmethod
     def _filter_transactions_by_value(transactions, attacker, value):
         return [transaction for transaction in transactions if float(transaction["value"]) >= value]
-
-    """def _keep_only_token_transactions(transactions, token):
-        return [transaction for transaction in transactions if transaction["tokenSymbol"] == token]"""
 
     def store_normal_transactions(self, transactions, attacker, labeled_accounts, direction):
         with self._driver.session() as session:
@@ -277,19 +227,16 @@ class Neo4J:
                 except ClientError as e:
                     print(e)
 
-    """def save_token_transactions(self, transactions, attacker, labeled_accounts, token, direction):
+    def store_token_transactions(self, transactions, attacker, labeled_accounts, direction):
         with self._driver.session() as session:
             with session.begin_transaction() as tx:
                 try:
-                    transactions = Neo4J._remove_transactions_with_no_value(transactions, None)
-                    #transactions = Neo4J._group_similar_tokens_together(transactions)
+                    transactions = Neo4J._remove_transactions_with_no_value(transactions, attacker)
                     transactions = Neo4J._group_token_transactions_together(transactions)
-                    #if token:
-                    #    transactions = Neo4J._keep_only_token_transactions(transactions, token)
                     for transaction in transactions:
-                        Neo4J._save_token_transaction2(tx, transaction, attacker, labeled_accounts, direction)
+                        Neo4J._store_token_transaction(tx, transaction, attacker, labeled_accounts, direction)
                 except ClientError as e:
-                    print(e)"""
+                    print(e)
 
     @staticmethod
     def _run_cypher_query(tx, query):
