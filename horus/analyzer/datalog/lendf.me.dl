@@ -1,0 +1,10 @@
+#include "lib/horus.dl"
+
+.decl LendfmeHack(hash:symbol, block:number, timestamp:number, token:Address, amount:Value)
+LendfmeHack(hash, block, timestamp, token, amount) :-
+  call(_, hash, "STATICCALL", "0x538359785a8d5ab1a741a0ba94f26a800759d91d", token, "70a082310000000000000000000000000eee3e3828a45f7601d5f54bf49bb01d1a9df5ea", _, 1, _, _, 1),
+  call(_, hash, "CALL", "0x0eee3e3828a45f7601d5f54bf49bb01d1a9df5ea", _, _, _, 2, _, _, 1),
+  transfer(_, hash, _, "0x0eee3e3828a45f7601d5f54bf49bb01d1a9df5ea", "0x538359785a8d5ab1a741a0ba94f26a800759d91d", amount),
+  transaction(hash, _, block, _, _, _, _, _, 1),
+  block(block, _, _, timestamp).
+.output LendfmeHack
