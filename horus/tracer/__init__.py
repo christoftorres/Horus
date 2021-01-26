@@ -62,7 +62,7 @@ class Tracer:
                 spaces += "  "
             print("-> "+spaces+account+" "+str(hop)+" hop(s) "+str(len(transactions))+" transaction(s)")
             if   direction == "forwards":
-                transactions = [transaction for transaction in transactions if transaction["from"] == account and transaction["to"] != "" and float(transaction["value"]) >= settings.MIN_AMOUNT and int(transaction["blockNumber"]) >= block_number]
+                transactions = [transaction for transaction in transactions if transaction["from"] == account and int(transaction["value"]) > 0 and int(transaction["blockNumber"]) >= block_number]
             elif direction == "backwards":
                 transactions = [transaction for transaction in transactions if transaction["to"] == account and int(transaction["blockNumber"]) <= block_number]
             if len(transactions) <= settings.MAX_TRANSACTIONS:
