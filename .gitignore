@@ -147,8 +147,3 @@ horus/analyzer/executable
 
 horus/facts
 horus/results
-
-tests/facts
-tests/results
-
-tools/results
