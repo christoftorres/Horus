@@ -5,46 +5,45 @@
 ```
 DAO
 
-python3 horus.py -e -t 0x0ec3f2488a93839524add10ea229e773f6bc891b4eb4794c3337d4495263790b
+python3 horus.py -e -tx 0x0ec3f2488a93839524add10ea229e773f6bc891b4eb4794c3337d4495263790b
 ```
 
 ```
 SpankChain 
 
-python3 horus.py -e -t 0x21e9d20b57f6ae60dac23466c8395d47f42dc24628e5a31f224567a2b4effa88
+python3 horus.py -e -tx 0x21e9d20b57f6ae60dac23466c8395d47f42dc24628e5a31f224567a2b4effa88
 ```
 
 ```
 Unconditional Reentrancy
 
-python3 horus.py -e -t 0xebeabdcfbe897a78baba0d0720b7d208c2472d36f06669bdb5b319715bc0b7f5
+python3 horus.py -e -tx 0xebeabdcfbe897a78baba0d0720b7d208c2472d36f06669bdb5b319715bc0b7f5
 ```
 
 ```
 Uniswap
 
-python3 horus.py -e -t 0x9cb1d93d6859883361e8c2f9941f13d6156a1e8daa0ebe801b5d0b5a612723c1
+python3 horus.py -e -tx 0x9cb1d93d6859883361e8c2f9941f13d6156a1e8daa0ebe801b5d0b5a612723c1
 ```
 
 ```
 Lendf.Me
 
-python3 horus.py -e -t 0xae7d664bdfcc54220df4f18d339005c6faf6e62c9ca79c56387bc0389274363b
+python3 horus.py -e -tx 0xae7d664bdfcc54220df4f18d339005c6faf6e62c9ca79c56387bc0389274363b
 ```
 
-###### Parity Wallet Hack 1 (19.07.2017)
+###### Parity Wallet Hacks
 
 ```
-ParityWallet
+Parity Wallet Hack 1 (19.07.2017)
 
 python3 horus.py -e -c 0x91efffb9c6cd3a66474688d0a48aa6ecfe515aa5
 
 python3 horus.py -e -c 0xbec591de75b8699a3ba52f073428822d0bfc0d7e
 ```
-###### Parity Wallet Hack 2 (06.11.2017)
 
 ```
-ParityWallet
+Parity Wallet Hack 2 (06.11.2017)
 
 python3 horus.py -e -c 0x863df6bfa4469f3ead0be8f9f2aae51c91a907b4
 ```
@@ -54,37 +53,35 @@ python3 horus.py -e -c 0x863df6bfa4469f3ead0be8f9f2aae51c91a907b4
 ```
 Multiplication
 
-python3 horus.py -e -t 0xad89ff16fd1ebe3a0a7cf4ed282302c06626c1af33221ebe0d3a470aba4a660f
+python3 horus.py -e -tx 0xad89ff16fd1ebe3a0a7cf4ed282302c06626c1af33221ebe0d3a470aba4a660f
 ```
 
 ```
 Addition
 
-python3 horus.py -e -t 0x1abab4c8db9a30e703114528e31dee129a3a758f7f8abc3b6494aad3d304e43f
+python3 horus.py -e -tx 0x1abab4c8db9a30e703114528e31dee129a3a758f7f8abc3b6494aad3d304e43f
 
-python3 horus.py -e -t 0xa850ce29dac8cefd0cf3250486a8080ca32b0a94308b9ac3ac6639140e601344
+python3 horus.py -e -tx 0xa850ce29dac8cefd0cf3250486a8080ca32b0a94308b9ac3ac6639140e601344
 ```
-
-###### Integer Underflows
 
 ```
 Subtraction
 
-python3 horus.py -e -t 0xf1d416a865f152ce4680ca89c33cb84aeff38abcc0d6708b9e2a1b6029e57537
+python3 horus.py -e -tx 0xf1d416a865f152ce4680ca89c33cb84aeff38abcc0d6708b9e2a1b6029e57537
 ```
 
-###### Unchecked Send Bug
+###### Unhandled Exception
 
 ```
 King of the Ether
 
-python3 horus.py -e -t 0x6d41b1d3e9b01efc0cc63b5c7ee162bccffe5af00fba3940850b09bfcbee0c9e
+python3 horus.py -e -tx 0x6d41b1d3e9b01efc0cc63b5c7ee162bccffe5af00fba3940850b09bfcbee0c9e
 ```
 
 ###### Short Address
 
 ```
-Short Address (Ropsten)
+Short Address
 
-python3 horus.py -e -t 0x06d83a7acf2b683323cc6900365e8515ee39e669d8c8f51d5183cc99a2382203
+python3 horus.py -e -tx 0x7c3fc0b33196a57a0b145054e9a34237b27a615348cd1904d0b7fe78772b3913
 ```
