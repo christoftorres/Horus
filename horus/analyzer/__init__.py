@@ -80,9 +80,9 @@ class Analyzer:
             proc = subprocess.Popen(shlex.split(execution_path+"/analyzer/executable/analyzer"+j+p+" -D "+results+" -F "+facts), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             out, err = proc.communicate()
             if out:
-                print("Soufflé: "+out.decode('utf-8'))
+                print("Souffle: "+out.decode('utf-8'))
             if err:
-                print("Soufflé: "+err.decode('utf-8'))
+                print("Souffle: "+err.decode('utf-8'))
             analysis_end = time.time()
             analysis_delta = analysis_end - analysis_begin
             souffle_error = out or err

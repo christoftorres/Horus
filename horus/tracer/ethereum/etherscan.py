@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 import os
 import re
@@ -8,9 +10,8 @@ import requests
 from urllib.parse import urlparse
 
 class Etherscan():
-    def __init__(self, api_key, session_cookie=None):
+    def __init__(self, api_key):
         self.api_key = api_key
-        self.session_cookie = session_cookie
 
     def get_block_number_by_timestamp(self, timestamp, closest='after'):
         response = requests.get("https://api.etherscan.io/api?module=block&action=getblocknobytime&timestamp="+str(timestamp)+"&closest="+closest+"&apikey="+str(self.api_key))
@@ -28,9 +29,9 @@ class Etherscan():
         response = requests.get("http://api.etherscan.io/api?module=account&action=tokentx&address="+str(address)+"&startblock="+str(start_block)+"&endblock="+str(end_block)+"&page=1&offset="+str(offset)+"&sort=asc&apikey="+str(self.api_key))
         return response.json()["result"]
 
-    def get_labels(self):
-        if os.path.isfile('labeled_accounts.json'):
-            with open('labeled_accounts.json') as json_file:
+    def get_labels(self, session_cookie=None):
+        if os.path.isfile('./tracer/data/labeled_accounts.json'):
+            with open('./tracer/data/labeled_accounts.json') as json_file:
                 return json.load(json_file)
         scraper = cfscrape.create_scraper()
         content = scraper.get('https://etherscan.io/labelcloud').content.decode('utf-8')
@@ -46,7 +47,7 @@ class Etherscan():
         for label in account_labels:
             url = 'https://etherscan.io/'+label[1]
             cookies, user_agent = cfscrape.get_tokens(url)
-            cookies['ASP.NET_SessionId'] = self.session_cookie
+            cookies['ASP.NET_SessionId'] = session_cookie
             headers = {'User-Agent': user_agent}
             page_count = 1
             accounts = []
@@ -72,15 +73,23 @@ class Etherscan():
                     labeled_accounts[address]["category"] = category
                 if category not in categories:
                     categories.append(category)
-        with open('labeled_accounts.json', 'w') as jsonfile:
+        with open('./tracer/data/labeled_accounts.json', 'w') as jsonfile:
             json.dump(labeled_accounts, jsonfile)
-        with open('categories.json', 'w') as jsonfile:
+        with open('./tracer/data/categories.json', 'w') as jsonfile:
             json.dump(categories, jsonfile)
         return labeled_accounts
 
     def get_geographic_locations_of_exchanges(self, labels):
+        if os.path.isfile('./tracer/data/geographic_locations.json'):
+            with open('./tracer/data/geographic_locations.json') as json_file:
+                return json.load(json_file)
+        exchanges = []
+        for account in labels:
+            if labels[account]["category"] == "Exchange":
+                for label in labels[account]["labels"]:
+                    exchanges.append(label)
         geographic_locations = {}
-        for label in labels:
+        for label in exchanges:
             label = label.split(":")[0]
             label = label.replace(" Exchange", " ")
             if " " in label:
@@ -112,18 +121,6 @@ class Etherscan():
                     pass
             else:
                 geographic_locations[label] = None
-        with open('geographic_locations.json', 'w') as jsonfile:
+        with open('./tracer/data/geographic_locations.json', 'w') as jsonfile:
             json.dump(geographic_locations, jsonfile)
         return geographic_locations
-
-
-if os.path.isfile('../labeled_accounts.json'):
-    with open('../labeled_accounts.json') as json_file:
-        labeled_accounts = json.load(json_file)
-        exchanges = []
-        for account in labeled_accounts:
-            if labeled_accounts[account]["category"] == "Exchange":
-                for label in labeled_accounts[account]["labels"]:
-                    exchanges.append(label)
-        print(len(exchanges))
-        Etherscan(None).get_geographic_locations_of_exchanges(exchanges)

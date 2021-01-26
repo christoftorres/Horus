@@ -16,8 +16,9 @@ from web3 import Web3
 from utils.utils import *
 from utils import settings
 
-from analyzer import Analyzer
 from extractor import Extractor
+from analyzer import Analyzer
+from tracer import Tracer
 
 def main():
     execution_begin = time.time()
@@ -26,7 +27,7 @@ def main():
     try:
         global args
 
-        print("")
+        print()
         print("@@@  @@@   @@@@@@   @@@@@@@   @@@  @@@   @@@@@@ ")
         print("@@@  @@@  @@@@@@@@  @@@@@@@@  @@@  @@@  @@@@@@@ ")
         print("@@!  @@@  @@!  @@@  @@!  @@@  @@!  @@@  !@@     ")
@@ -37,7 +38,7 @@ def main():
         print(":!:  !:!  :!:  !:!  :!:  !:!  :!:  !:!      !:! ")
         print("::   :::  ::::: ::  ::   :::  ::::: ::  :::: :: ")
         print(":   : :   : :  :    :   : :   : :  :   :: : :   ")
-        print("")
+        print()
 
         parser = argparse.ArgumentParser()
 
@@ -46,10 +47,12 @@ def main():
             "-e", "--extract", action="store_true", help="extract Datalog facts for a transaction, block or contract")
         group1.add_argument(
             "-a", "--analyze", action="store_true", help="analyze Datalog facts")
+        group1.add_argument(
+            "-t", "--trace", action="store_true", help="trace Datalog results")
 
         group2 = parser.add_mutually_exclusive_group()
         group2.add_argument(
-            "-t", "--transaction-hash", type=str, help="transaction hash to be extracted")
+            "-tx", "--transaction-hash", type=str, help="transaction hash to be extracted")
         group2.add_argument(
             "-b", "--block-number", type=str, help="block number or block range to be extracted")
         group2.add_argument(
@@ -67,13 +70,27 @@ def main():
             "-p", "--profile", action="store_true", help="run the Souffle profiler during the execution of the Datalog program")
 
         parser.add_argument(
+            "--neo4j-connection", type=str, default="bolt://localhost:7687", help="Neo4J server connection string (default: 'bolt://localhost:7687')")
+        parser.add_argument(
+            "--neo4j-user", type=str, default="neo4j", help="Neo4J username")
+        parser.add_argument(
+            "--neo4j-password", type=str, default="ethereum", help="Neo4J password")
+
+        parser.add_argument(
+            "--type", type=str, default="normal", help="transaction type to trace: 'normal', 'internal', or 'token' (default: 'normal')")
+        parser.add_argument(
+            "--direction", type=str, default="forwards", help="tracing direction: 'forwards' or 'backwards' (default: 'forwards')")
+        parser.add_argument(
+            "--hops", type=int, default=3, help="number of hops to be traced (default: 3)")
+
+        parser.add_argument(
             "--compress", action="store_true", help="compress facts and results into ZIP files")
         parser.add_argument(
             "--debug", action="store_true", help="print debug information to the console")
         parser.add_argument(
-            "--host", type=str, help="client HTTP-RPC listening interface (default: '"+settings.RPC_HOST+"')")
+            "--host", type=str, help="Ethereum client HTTP-RPC host (default: '"+settings.RPC_HOST+"')")
         parser.add_argument(
-            "--port", type=int, help="client HTTP-RPC listening port (default: '"+str(settings.RPC_PORT)+"')")
+            "--port", type=int, help="Ethereum client HTTP-RPC port (default: '"+str(settings.RPC_PORT)+"')")
         parser.add_argument(
             "-v", "--version", action="version", version="Horus version 0.0.1 - 'Ramses II'")
 
@@ -95,9 +112,6 @@ def main():
             settings.RPC_HOST = args.host
         if args.port:
             settings.RPC_PORT = args.port
-
-        if not has_dependencies_installed():
-            return
 
         if args.extract and (args.transaction_hash or args.block_number or args.contract_address):
             tries = 0
@@ -129,11 +143,11 @@ def main():
                     if not settings.W3.eth.syncing:
                         print("Blockchain is in sync.")
                         print("Latest block: "+str(settings.W3.eth.blockNumber))
-                        print("")
+                        print()
                     else:
                         print("Blockchain is syncing... (synced at %.2f%%)" % (settings.W3.eth.syncing.currentBlock/settings.W3.eth.syncing.highestBlock*100.0))
                         print("Latest block: "+str(settings.W3.eth.syncing.currentBlock))
-                        print("")
+                        print()
                     connection = http.client.HTTPConnection(settings.RPC_HOST, settings.RPC_PORT)
                 except Exception as e:
                     print(e)
@@ -243,9 +257,6 @@ def main():
                     elif "result" in api_response:
                         if not api_response["result"] or len(api_response["result"]) == 0:
                             break
-                        #elif len(api_response["result"]) > 100:
-                        #    print(len(api_response["result"]))
-                        #    break
                         else:
                             page += 1
                             for result in api_response["result"]:
@@ -317,9 +328,7 @@ def main():
                     transactions = []
                     for tx in all_txs:
                         transaction = format_transaction(settings.W3.eth.getTransaction(tx))
-                        print(transaction)
                         transactions.append(transaction)
-                    print(len(transactions))
                     extractor = Extractor()
                     extractor.extract_facts_from_transactions(connection, transactions, blocks, settings.FACTS_FOLDER, args.compress)
             else:
@@ -330,13 +339,36 @@ def main():
             extractor.extract_facts_from_transactions(connection, transactions, blocks, settings.FACTS_FOLDER, args.compress)
 
         if args.analyze:
+            if not has_souffle_installed():
+                return
             analyzer = Analyzer()
             if not os.path.isdir(settings.RESULTS_FOLDER) or not os.listdir(settings.RESULTS_FOLDER):
                 analyzer.analyze_facts(args.number_of_threads, args.profile, settings.FACTS_FOLDER, settings.RESULTS_FOLDER, settings.DATALOG_FILE, args.compress, settings.TMP_FOLDER)
             else:
                 print("Datalog facts have already been analyzed.")
 
-        print("")
+        if args.trace:
+            tracer = Tracer(args.neo4j_connection, args.neo4j_user, args.neo4j_password)
+
+            if args.direction != "forwards" and args.direction != "backwards":
+                parser.error("--direction must be either 'forwards' or 'backwards'")
+
+            if args.type != "normal" and args.type != "internal" and args.type != "token":
+                parser.error("--type must be either 'normal', 'internal', or 'token'")
+
+            attacker = '0xa9bf70a420d364e923c74448d9d817d3f2a77822'
+            block_number = 9900108
+
+            print("Tracing "+args.type+" transactions "+args.direction+" for account "+attacker+" for up to "+str(args.hops)+" hops...")
+            print()
+            if   args.type == "normal":
+                tracer.trace_normal_transactions(attacker, attacker, block_number, args.direction, args.hops)
+            elif args.type == "internal":
+                tracer.trace_internal_transactions(attacker, attacker, block_number, args.direction, args.hops)
+            elif args.type == "token":
+                tracer.trace_token_transactions(attacker, attacker, block_number, args.direction, args.hops)
+
+        print()
     except argparse.ArgumentTypeError as e:
         print(e)
     except Exception:
