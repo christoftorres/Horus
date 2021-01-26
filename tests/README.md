@@ -23,7 +23,7 @@ python3 horus.py -e -tx 0xebeabdcfbe897a78baba0d0720b7d208c2472d36f06669bdb5b319
 ```
 Uniswap
 
-python3 horus.py -e -tx 0x9cb1d93d6859883361e8c2f9941f13d6156a1e8daa0ebe801b5d0b5a612723c1
+python3 horus.py -e -tx 0x9437dde6c06a20f6d56f69b07f43d5fb918e6c57c97e1fc25a4162c693f578aa
 ```
 
 ```
