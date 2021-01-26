@@ -9,7 +9,6 @@ Reentrancy(hash, timestamp, step3, attacker, caller, callee, depth2, amount) :-
   storage(step4, "SSTORE", hash, _, caller, index, _, depth1),
   depth1 < depth2,
   step1 < step2,
-  step2 < step3,
   step3 < step4,
   !match("0", amount),
   transaction(hash, _, block, attacker, _, _, _, _, 1),
@@ -28,22 +27,11 @@ ReentrancyToken(hash, timestamp, step5, attacker, caller, callee, amount) :-
   !match("0x0000000000000000000000000000000000000000", from),
   depth1 < depth2,
   step1 < step2,
-  step2 < step3,
   step3 < step4,
   !match("0", amount),
   transaction(hash, _, block, attacker, _, _, _, _, 1),
   block(block, _, _, timestamp).
 .output ReentrancyToken
-
-/* Unhandled Exception */
-.decl UnhandledException(hash:symbol, timestamp:number, step:number, attacker:Address, caller:Address, callee:Address, amount:Value)
-UnhandledException(hash, timestamp, step1, attacker, caller, callee, amount) :-
-  call(step1, hash, "CALL", caller, callee, _, amount, _, _, _, 0),
-  !match("0", amount),
-  !used_in_condition(step1, hash),
-  transaction(hash, _, block, attacker, _, _, _, _, 1),
-  block(block, _, _, timestamp).
-.output UnhandledException
 
 /* Integer Overflow */
 .decl IntegerOverflow(hash:symbol, timestamp:number, step:number, opcode:Opcode, first_operand:Value, second_operand:Value, arithmetic_result:Value, evm_result:Value, attacker:Address, contract: Address, from:Address, to:Address, amount:Value)
@@ -90,6 +78,16 @@ ParityWalletHack2(hash1, hash2, timestamp1, timestamp2, from, contract, destinat
   block(block1, _, _, timestamp1),
   block(block2, _, _, timestamp2).
 .output ParityWalletHack2
+
+/* Unhandled Exception */
+.decl UnhandledException(hash:symbol, timestamp:number, step:number, attacker:Address, caller:Address, callee:Address, amount:Value)
+UnhandledException(hash, timestamp, step1, attacker, caller, callee, amount) :-
+  call(step1, hash, "CALL", caller, callee, _, amount, _, _, _, 0),
+  !match("0", amount),
+  !used_in_condition(step1, hash),
+  transaction(hash, _, block, attacker, _, _, _, _, 1),
+  block(block, _, _, timestamp).
+.output UnhandledException
 
 /* Short Address */
 .decl ShortAddress(hash:symbol, timestamp:number, step:number, attacker:Address, contract:Address, from:Address, to:Address, amount:Value)
