@@ -29,7 +29,7 @@ python3 horus.py -e -tx 0x9437dde6c06a20f6d56f69b07f43d5fb918e6c57c97e1fc25a4162
 ```
 Lendf.Me
 
-python3 horus.py -e -tx 0xae7d664bdfcc54220df4f18d339005c6faf6e62c9ca79c56387bc0389274363b
+python3 horus.py -e -tx 0xe49304cd3edccf32069dcbbb5df7ac3b8678daad34d0ad1927aa725a8966d52a
 ```
 
 ###### Parity Wallet Hacks
