@@ -75,7 +75,7 @@ python3 horus.py -a -f <FACTS_FOLDER> -r <RESULTS_FOLDER> -d <DATALOG_FILE>
 
 ``` shell
 cd horus
-python3 horus.py -t -r <RESULTS_FOLDER>
+python3 horus.py -t -r <RESULTS_FOLDER> --type <TYPE> --direction <DIRECTION> --hops <HOPS> --neo4j-connection <NEO4J_CONNECTION> --neo4j-user <NEO4J_USER> --neo4j-password <NEO4J_PASSWORD>
 ```
 
 Run ```python3 horus.py --help``` for a complete list of options.
