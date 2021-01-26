@@ -1,0 +1,4 @@
+
+.type Address
+.type Opcode
+.type Value

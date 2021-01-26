@@ -1,0 +1,30 @@
+#include "lib/horus.dl"
+
+/* ERC777Reentrancy */
+.decl ERC777Reentrancy(hash:symbol, timestamp:number, caller:Address, callee:Address, amount:Value, asset:symbol)
+ERC777Reentrancy(hash, timestamp, caller, callee, amount, asset) :-
+  call(step1, hash, "CALL", caller, callee, input_data1, _, depth1, _, _, 1),
+  substr(input_data1, 0, 8) = "75ab9782",
+  call(step2, hash, "CALL", caller, callee, input_data2, _, depth2, _, _, 1),
+  substr(input_data2, 0, 8) = "75ab9782",
+  depth1 < depth2,
+  call(step3, hash, "CALL", callee, from, _, amount, _,  _, _, 1),
+  !match("0", amount),
+  step2 < step3,
+  transaction(hash, _, block, from, _, _, _, _, 1),
+  block(block, _, _, timestamp),
+  asset = "Ether";
+
+  call(step1, hash, "CALL", caller, callee, input_data1, _, _, _, _, 1),
+  substr(input_data1, 0, 8) = "75ab9782",
+  call(step2, hash, "CALL", caller, callee, input_data2, _, _, _, _, 1),
+  substr(input_data2, 0, 8) = "75ab9782",
+  step1 < step2,
+  transfer(step3, hash, _, callee, to, _),
+  transfer(step4, hash, _, to, callee, amount),
+  !match("0", amount),
+  step3 < step4,
+  transaction(hash, _, block, _, _, _, _, _, 1),
+  block(block, _, _, timestamp),
+  asset = "Token".
+.output ERC777Reentrancy

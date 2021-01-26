@@ -1,0 +1,4 @@
+requests==2.23.0
+web3==5.7.0
+neo4j-driver==1.7.6
+cfscrape==2.1.1

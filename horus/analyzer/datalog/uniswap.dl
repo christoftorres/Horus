@@ -1,0 +1,18 @@
+#include "lib/horus.dl"
+
+.decl UniswapHack(hash:symbol, block:number, timestamp:number, caller:Address, callee:Address, attacker:Address, amount:Value, profit:Value)
+UniswapHack(hash, block, timestamp, caller, callee, attacker, amount, profit) :-
+  call(step1, hash, "CALL", callee, _, input_data1, amount, _, _, _, 1),
+  substr(input_data1, 0, 8) = "f39b5b9b",
+  call(step2, hash, "CALL", caller, callee, input_data2, _, depth1, _, _, 1),
+  step1 < step2,
+  substr(input_data2, 0, 8) = "75ab9782",
+  call(step3, hash, "CALL", caller, callee, input_data3, _, depth2, _, _, 1),
+  substr(input_data3, 0, 8) = "75ab9782",
+  depth1 < depth2,
+  call(step4, hash, "CALL", callee, attacker, _, profit, _, _, _, 1),
+  !match("0", profit),
+  step3 < step4,
+  transaction(hash, _, block, attacker, _, _, _, _, 1),
+  block(block, _, _, timestamp).
+.output UniswapHack

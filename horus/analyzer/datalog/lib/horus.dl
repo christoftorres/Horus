@@ -1,0 +1,24 @@
+#include "types.dl"
+#include "edb.dl"
+
+.decl data_flow(x:number, y:number, hash:symbol)
+data_flow(x, y, hash) :-
+  use(y, x, hash).
+
+data_flow(x, y, hash) :-
+  use(y, z, hash),
+  data_flow(x, z, hash).
+
+.decl used_in_condition(step:number, hash:symbol)
+used_in_condition(step1, hash) :-
+  condition(step2, hash),
+  data_flow(step1, step2, hash).
+
+.decl caller_check(step:number, hash:symbol)
+caller_check(step1, hash) :-
+  def(step1, "CALLER", hash),
+  used_in_condition(step1, hash).
+
+.decl opcode(step:number, opcode:Opcode, hash:symbol)
+opcode(step, opcode, hash) :-
+  def(step, opcode, hash).
