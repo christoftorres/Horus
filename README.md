@@ -57,6 +57,10 @@ Download and install Neo4j from [neo4j.com](https://neo4j.com/download-center).
 
 ## Running Instructions
 
+:warning: **Horus requires a connection to a fully synced Go-Ethereum (Geth) archive node.**
+
+More information on how to run an archive node can be found [here](https://docs.ethhub.io/using-ethereum/running-an-ethereum-node/#archive-nodes).
+
 1. Run the <b>extractor</b> on a transaction (```-tx```), block (```-b```) or contract (```-c```):
 
 ``` shell
