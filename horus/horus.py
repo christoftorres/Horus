@@ -61,7 +61,7 @@ def main():
         parser.add_argument(
             "-f", "--facts-folder", type=str, help="folder where Datalog facts should be extracted/analyzed (default: '"+settings.FACTS_FOLDER+"')")
         parser.add_argument(
-            "-r", "--results-folder", type=str, help="folder where results should be saved (default: '"+settings.RESULTS_FOLDER+"')")
+            "-r", "--results-folder", type=str, help="folder where Datalog results should be saved (default: '"+settings.RESULTS_FOLDER+"')")
         parser.add_argument(
             "-d", "--datalog-file", type=str, help="file with Datalog rules and queries to be analyzed (default: '"+settings.DATALOG_FILE+"')")
         parser.add_argument(
@@ -82,6 +82,10 @@ def main():
             "--direction", type=str, default="forwards", help="tracing direction: 'forwards' or 'backwards' (default: 'forwards')")
         parser.add_argument(
             "--hops", type=int, default=3, help="number of hops to be traced (default: 3)")
+        parser.add_argument(
+            "--traces-folder", type=str, help="folder where traces should be saved (default: '"+settings.TRACES_FOLDER+"')")
+        parser.add_argument(
+            "--attacker", type=str, help="attacker address to be traced (default: attacker address will be inferred from Datalog results)")
 
         parser.add_argument(
             "--compress", action="store_true", help="compress facts and results into ZIP files")
@@ -112,8 +116,10 @@ def main():
             settings.RPC_HOST = args.host
         if args.port:
             settings.RPC_PORT = args.port
+        if args.traces_folder:
+            settings.TRACES_FOLDER = args.traces_folder
 
-        if args.extract and (args.transaction_hash or args.block_number or args.contract_address) or args.trace:
+        if args.extract and (args.transaction_hash or args.block_number or args.contract_address):
             tries = 0
             network = ""
             print("Connecting to http://"+settings.RPC_HOST+":"+str(settings.RPC_PORT)+"...")
@@ -356,28 +362,57 @@ def main():
             if args.type != "normal" and args.type != "internal" and args.type != "token":
                 parser.error("--type must be either 'normal', 'internal', or 'token'")
 
-            attackers, block_numbers = [], []
+            if not os.path.exists(settings.TRACES_FOLDER):
+                os.mkdir(settings.TRACES_FOLDER)
+
+            attackers, timestamps = [], []
             for filename in os.listdir(settings.RESULTS_FOLDER):
                 if filename.endswith(".csv"):
                     with open(os.path.join(settings.RESULTS_FOLDER, filename)) as csv_file:
                         reader = csv.reader(csv_file, delimiter='\t')
                         for row in reader:
-                            transaction = settings.W3.eth.getTransaction(row[0])
-                            if not transaction["from"].lower() in attackers:
-                                attackers.append(transaction["from"].lower())
-                                block_numbers.append(transaction["blockNumber"])
+                            if filename.endswith("Reentrancy.csv") or filename.endswith("ReentrancyToken.csv") or filename.endswith("UnhandledException.csv"):
+                                if args.attacker:
+                                    attacker = args.attacker.lower()
+                                else:
+                                    attacker = row[3].lower()
+                                timestamp = int(row[1])
+                                if not attacker in attackers:
+                                    attackers.append(attacker)
+                                    timestamps.append(timestamp)
+                            elif filename.endswith("IntegerOverflow.csv"):
+                                if args.attacker:
+                                    attacker = args.attacker.lower()
+                                else:
+                                    attacker = row[11].lower()
+                                timestamp = int(row[1])
+                                if not attacker in attackers:
+                                    attackers.append(attacker)
+                                    timestamps.append(timestamp)
 
-            print("Found "+str(len(attackers))+" account(s).")
+            print("Found "+str(len(attackers))+" attacker account(s).")
             for i in range(len(attackers)):
-                attacker, block_number = attackers[i], block_numbers[i]
+                attacker, timestamp = attackers[i], timestamps[i]
                 print("Tracing "+args.type+" transactions "+args.direction+" for account "+attacker+" for up to "+str(args.hops)+" hops...")
                 print()
+
+                if not os.path.exists(settings.TRACES_FOLDER+"/"+attacker):
+                    os.mkdir(settings.TRACES_FOLDER+"/"+attacker)
+
+                trace = dict()
+                if os.path.exists(settings.TRACES_FOLDER+"/"+attacker+"/"+attacker+"_trace.json"):
+                    trace = None
+
                 if   args.type == "normal":
-                    tracer.trace_normal_transactions(attacker, attacker, block_number, args.direction, args.hops)
+                    tracer.trace_normal_transactions(attacker, attacker, timestamp, args.direction, args.hops, trace)
                 elif args.type == "internal":
-                    tracer.trace_internal_transactions(attacker, attacker, block_number, args.direction, args.hops)
+                    tracer.trace_internal_transactions(attacker, attacker, timestamp, args.direction, args.hops, trace)
                 elif args.type == "token":
-                    tracer.trace_token_transactions(attacker, attacker, block_number, args.direction, args.hops)
+                    tracer.trace_token_transactions(attacker, attacker, timestamp, args.direction, args.hops, trace)
+
+                if trace != None:
+                    with open(settings.TRACES_FOLDER+"/"+attacker+"/"+attacker+"_trace.json", "w") as f:
+                        json.dump(trace, f)
 
         print()
     except argparse.ArgumentTypeError as e:

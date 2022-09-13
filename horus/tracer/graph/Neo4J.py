@@ -33,13 +33,19 @@ class Neo4J:
 
         account_info_from = "{address:'"+transaction["from"]+"'"
         if from_account_type == "Labeled_Account":
-            account_info_from += ",label:'"+labeled_accounts[transaction["from"]]["labels"][0]+"'"
+            if len(labeled_accounts[transaction["from"]]["labels"]) > 0:
+                account_info_from += ",label:'"+labeled_accounts[transaction["from"]]["labels"][0]+"'"
+            else:
+                account_info_to += ",label:''"
             account_info_from += ",category:'"+labeled_accounts[transaction["from"]]["category"]+"'"
         account_info_from += "}"
 
         account_info_to = "{address:'"+transaction["to"]+"'"
         if to_account_type == "Labeled_Account":
-            account_info_to += ",label:'"+labeled_accounts[transaction["to"]]["labels"][0]+"'"
+            if len(labeled_accounts[transaction["to"]]["labels"]) > 0:
+                account_info_to += ",label:'"+labeled_accounts[transaction["to"]]["labels"][0]+"'"
+            else:
+                account_info_to += ",label:''"
             account_info_to += ",category:'"+labeled_accounts[transaction["to"]]["category"]+"'"
         account_info_to += "}"
 
@@ -79,13 +85,19 @@ class Neo4J:
 
         account_info_from = "{address:'"+transaction["from"]+"'"
         if from_account_type == "Labeled_Account":
-            account_info_from += ",label:'"+labeled_accounts[transaction["from"]]["labels"][0]+"'"
+            if len(labeled_accounts[transaction["from"]]["labels"]) > 0:
+                account_info_from += ",label:'"+labeled_accounts[transaction["from"]]["labels"][0]+"'"
+            else:
+                account_info_to += ",label:''"
             account_info_from += ",category:'"+labeled_accounts[transaction["from"]]["category"]+"'"
         account_info_from += "}"
 
         account_info_to = "{address:'"+transaction["to"]+"'"
         if to_account_type == "Labeled_Account":
-            account_info_to += ",label:'"+labeled_accounts[transaction["to"]]["labels"][0]+"'"
+            if len(labeled_accounts[transaction["to"]]["labels"]) > 0:
+                account_info_to += ",label:'"+labeled_accounts[transaction["to"]]["labels"][0]+"'"
+            else:
+                account_info_to += ",label:''"
             account_info_to += ",category:'"+labeled_accounts[transaction["to"]]["category"]+"'"
         account_info_to += "}"
 
@@ -125,17 +137,27 @@ class Neo4J:
 
         account_info_from = "{address:'"+transaction["from"]+"'"
         if from_account_type == "Labeled_Account":
-            account_info_from += ",label:'"+labeled_accounts[transaction["from"]]["labels"][0]+"'"
+            if len(labeled_accounts[transaction["from"]]["labels"]) > 0:
+                account_info_from += ",label:'"+labeled_accounts[transaction["from"]]["labels"][0]+"'"
+            else:
+                account_info_to += ",label:''"
             account_info_from += ",category:'"+labeled_accounts[transaction["from"]]["category"]+"'"
         account_info_from += "}"
 
         account_info_to = "{address:'"+transaction["to"]+"'"
         if to_account_type == "Labeled_Account":
-            account_info_to += ",label:'"+labeled_accounts[transaction["to"]]["labels"][0]+"'"
+            if len(labeled_accounts[transaction["to"]]["labels"]) > 0:
+                account_info_to += ",label:'"+labeled_accounts[transaction["to"]]["labels"][0]+"'"
+            else:
+                account_info_to += ",label:''"
             account_info_to += ",category:'"+labeled_accounts[transaction["to"]]["category"]+"'"
         account_info_to += "}"
 
-        value = str(int(int(transaction["value"]) / (int(10)**int(transaction["tokenDecimal"]))))+" "+transaction["tokenSymbol"]
+        value = "{:,.0f}".format(int(int(transaction["value"]) / (int(10)**int(transaction["tokenDecimal"]))))+" "+transaction["tokenSymbol"]
+
+        token_value = int(int(transaction["value"]) / (int(10)**int(transaction["tokenDecimal"])))
+        if token_value.bit_length() >= 64:
+            token_value = "Token value larger than 64 bit."
 
         tx.run("""MERGE (from:"""+from_account_type+""" """+account_info_from+""")
                   MERGE (to:"""+to_account_type+""" """+account_info_to+""")
@@ -143,6 +165,7 @@ class Neo4J:
                     value:$value,
                     hash:$hash,
                     block:$block,
+                    token_value:$token_value,
                     token_name:$token_name,
                     token_symbol:$token_symbol,
                     token_decimal:$token_decimal,
@@ -151,10 +174,11 @@ class Neo4J:
                value=value,
                hash=transaction["hash"],
                block=transaction["blockNumber"],
+               token_value=token_value,
                token_name=transaction["tokenName"],
                token_symbol=transaction["tokenSymbol"],
                token_decimal=transaction["tokenDecimal"],
-               timestamp=datetime.fromtimestamp(int(transaction["timeStamp"])))
+               timestamp=datetime.fromtimestamp(int(transaction["timeStamp"])).strftime("%d-%m-%Y %H:%M:%S"))
 
     def delete_graph(self):
         with self._driver.session() as session:
@@ -196,8 +220,11 @@ class Neo4J:
         return aggregated_transactions
 
     @staticmethod
-    def _remove_transactions_with_no_value(transactions, attacker):
-        return [transaction for transaction in transactions if float(transaction["value"]) > 0 or transaction["from"] == attacker or transaction["to"] == attacker]
+    def _remove_transactions_with_no_value(transactions, attacker, token=False):
+        if token:
+            return [transaction for transaction in transactions if int(int(transaction["value"]) / (int(10)**int(transaction["tokenDecimal"]))) > 0 or transaction["from"] == attacker or transaction["to"] == attacker]
+        else:
+            return [transaction for transaction in transactions if float(transaction["value"]) > 0 or transaction["from"] == attacker or transaction["to"] == attacker]
 
     @staticmethod
     def _filter_transactions_by_value(transactions, attacker, value):
@@ -207,6 +234,7 @@ class Neo4J:
         with self._driver.session() as session:
             with session.begin_transaction() as tx:
                 try:
+                    tx.run("""MERGE (n:Attacker {address: '"""+attacker+"""'})""")
                     transactions = Neo4J._remove_transactions_with_no_value(transactions, attacker)
                     transactions = Neo4J._group_transactions_together(transactions)
                     transactions = Neo4J._filter_transactions_by_value(transactions, attacker, settings.MIN_AMOUNT)
@@ -219,6 +247,7 @@ class Neo4J:
         with self._driver.session() as session:
             with session.begin_transaction() as tx:
                 try:
+                    tx.run("""MERGE (n:Attacker {address: '"""+attacker+"""'})""")
                     transactions = Neo4J._remove_transactions_with_no_value(transactions, attacker)
                     transactions = Neo4J._group_transactions_together(transactions)
                     transactions = Neo4J._filter_transactions_by_value(transactions, attacker, settings.MIN_AMOUNT)
@@ -231,7 +260,8 @@ class Neo4J:
         with self._driver.session() as session:
             with session.begin_transaction() as tx:
                 try:
-                    transactions = Neo4J._remove_transactions_with_no_value(transactions, attacker)
+                    tx.run("""MERGE (n:Attacker {address: '"""+attacker+"""'})""")
+                    transactions = Neo4J._remove_transactions_with_no_value(transactions, attacker, True)
                     transactions = Neo4J._group_token_transactions_together(transactions)
                     for transaction in transactions:
                         Neo4J._store_token_transaction(tx, transaction, attacker, labeled_accounts, direction)

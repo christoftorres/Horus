@@ -31,7 +31,7 @@
         this.structLogs.push({"op": log.op.toString(), "stack": [log.stack.peek(1), log.stack.peek(0)], "depth": log.getDepth(), "contract": toHex(log.contract.getAddress()), "error": log.getError()});
         break;
       default:
-        this.structLogs.push({"op": log.op.toString(), "stack": [log.stack.peek(0)], "depth": log.getDepth(), "contract": toHex(log.contract.getAddress()), "error": log.getError()});
+        this.structLogs.push({"op": log.op.toString(), "stack": log.stack.length() > 0 ? [log.stack.peek(0)] : [], "depth": log.getDepth(), "contract": toHex(log.contract.getAddress()), "error": log.getError()});
     }
   },
 

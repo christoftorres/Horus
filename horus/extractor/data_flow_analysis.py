@@ -405,6 +405,7 @@ class TaintRunner:
         'SAR': (2, 1),
         # 20s: SHA3
         'SHA3': (2, 1),
+        'KECCAK256': (2, 1),
         # 30s: Environmental Information
         'ADDRESS': (0, 1),
         'BALANCE': (1, 1),

@@ -3,14 +3,16 @@
 
 import os
 import re
+import sys
 import json
+import time
 import cfscrape
 import requests
 
 from urllib.parse import urlparse
 
 class Etherscan():
-    def __init__(self, api_key):
+    def __init__(self, api_key=None):
         self.api_key = api_key
 
     def get_block_number_by_timestamp(self, timestamp, closest='after'):
@@ -30,8 +32,8 @@ class Etherscan():
         return response.json()["result"]
 
     def get_labels(self, session_cookie=None):
-        if os.path.isfile('./tracer/data/labeled_accounts.json'):
-            with open('./tracer/data/labeled_accounts.json') as json_file:
+        if os.path.isfile(os.path.abspath(os.path.dirname(sys.argv[0]))+'/tracer/ethereum/data/labeled_accounts.json'):
+            with open(os.path.abspath(os.path.dirname(sys.argv[0]))+'/tracer/ethereum/data/labeled_accounts.json') as json_file:
                 return json.load(json_file)
         scraper = cfscrape.create_scraper()
         content = scraper.get('https://etherscan.io/labelcloud').content.decode('utf-8')
@@ -73,36 +75,32 @@ class Etherscan():
                     labeled_accounts[address]["category"] = category
                 if category not in categories:
                     categories.append(category)
-        with open('./tracer/data/labeled_accounts.json', 'w') as jsonfile:
+        with open(os.path.abspath(os.path.dirname(sys.argv[0]))+'/tracer/ethereum/data/labeled_accounts.json', 'w') as jsonfile:
             json.dump(labeled_accounts, jsonfile)
-        with open('./tracer/data/categories.json', 'w') as jsonfile:
+        with open(os.path.abspath(os.path.dirname(sys.argv[0]))+'/tracer/ethereum/data/categories.json', 'w') as jsonfile:
             json.dump(categories, jsonfile)
         return labeled_accounts
 
-    def get_geographic_locations_of_exchanges(self, labels):
-        if os.path.isfile('./tracer/data/geographic_locations.json'):
-            with open('./tracer/data/geographic_locations.json') as json_file:
-                return json.load(json_file)
-        exchanges = []
-        for account in labels:
-            if labels[account]["category"] == "Exchange":
-                for label in labels[account]["labels"]:
-                    exchanges.append(label)
+    def get_geographic_locations(self, labels=list(), path=os.path.abspath(os.path.dirname(sys.argv[0]))+'/tracer/ethereum', update=False):
         geographic_locations = {}
-        for label in exchanges:
-            label = label.split(":")[0]
-            label = label.replace(" Exchange", " ")
-            if " " in label:
-                label = label.split(" ")[0]+''.join(i for i in label.split(" ")[1] if not i.isdigit())
-            print(label)
+        if os.path.isfile(path+'/data/geographic_locations.json'):
+            with open(path+'/data/geographic_locations.json') as json_file:
+                geographic_locations = json.load(json_file)
+                if not update:
+                    return geographic_locations
+        for label in labels:
+            if label in geographic_locations:
+                continue
+            time.sleep(1)
+            print("Contract address:", label)
             scraper = cfscrape.create_scraper()
-            content = scraper.get('https://etherscan.io/directory/Exchanges?q='+label).content.decode('utf-8')
-            website = re.compile('><a href=".+?" data-toggle="tooltip" class="btn btn-sm btn-icon btn-soft-secondary rounded-circle" data-original-title="\[Website\] (.+?)" rel="nofollow" target="_blank">').findall(content)
+            content = scraper.get('https://etherscan.io/address/'+label).content.decode('utf-8')
+            website = re.compile("<a href='(.+?)' target='_blank' rel='nofollow' data-toggle='tooltip' title='External Site - More Info'>.+?</a>").findall(content)
             if len(website) > 0:
                 website = website[0]
-                print(website)
+                print("Website:", website)
                 domain = urlparse(website).netloc.replace("www.", "")
-                print(domain)
+                print("Domain:", domain)
                 try:
                     response = requests.get('http://ip-api.com/json/'+domain).json()
                     if response["status"] == "success":
@@ -117,10 +115,18 @@ class Etherscan():
                         else:
                             print(response)
                 except:
-                    geographic_locations[label] = None
                     pass
-            else:
-                geographic_locations[label] = None
-        with open('./tracer/data/geographic_locations.json', 'w') as jsonfile:
-            json.dump(geographic_locations, jsonfile)
+            with open(path+'/data/geographic_locations.json', 'w') as jsonfile:
+                json.dump(geographic_locations, jsonfile)
         return geographic_locations
+
+def main():
+    etherscan = Etherscan()
+    with open(os.path.abspath(os.path.dirname(sys.argv[0]))+'/data/labeled_accounts.json', 'r') as f:
+        labels = json.load(f)
+        print(len(labels))
+        geographic_locations = etherscan.get_geographic_locations(labels, os.path.abspath(os.path.dirname(sys.argv[0])), True)
+        print(len(geographic_locations))
+
+if __name__ == "__main__":
+    main()

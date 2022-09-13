@@ -37,8 +37,10 @@ REQUEST_RETRY_INTERVAL = 60
 # Folder for temporary results
 TMP_FOLDER = None
 # Maximum number of transactions to be traced
-MAX_TRANSACTIONS = 1000
+MAX_TRANSACTIONS = 100
 # Etherscan offset for transactions to be retrieved
 ETHERSCAN_OFFSET = 1000
 # Minimum amount of wei to be traced
 MIN_AMOUNT = 10000000000000000000 # 10 ETH
+# Traces folder
+TRACES_FOLDER = './traces'
