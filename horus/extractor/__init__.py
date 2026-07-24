@@ -22,6 +22,7 @@ class Extractor:
 
         if not compress:
             def_facts           = open(facts_folder+"/def.facts",           "a")
+            pc_facts            = open(facts_folder+"/pc.facts",            "a")
             use_facts           = open(facts_folder+"/use.facts",           "a")
             arithmetic_facts    = open(facts_folder+"/arithmetic.facts",    "a")
             storage_facts       = open(facts_folder+"/storage.facts",       "a")
@@ -56,6 +57,13 @@ class Extractor:
                     print(str(step)+" \t "+str(trace[step]["pc"])+" \t "+trace[step]["op"].ljust(10)+"\t "+str(trace[step]["gas"]).ljust(10)+" \t "+str(trace[step]["gasCost"]).ljust(10)+" \t "+str(trace[step]["depth"])+" \t "+str(call_flow_analysis.get_caller())+(" \t "+"[Error]" if "error" in trace[step] else ""))
                 else:
                     print(str(step)+" \t "+trace[step]["op"].ljust(10)+" \t "+str(trace[step]["depth"])+" \t "+str(trace[step]["contract"])+(" \t "+"[Error]" if "error" in trace[step] else ""))
+
+            # PC facts — one row per trace step when Geth provides pc
+            if "pc" in trace[step]:
+                if compress:
+                    in_memory_zip.append(facts_folder+"/pc.facts", "%d\t%d\t%s\t%s\t%s\r\n" % (step, trace[step]["pc"], trace[step]["contract"], transaction["hash"], trace[step]["op"]))
+                else:
+                    pc_facts.write("%d\t%d\t%s\t%s\t%s\r\n" % (step, trace[step]["pc"], trace[step]["contract"], transaction["hash"], trace[step]["op"]))
 
             # Use facts
             if trace[step]["op"] in [
@@ -264,6 +272,7 @@ class Extractor:
 
         if not compress:
             def_facts.close()
+            pc_facts.close()
             use_facts.close()
             arithmetic_facts.close()
             storage_facts.close()
@@ -301,6 +310,7 @@ class Extractor:
         if compress:
             in_memory_zip = InMemoryZip()
             in_memory_zip.append(facts_folder+"/def.facts", "")
+            in_memory_zip.append(facts_folder+"/pc.facts", "")
             in_memory_zip.append(facts_folder+"/use.facts", "")
             in_memory_zip.append(facts_folder+"/arithmetic.facts", "")
             in_memory_zip.append(facts_folder+"/storage.facts", "")
@@ -396,6 +406,7 @@ class Extractor:
         if compress:
             in_memory_zip = InMemoryZip()
             in_memory_zip.append(facts_folder+"/def.facts", "")
+            in_memory_zip.append(facts_folder+"/pc.facts", "")
             in_memory_zip.append(facts_folder+"/use.facts", "")
             in_memory_zip.append(facts_folder+"/arithmetic.facts", "")
             in_memory_zip.append(facts_folder+"/storage.facts", "")

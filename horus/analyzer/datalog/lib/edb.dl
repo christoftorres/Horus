@@ -1,5 +1,6 @@
 
 .decl def(step:number, opcode:Opcode, transaction_hash:symbol)
+.decl pc(step:number, pc:number, contract:Address, transaction_hash:symbol, opcode:Opcode)
 .decl use(step1:number, step2:number, transaction_hash:symbol)
 .decl arithmetic(step:number, opcode:Opcode, first_operand:Value, second_operand:Value, arithmetic_result:Value, evm_result:Value)
 .decl storage(step:number, opcode:Opcode, transaction_hash:symbol, caller:Address, contract:Address, storage_index:Value, storage_value:Value, depth:number)
@@ -13,6 +14,7 @@
 .decl transaction(transaction_hash:symbol, transaction_index:number, block_number:number, from:Address, to:Address, input_data:symbol, gas_used:number, gas_limit:number, status:number)
 
 .input def
+.input pc
 .input use
 .input arithmetic
 .input storage
