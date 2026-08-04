@@ -6,7 +6,6 @@ import sys
 import csv
 import time
 import http
-import shutil
 import requests
 import argparse
 import traceback
@@ -100,6 +99,10 @@ def main():
             "--host", type=str, help="Ethereum client HTTP-RPC host (default: '"+settings.RPC_HOST+"')")
         parser.add_argument(
             "--port", type=int, help="Ethereum client HTTP-RPC port (default: '"+str(settings.RPC_PORT)+"')")
+        
+        parser.add_argument(
+            "--facts", type=str, default="", help="list of facts to be extracted: 'def,use,call' or 'transaction'. Available facts: def,pc,use,arithmetic,storage,condition,transfer,call,throw,selfdestruct,error,block,transaction (default: all)")
+        
         parser.add_argument(
             "-v", "--version", action="version", version="Horus version 0.0.2 - 'Merneptah'")
 
@@ -185,7 +188,7 @@ def main():
                 print(e)
                 print("Error: Blockchain is not in sync with transaction: "+args.transaction_hash)
             extractor = Extractor()
-            extractor.extract_facts_from_transactions(connection, transactions, blocks, settings.FACTS_FOLDER, args.compress)
+            extractor.extract_facts_from_transactions(connection, transactions, blocks, settings.FACTS_FOLDER, args.compress, args.facts)
 
         if args.extract and args.block_number:
             if " " in args.block_number:
@@ -224,7 +227,7 @@ def main():
                         return
                     print("Retrieving "+str(len(transactions))+" transaction(s).\n")
                     extractor = Extractor()
-                    extractor.extract_facts_from_block(connection, i, transactions, block, settings.FACTS_FOLDER, args.compress, stats)
+                    extractor.extract_facts_from_block(connection, i, transactions, block, settings.FACTS_FOLDER, args.compress, stats, args.facts)
             else:
                 if not args.block_number.isnumeric():
                     parser.error("--block-number has to be a number or a range of two numbers")
@@ -254,7 +257,7 @@ def main():
                     return
                 print("Retrieving "+str(len(transactions))+" transaction(s).\n")
                 extractor = Extractor()
-                extractor.extract_facts_from_block(connection, int(args.block_number), transactions, block, settings.FACTS_FOLDER, args.compress, stats)
+                extractor.extract_facts_from_block(connection, int(args.block_number), transactions, block, settings.FACTS_FOLDER, args.compress, stats, args.facts)
 
         if args.extract and args.contract_address:
             transactions = []
@@ -312,7 +315,7 @@ def main():
                 from operator import itemgetter
                 transactions = sorted(transactions, key=itemgetter('blockNumber', 'transactionIndex'))"""
             elif args.contract_address.endswith(".csv"):
-                csv.field_size_limit(sys.maxsize) #https://stackoverflow.com/questions/15063936/csv-error-field-larger-than-field-limit-131072
+                csv.field_size_limit(sys.maxsize) # https://stackoverflow.com/questions/15063936/csv-error-field-larger-than-field-limit-131072
                 with open(args.contract_address) as csvfile:
                     reader = csv.reader(csvfile)
                     for row in reader:
@@ -346,13 +349,13 @@ def main():
                         transaction = format_transaction(settings.W3.eth.get_transaction(tx))
                         transactions.append(transaction)
                     extractor = Extractor()
-                    extractor.extract_facts_from_transactions(connection, transactions, blocks, settings.FACTS_FOLDER, args.compress)
+                    extractor.extract_facts_from_transactions(connection, transactions, blocks, settings.FACTS_FOLDER, args.compress, args.facts)
             else:
                 print("Contract requires to be either an address, a CSV file, or a JOSN file")
                 return
             print("Retrieving "+str(len(transactions))+" transaction(s).\n")
             extractor = Extractor()
-            extractor.extract_facts_from_transactions(connection, transactions, blocks, settings.FACTS_FOLDER, args.compress)
+            extractor.extract_facts_from_transactions(connection, transactions, blocks, settings.FACTS_FOLDER, args.compress, args.facts)
 
         if args.analyze:
             if not has_souffle_installed():

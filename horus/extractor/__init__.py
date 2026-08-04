@@ -16,24 +16,37 @@ from .call_flow_analysis import CallFlowAnalysis
 from .in_memory_zip import InMemoryZip
 
 class Extractor:
-    def extract_facts_from_trace(self, facts_folder, trace, step, max_step, gas_used, block, transaction, taint_runner, stats, compress, in_memory_zip):
+    def extract_facts_from_trace(self, facts_folder, trace, step, max_step, gas_used, block, transaction, taint_runner, stats, compress, in_memory_zip, facts_to_extract=""):
         if settings.DEBUG_MODE:
             tracemalloc.start()
 
         if not compress:
-            def_facts           = open(facts_folder+"/def.facts",           "a")
-            pc_facts            = open(facts_folder+"/pc.facts",            "a")
-            use_facts           = open(facts_folder+"/use.facts",           "a")
-            arithmetic_facts    = open(facts_folder+"/arithmetic.facts",    "a")
-            storage_facts       = open(facts_folder+"/storage.facts",       "a")
-            condition_facts     = open(facts_folder+"/condition.facts",     "a")
-            transfer_facts      = open(facts_folder+"/transfer.facts",      "a")
-            call_facts          = open(facts_folder+"/call.facts",          "a")
-            throw_facts         = open(facts_folder+"/throw.facts",         "a")
-            selfdestruct_facts  = open(facts_folder+"/selfdestruct.facts",  "a")
-            error_facts         = open(facts_folder+"/error.facts",         "a")
-            block_facts         = open(facts_folder+"/block.facts",         "a")
-            transaction_facts   = open(facts_folder+"/transaction.facts",   "a")
+            if facts_to_extract == "" or "def" in facts_to_extract.lower().split(","):
+                def_facts           = open(facts_folder+"/def.facts",           "a")
+            if facts_to_extract == "" or "pc" in facts_to_extract.lower().split(","):
+                pc_facts            = open(facts_folder+"/pc.facts",            "a")
+            if facts_to_extract == "" or "use" in facts_to_extract.lower().split(","):
+                use_facts           = open(facts_folder+"/use.facts",           "a")
+            if facts_to_extract == "" or "arithmetic" in facts_to_extract.lower().split(","):
+                arithmetic_facts    = open(facts_folder+"/arithmetic.facts",    "a")
+            if facts_to_extract == "" or "storage" in facts_to_extract.lower().split(","):
+                storage_facts       = open(facts_folder+"/storage.facts",       "a")
+            if facts_to_extract == "" or "condition" in facts_to_extract.lower().split(","):
+                condition_facts     = open(facts_folder+"/condition.facts",     "a")
+            if facts_to_extract == "" or "transfer" in facts_to_extract.lower().split(","):
+                transfer_facts      = open(facts_folder+"/transfer.facts",      "a")
+            if facts_to_extract == "" or "call" in facts_to_extract.lower().split(","):
+                call_facts          = open(facts_folder+"/call.facts",          "a")
+            if facts_to_extract == "" or "throw" in facts_to_extract.lower().split(","):
+                throw_facts         = open(facts_folder+"/throw.facts",         "a")
+            if facts_to_extract == "" or "seldestruct" in facts_to_extract.lower().split(","):
+                selfdestruct_facts  = open(facts_folder+"/selfdestruct.facts",  "a")
+            if facts_to_extract == "" or "error" in facts_to_extract.lower().split(","):
+                error_facts         = open(facts_folder+"/error.facts",         "a")
+            if facts_to_extract == "" or "block" in facts_to_extract.lower().split(","):
+                block_facts         = open(facts_folder+"/block.facts",         "a")
+            if facts_to_extract == "" or "transaction" in facts_to_extract.lower().split(","):
+                transaction_facts   = open(facts_folder+"/transaction.facts",   "a")
 
         call_flow_analysis = CallFlowAnalysis(transaction)
         execution_begin = time.time()
@@ -59,231 +72,258 @@ class Extractor:
                     print(str(step)+" \t "+trace[step]["op"].ljust(10)+" \t "+str(trace[step]["depth"])+" \t "+str(trace[step]["contract"])+(" \t "+"[Error]" if "error" in trace[step] else ""))
 
             # PC facts — one row per trace step when Geth provides pc
-            if "pc" in trace[step]:
-                if compress:
-                    in_memory_zip.append(facts_folder+"/pc.facts", "%d\t%d\t%s\t%s\t%s\r\n" % (step, trace[step]["pc"], trace[step]["contract"], transaction["hash"], trace[step]["op"]))
-                else:
-                    pc_facts.write("%d\t%d\t%s\t%s\t%s\r\n" % (step, trace[step]["pc"], trace[step]["contract"], transaction["hash"], trace[step]["op"]))
+            if facts_to_extract == "" or "pc" in facts_to_extract.lower().split(","):    
+                if "pc" in trace[step]:
+                    if compress:
+                        in_memory_zip.append(facts_folder+"/pc.facts", "%d\t%d\t%s\t%s\t%s\r\n" % (step, trace[step]["pc"], trace[step]["contract"], transaction["hash"], trace[step]["op"]))
+                    else:
+                        pc_facts.write("%d\t%d\t%s\t%s\t%s\r\n" % (step, trace[step]["pc"], trace[step]["contract"], transaction["hash"], trace[step]["op"]))
 
             # Use facts
-            if trace[step]["op"] in [
-                "ADD", "SUB", "MUL",                                                        # Arithmetic opcodes
-                "SHA3",                                                                     # Hash computation opcodes
-                "SSTORE", "SLOAD",                                                          # Storage opcodes
-                "JUMPI",                                                                    # Flow opcodes
-                "LOG3",                                                                     # Event opcodes
-                "CALL", "DELEGATECALL",                                                     # Call opcodes
-                "SELFDESTRUCT", "SUICIDE",                                                  # Selfdestruct opcodes
-               ]:
-                values = taint_runner.check_taint(trace[step])
-                if values:
-                    for i in values:
-                        if compress:
-                            in_memory_zip.append(facts_folder+"/use.facts", "%d\t%d\t%s\r\n" % (step, i, transaction["hash"]))
-                        else:
-                            use_facts.write("%d\t%d\t%s\r\n" % (step, i, transaction["hash"]))
+            if facts_to_extract == "" or "use" in facts_to_extract.lower().split(","):
+                if trace[step]["op"] in [
+                    "ADD", "SUB", "MUL",                                                        # Arithmetic opcodes
+                    "SHA3",                                                                     # Hash computation opcodes
+                    "SSTORE", "SLOAD",                                                          # Storage opcodes
+                    "JUMPI",                                                                    # Flow opcodes
+                    "LOG3",                                                                     # Event opcodes
+                    "CALL", "DELEGATECALL",                                                     # Call opcodes
+                    "SELFDESTRUCT", "SUICIDE",                                                  # Selfdestruct opcodes
+                ]:
+                    values = taint_runner.check_taint(trace[step])
+                    if values:
+                        for i in values:
+                            if compress:
+                                in_memory_zip.append(facts_folder+"/use.facts", "%d\t%d\t%s\r\n" % (step, i, transaction["hash"]))
+                            else:
+                                use_facts.write("%d\t%d\t%s\r\n" % (step, i, transaction["hash"]))
 
             taint_runner.propagate_taint(trace[step], trace[step]["contract"])
 
             # Def facts
-            if trace[step]["op"] in [
-                "SHA3",                                                                     # Hash computation opcodes
-                "BALANCE", "ORIGIN", "CALLER", "CALLDATALOAD", "CALLDATACOPY",              # Environmental opcodes
-                "BLOCKHASH", "COINBASE", "TIMESTAMP", "NUMBER", "DIFFICULTY", "GASLIMIT",   # Block opcodes
-                "SLOAD",                                                                    # Storage opcodes
-                "CALL",                                                                     # Call opcodes
-               ]:
-                taint_runner.introduce_taint(step, trace[step])
-                if compress:
-                    in_memory_zip.append(facts_folder+"/def.facts", "%d\t%s\t%s\r\n" % (step, trace[step]["op"], transaction["hash"]))
-                else:
-                    def_facts.write("%d\t%s\t%s\r\n" % (step, trace[step]["op"], transaction["hash"]))
-
-            # Arithmetic facts
-            if trace[step]["op"] in ["ADD", "SUB", "MUL"]:
-                _opcode = trace[step]["op"]
-                _first_operand = int(trace[step]["stack"][-1])
-                _second_operand = int(trace[step]["stack"][-2])
-                if   trace[step]["op"] == "ADD":
-                    _arithmetic_result = _first_operand + _second_operand
-                elif trace[step]["op"] == "SUB":
-                    _arithmetic_result = _first_operand - _second_operand
-                elif trace[step]["op"] == "MUL":
-                    _arithmetic_result = _first_operand * _second_operand
-                if not "error" in trace[step]:
-                    _evm_result = int(trace[step + 1]["stack"][-1])
-                else:
-                    _evm_result = 0
-                if _arithmetic_result != _evm_result:
+            if facts_to_extract == "" or "def" in facts_to_extract.lower().split(","):    
+                if trace[step]["op"] in [
+                    "SHA3",                                                                     # Hash computation opcodes
+                    "BALANCE", "ORIGIN", "CALLER", "CALLDATALOAD", "CALLDATACOPY",              # Environmental opcodes
+                    "BLOCKHASH", "COINBASE", "TIMESTAMP", "NUMBER", "DIFFICULTY", "GASLIMIT",   # Block opcodes
+                    "SLOAD",                                                                    # Storage opcodes
+                    "CALL",                                                                     # Call opcodes
+                ]:
                     taint_runner.introduce_taint(step, trace[step])
                     if compress:
                         in_memory_zip.append(facts_folder+"/def.facts", "%d\t%s\t%s\r\n" % (step, trace[step]["op"], transaction["hash"]))
                     else:
                         def_facts.write("%d\t%s\t%s\r\n" % (step, trace[step]["op"], transaction["hash"]))
-                    if compress:
-                        in_memory_zip.append(facts_folder+"/arithmetic.facts", "%d\t%s\t%s\t%s\t%s\t%s\r\n" % (step, _opcode, _first_operand, _second_operand, _arithmetic_result, _evm_result))
+
+            # Arithmetic facts
+            if facts_to_extract == "" or "arithmetic" in facts_to_extract.lower().split(","):    
+                if trace[step]["op"] in ["ADD", "SUB", "MUL"]:
+                    _opcode = trace[step]["op"]
+                    _first_operand = int(trace[step]["stack"][-1])
+                    _second_operand = int(trace[step]["stack"][-2])
+                    if   trace[step]["op"] == "ADD":
+                        _arithmetic_result = _first_operand + _second_operand
+                    elif trace[step]["op"] == "SUB":
+                        _arithmetic_result = _first_operand - _second_operand
+                    elif trace[step]["op"] == "MUL":
+                        _arithmetic_result = _first_operand * _second_operand
+                    if not "error" in trace[step]:
+                        _evm_result = int(trace[step + 1]["stack"][-1])
                     else:
-                        arithmetic_facts.write("%d\t%s\t%s\t%s\t%s\t%s\r\n" % (step, _opcode, _first_operand, _second_operand, _arithmetic_result, _evm_result))
+                        _evm_result = 0
+                    if _arithmetic_result != _evm_result:
+                        taint_runner.introduce_taint(step, trace[step])
+                        if compress:
+                            in_memory_zip.append(facts_folder+"/def.facts", "%d\t%s\t%s\r\n" % (step, trace[step]["op"], transaction["hash"]))
+                        else:
+                            def_facts.write("%d\t%s\t%s\r\n" % (step, trace[step]["op"], transaction["hash"]))
+                        if compress:
+                            in_memory_zip.append(facts_folder+"/arithmetic.facts", "%d\t%s\t%s\t%s\t%s\t%s\r\n" % (step, _opcode, _first_operand, _second_operand, _arithmetic_result, _evm_result))
+                        else:
+                            arithmetic_facts.write("%d\t%s\t%s\t%s\t%s\t%s\r\n" % (step, _opcode, _first_operand, _second_operand, _arithmetic_result, _evm_result))
 
             # Storage facts
-            elif trace[step]["op"] in ["SSTORE", "SLOAD"]:
-                _opcode = trace[step]["op"]
-                _transaction_hash = transaction["hash"]
-                _caller = transaction["from"]
-                _contract = trace[step]["contract"]
-                _storage_index = trace[step]["stack"][-1]
-                _depth = trace[step]["depth"]
-                _value = 0
-                if _opcode == "SSTORE":
-                    _value = trace[step]["stack"][-2]
-                    if not trace[step]["stack"][-2].startswith('0x'):
-                        _value = int(trace[step]["stack"][-2])
-                elif not "error" in trace[step]:
-                    _value = trace[step + 1]["stack"][-1]
-                    if not trace[step + 1]["stack"][-1].startswith('0x'):
-                        _value = int(trace[step + 1]["stack"][-1])
-                if compress:
-                    in_memory_zip.append(facts_folder+"/storage.facts", "%d\t%s\t%s\t%s\t%s\t%s\t%s\t%d\r\n" % (step, _opcode, _transaction_hash, _caller, _contract, _storage_index, _value, _depth))
-                else:
-                    storage_facts.write("%d\t%s\t%s\t%s\t%s\t%s\t%s\t%d\r\n" % (step, _opcode, _transaction_hash, _caller, _contract, _storage_index, _value, _depth))
+            if facts_to_extract == "" or "storage" in facts_to_extract.lower().split(","):    
+                if trace[step]["op"] in ["SSTORE", "SLOAD"]:
+                    _opcode = trace[step]["op"]
+                    _transaction_hash = transaction["hash"]
+                    _caller = transaction["from"]
+                    _contract = trace[step]["contract"]
+                    _storage_index = trace[step]["stack"][-1]
+                    _depth = trace[step]["depth"]
+                    _value = 0
+                    if _opcode == "SSTORE":
+                        _value = trace[step]["stack"][-2]
+                        if not trace[step]["stack"][-2].startswith('0x'):
+                            _value = int(trace[step]["stack"][-2])
+                    elif not "error" in trace[step]:
+                        _value = trace[step + 1]["stack"][-1]
+                        if not trace[step + 1]["stack"][-1].startswith('0x'):
+                            _value = int(trace[step + 1]["stack"][-1])
+                    if compress:
+                        in_memory_zip.append(facts_folder+"/storage.facts", "%d\t%s\t%s\t%s\t%s\t%s\t%s\t%d\r\n" % (step, _opcode, _transaction_hash, _caller, _contract, _storage_index, _value, _depth))
+                    else:
+                        storage_facts.write("%d\t%s\t%s\t%s\t%s\t%s\t%s\t%d\r\n" % (step, _opcode, _transaction_hash, _caller, _contract, _storage_index, _value, _depth))
 
             # Condition facts
-            elif trace[step]["op"] == "JUMPI":
-                if compress:
-                    in_memory_zip.append(facts_folder+"/condition.facts", "%d\t%s\r\n" % (step, transaction["hash"]))
-                else:
-                    condition_facts.write("%d\t%s\r\n" % (step, transaction["hash"]))
+            if facts_to_extract == "" or "condition" in facts_to_extract.lower().split(","):    
+                if trace[step]["op"] == "JUMPI":
+                    if compress:
+                        in_memory_zip.append(facts_folder+"/condition.facts", "%d\t%s\r\n" % (step, transaction["hash"]))
+                    else:
+                        condition_facts.write("%d\t%s\r\n" % (step, transaction["hash"]))
 
             # Transfer facts
-            elif trace[step]["op"] == "LOG3":
-                # This is the signature (topic) of the following ERC-20 event: Transfer(address,address,uint256)
-                if hex(int(trace[step]["stack"][-3])) == "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef":
-                    _transaction_hash = transaction["hash"]
-                    _contract = trace[step]["contract"]
-                    _from = settings.W3.to_checksum_address("0x"+hex(int(trace[step]["stack"][-4])).replace("0x", "").zfill(40)).lower()
-                    _to = settings.W3.to_checksum_address("0x"+hex(int(trace[step]["stack"][-5])).replace("0x", "").zfill(40)).lower()
-                    _value = int(trace[step]["memory"], 16)
-                    if compress:
-                        in_memory_zip.append(facts_folder+"/transfer.facts", "%d\t%s\t%s\t%s\t%s\t%s\r\n" % (step, _transaction_hash, _contract, _from, _to, _value))
-                    else:
-                        transfer_facts.write("%d\t%s\t%s\t%s\t%s\t%s\r\n" % (step, _transaction_hash, _contract, _from, _to, _value))
+            if facts_to_extract == "" or "transfer" in facts_to_extract.lower().split(","):    
+                if trace[step]["op"] == "LOG3":
+                    # This is the signature (topic) of the following ERC-20 event: Transfer(address,address,uint256)
+                    if hex(int(trace[step]["stack"][-3])) == "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef":
+                        _transaction_hash = transaction["hash"]
+                        _contract = trace[step]["contract"]
+                        _from = settings.W3.to_checksum_address("0x"+hex(int(trace[step]["stack"][-4])).replace("0x", "").zfill(40)).lower()
+                        _to = settings.W3.to_checksum_address("0x"+hex(int(trace[step]["stack"][-5])).replace("0x", "").zfill(40)).lower()
+                        _value = int(trace[step]["memory"], 16)
+                        if compress:
+                            in_memory_zip.append(facts_folder+"/transfer.facts", "%d\t%s\t%s\t%s\t%s\t%s\r\n" % (step, _transaction_hash, _contract, _from, _to, _value))
+                        else:
+                            transfer_facts.write("%d\t%s\t%s\t%s\t%s\t%s\r\n" % (step, _transaction_hash, _contract, _from, _to, _value))
 
             # Call facts
-            elif trace[step]["op"] in ["CREATE", "CREATE2", "CALL", "CALLCODE", "DELEGATECALL", "STATICCALL"]:
-                call_flow_analysis.analyze_call_flow(step, max_step, trace)
+            if facts_to_extract == "" or "call" in facts_to_extract.lower().split(","):    
+                if trace[step]["op"] in ["CREATE", "CREATE2", "CALL", "CALLCODE", "DELEGATECALL", "STATICCALL"]:
+                    call_flow_analysis.analyze_call_flow(step, max_step, trace)
 
-                _call_id = call_flow_analysis.get_call_id()
-                _call_branch = call_flow_analysis.get_call_branch()
-                i = step + 1
-                while i < max_step and trace[step]["depth"] < trace[i]["depth"]:
-                    i += 1
-                _transaction_hash = transaction["hash"]
-                _opcode = trace[step]["op"]
-                _caller = trace[step]["contract"]
-                if trace[step]["op"] in ["CREATE", "CREATE2"]:
-                    if not "error" in trace[step]:
-                        _callee = normalize_32_byte_hex_address(hex(int(trace[i]["stack"][-1])))
+                    _call_id = call_flow_analysis.get_call_id()
+                    _call_branch = call_flow_analysis.get_call_branch()
+                    i = step + 1
+                    while i < max_step and trace[step]["depth"] < trace[i]["depth"]:
+                        i += 1
+                    _transaction_hash = transaction["hash"]
+                    _opcode = trace[step]["op"]
+                    _caller = trace[step]["contract"]
+                    if trace[step]["op"] in ["CREATE", "CREATE2"]:
+                        if not "error" in trace[step]:
+                            _callee = normalize_32_byte_hex_address(hex(int(trace[i]["stack"][-1]) % 2**160))
+
+                        else:
+                            _callee = ""
                     else:
-                        _callee = ""
-                else:
-                    _callee = settings.W3.to_checksum_address("0x"+hex(int(trace[step]["stack"][-2])).replace("0x", "").zfill(40)).lower()
-                if trace[step]["op"] in ["CREATE", "CREATE2"]:
-                    _amount = int(trace[step]["stack"][-1])
+                        _callee = settings.W3.to_checksum_address("0x"+hex(int(trace[step]["stack"][-2]) % 2**160).replace("0x", "").zfill(40)).lower()
+                    if trace[step]["op"] in ["CREATE", "CREATE2"]:
+                        _amount = int(trace[step]["stack"][-1])
 
-                elif trace[step]["op"] in ["DELEGATECALL", "STATICCALL"]:
-                    _amount = 0
-                else:
-                    _amount = int(trace[step]["stack"][-3])
-                _depth = trace[step]["depth"]
-                if trace[step]["op"] in ["CREATE", "CREATE2"]:
-                    if _callee != 0:
-                        _success = 1
+                    elif trace[step]["op"] in ["DELEGATECALL", "STATICCALL"]:
+                        _amount = 0
+                    else:
+                        _amount = int(trace[step]["stack"][-3])
+                    _depth = trace[step]["depth"]
+                    if trace[step]["op"] in ["CREATE", "CREATE2"]:
+                        if _callee != 0:
+                            _success = 1
+                        else:
+                            _success = 0
+                    elif not "error" in trace[step]:
+                        _success = int(trace[i]["stack"][-1])
                     else:
                         _success = 0
-                elif not "error" in trace[step]:
-                    _success = int(trace[i]["stack"][-1])
-                else:
-                    _success = 0
-                _input_data = trace[step]["memory"].replace("0x", "")
-                if compress:
-                    in_memory_zip.append(facts_folder+"/call.facts", "%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\r\n" % (step, _transaction_hash, _opcode, _caller, _callee, _input_data, _amount, _depth, _call_id, _call_branch, _success))
-                else:
-                    call_facts.write("%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\r\n" % (step, _transaction_hash, _opcode, _caller, _callee, _input_data, _amount, _depth, _call_id, _call_branch, _success))
+                    _input_data = trace[step]["memory"].replace("0x", "")
+                    if compress:
+                        in_memory_zip.append(facts_folder+"/call.facts", "%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\r\n" % (step, _transaction_hash, _opcode, _caller, _callee, _input_data, _amount, _depth, _call_id, _call_branch, _success))
+                    else:
+                        call_facts.write("%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\r\n" % (step, _transaction_hash, _opcode, _caller, _callee, _input_data, _amount, _depth, _call_id, _call_branch, _success))
 
             # Throw facts
-            elif trace[step]["op"] in ["REVERT", "INVALID", "ASSERTFAIL"]:
-                _transaction_hash = transaction["hash"]
-                _opcode = trace[step]["op"]
-                _caller = trace[step]["contract"]
-                _depth = trace[step]["depth"]
-                if compress:
-                    in_memory_zip.append(facts_folder+"/throw.facts", "%d\t%s\t%s\t%s\t%d\r\n" % (step, _transaction_hash, _opcode, _caller, _depth))
-                else:
-                    throw_facts.write("%d\t%s\t%s\t%s\t%d\r\n" % (step, _transaction_hash, _opcode, _caller, _depth))
+            if facts_to_extract == "" or "throw" in facts_to_extract.lower().split(","):    
+                if trace[step]["op"] in ["REVERT", "INVALID", "ASSERTFAIL"]:
+                    _transaction_hash = transaction["hash"]
+                    _opcode = trace[step]["op"]
+                    _caller = trace[step]["contract"]
+                    _depth = trace[step]["depth"]
+                    if compress:
+                        in_memory_zip.append(facts_folder+"/throw.facts", "%d\t%s\t%s\t%s\t%d\r\n" % (step, _transaction_hash, _opcode, _caller, _depth))
+                    else:
+                        throw_facts.write("%d\t%s\t%s\t%s\t%d\r\n" % (step, _transaction_hash, _opcode, _caller, _depth))
 
             # Selfdestruct facts
-            elif trace[step]["op"] in ["SELFDESTRUCT", "SUICIDE"]:
-                _transaction_hash = transaction["hash"]
-                _caller = transaction["from"]
-                _destination = settings.W3.to_checksum_address("0x"+hex(int(trace[step]["stack"][-1])).replace("0x", "").zfill(40)).lower()
-                _contract = trace[step]["contract"]
-                _balance = trace[step]["stack"][-2]
-                if compress:
-                    in_memory_zip.append(facts_folder+"/selfdestruct.facts", "%d\t%s\t%s\t%s\t%s\t%s\r\n" % (step, _transaction_hash, _caller, _contract, _destination, _balance))
-                else:
-                    selfdestruct_facts.write("%d\t%s\t%s\t%s\t%s\t%s\r\n" % (step, _transaction_hash, _caller, _contract, _destination, _balance))
+            if facts_to_extract == "" or "selfdestruct" in facts_to_extract.lower().split(","):    
+                if trace[step]["op"] in ["SELFDESTRUCT", "SUICIDE"]:
+                    _transaction_hash = transaction["hash"]
+                    _caller = transaction["from"]
+                    _destination = settings.W3.to_checksum_address("0x"+hex(int(trace[step]["stack"][-1])).replace("0x", "").zfill(40)).lower()
+                    _contract = trace[step]["contract"]
+                    _balance = trace[step]["stack"][-2]
+                    if compress:
+                        in_memory_zip.append(facts_folder+"/selfdestruct.facts", "%d\t%s\t%s\t%s\t%s\t%s\r\n" % (step, _transaction_hash, _caller, _contract, _destination, _balance))
+                    else:
+                        selfdestruct_facts.write("%d\t%s\t%s\t%s\t%s\t%s\r\n" % (step, _transaction_hash, _caller, _contract, _destination, _balance))
 
             # Error facts
-            if "error" in trace[step]:
-                # Fix for https://github.com/ethereum/go-ethereum/issues/2576
-                # There are four different EVM exceptions: "out of gas", "invalid jump destination", "invalid instruction" and "stack underflow"
-                _error_message = "out of gas" # Default error message in Geth is 'out of gas'
-                if trace[step]["error"]:
-                    _error_message = trace[step]["error"]
-                elif trace[step]["op"].startswith("Missing opcode") or trace[step]["op"] not in taint_runner.stack_taint_table:
-                    _error_message = "invalid instruction"
-                elif len(trace[step]["stack"]) < taint_runner.stack_taint_table[trace[step]["op"]][0]:
-                    _error_message = "stack underflow"
-                if compress:
-                    in_memory_zip.append(facts_folder+"/error.facts", "%s\t%s\r\n" % (transaction["hash"], _error_message))
-                else:
-                    error_facts.write("%s\t%s\r\n" % (transaction["hash"], _error_message))
+            if facts_to_extract == "" or "error" in facts_to_extract.lower().split(","):    
+                if "error" in trace[step]:
+                    # Fix for https://github.com/ethereum/go-ethereum/issues/2576
+                    # There are four different EVM exceptions: "out of gas", "invalid jump destination", "invalid instruction" and "stack underflow"
+                    _error_message = "out of gas" # Default error message in Geth is 'out of gas'
+                    if trace[step]["error"]:
+                        _error_message = trace[step]["error"]
+                    elif trace[step]["op"].startswith("Missing opcode") or trace[step]["op"] not in taint_runner.stack_taint_table:
+                        _error_message = "invalid instruction"
+                    elif len(trace[step]["stack"]) < taint_runner.stack_taint_table[trace[step]["op"]][0]:
+                        _error_message = "stack underflow"
+                    if compress:
+                        in_memory_zip.append(facts_folder+"/error.facts", "%s\t%s\r\n" % (transaction["hash"], _error_message))
+                    else:
+                        error_facts.write("%s\t%s\r\n" % (transaction["hash"], _error_message))
 
             step += 1
         taint_runner.clear_machine_state()
 
         # Block facts
-        if compress:
-            in_memory_zip.append(facts_folder+"/block.facts", "%d\t%d\t%d\t%d\r\n" % (block["number"], block["gasUsed"], block["gasLimit"], block["timestamp"]))
-        else:
-            block_facts.write("%d\t%d\t%d\t%d\r\n" % (block["number"], block["gasUsed"], block["gasLimit"], block["timestamp"]))
+        if facts_to_extract == "" or "block" in facts_to_extract.lower().split(","):    
+            if compress:
+                in_memory_zip.append(facts_folder+"/block.facts", "%d\t%d\t%d\t%d\r\n" % (block["number"], block["gasUsed"], block["gasLimit"], block["timestamp"]))
+            else:
+                block_facts.write("%d\t%d\t%d\t%d\r\n" % (block["number"], block["gasUsed"], block["gasLimit"], block["timestamp"]))
 
         # Transaction facts
-        if max_step in trace and trace[max_step]["op"] in ["STOP", "RETURN", "SELFDESTRUCT"]:
-            _status = 1
-        else:
-            _status = 0
-        if transaction["to"] == None:
-            transaction["to"] = ""
-        if compress:
-            in_memory_zip.append(facts_folder+"/transaction.facts", "%s\t%d\t%d\t%s\t%s\t%s\t%d\t%d\t%d\r\n" % (transaction["hash"], transaction["transactionIndex"], transaction["blockNumber"], transaction["from"], transaction["to"], transaction["input"].replace("0x", ""), gas_used, transaction["gas"], _status))
-        else:
-            transaction_facts.write("%s\t%d\t%d\t%s\t%s\t%s\t%d\t%d\t%d\r\n" % (transaction["hash"], transaction["transactionIndex"], transaction["blockNumber"], transaction["from"], transaction["to"], transaction["input"].replace("0x", ""), gas_used, transaction["gas"], _status))
+        if facts_to_extract == "" or "transaction" in facts_to_extract.lower().split(","):    
+            if max_step in trace and trace[max_step]["op"] in ["STOP", "RETURN", "SELFDESTRUCT"]:
+                _status = 1
+            else:
+                _status = 0
+            if transaction["to"] == None:
+                transaction["to"] = ""
+            if compress:
+                in_memory_zip.append(facts_folder+"/transaction.facts", "%s\t%d\t%d\t%s\t%s\t%s\t%d\t%d\t%d\r\n" % (transaction["hash"], transaction["transactionIndex"], transaction["blockNumber"], transaction["from"], transaction["to"], transaction["input"].replace("0x", ""), gas_used, transaction["gas"], _status))
+            else:
+                transaction_facts.write("%s\t%d\t%d\t%s\t%s\t%s\t%d\t%d\t%d\r\n" % (transaction["hash"], transaction["transactionIndex"], transaction["blockNumber"], transaction["from"], transaction["to"], transaction["input"].replace("0x", ""), gas_used, transaction["gas"], _status))
 
         if not compress:
-            def_facts.close()
-            pc_facts.close()
-            use_facts.close()
-            arithmetic_facts.close()
-            storage_facts.close()
-            condition_facts.close()
-            transfer_facts.close()
-            call_facts.close()
-            throw_facts.close()
-            selfdestruct_facts.close()
-            error_facts.close()
-            block_facts.close()
-            transaction_facts.close()
+            if facts_to_extract == "" or "def" in facts_to_extract.lower().split(","):
+                def_facts.close()
+            if facts_to_extract == "" or "pc" in facts_to_extract.lower().split(","):
+                pc_facts.close()
+            if facts_to_extract == "" or "use" in facts_to_extract.lower().split(","):
+                use_facts.close()
+            if facts_to_extract == "" or "arithmetic" in facts_to_extract.lower().split(","):
+                arithmetic_facts.close()
+            if facts_to_extract == "" or "storage" in facts_to_extract.lower().split(","):
+                storage_facts.close()
+            if facts_to_extract == "" or "condition" in facts_to_extract.lower().split(","):
+                condition_facts.close()
+            if facts_to_extract == "" or "transfer" in facts_to_extract.lower().split(","):
+                transfer_facts.close()
+            if facts_to_extract == "" or "call" in facts_to_extract.lower().split(","):
+                call_facts.close()
+            if facts_to_extract == "" or "throw" in facts_to_extract.lower().split(","):
+                throw_facts.close()
+            if facts_to_extract == "" or "seldestruct" in facts_to_extract.lower().split(","):
+                selfdestruct_facts.close()
+            if facts_to_extract == "" or "error" in facts_to_extract.lower().split(","):
+                error_facts.close()
+            if facts_to_extract == "" or "block" in facts_to_extract.lower().split(","):
+                block_facts.close()
+            if facts_to_extract == "" or "transaction" in facts_to_extract.lower().split(","):
+                transaction_facts.close()
 
         if settings.DEBUG_MODE:
             if "pc" in trace[step-1] and "gas" in trace[step-1] and "gasCost" in trace[step-1]:
@@ -302,26 +342,39 @@ class Extractor:
 
         return step
 
-    def extract_facts_from_block(self, connection, block_number, transactions, block, facts_folder, compress, stats):
+    def extract_facts_from_block(self, connection, block_number, transactions, block, facts_folder, compress, stats, facts_to_extract=""):
         if not compress and not os.path.isdir(facts_folder):
             os.mkdir(facts_folder)
 
         in_memory_zip = None
         if compress:
             in_memory_zip = InMemoryZip()
-            in_memory_zip.append(facts_folder+"/def.facts", "")
-            in_memory_zip.append(facts_folder+"/pc.facts", "")
-            in_memory_zip.append(facts_folder+"/use.facts", "")
-            in_memory_zip.append(facts_folder+"/arithmetic.facts", "")
-            in_memory_zip.append(facts_folder+"/storage.facts", "")
-            in_memory_zip.append(facts_folder+"/condition.facts", "")
-            in_memory_zip.append(facts_folder+"/transfer.facts", "")
-            in_memory_zip.append(facts_folder+"/call.facts", "")
-            in_memory_zip.append(facts_folder+"/throw.facts", "")
-            in_memory_zip.append(facts_folder+"/selfdestruct.facts", "")
-            in_memory_zip.append(facts_folder+"/error.facts", "")
-            in_memory_zip.append(facts_folder+"/block.facts", "")
-            in_memory_zip.append(facts_folder+"/transaction.facts", "")
+            if facts_to_extract == "" or "def" in facts_to_extract.lower().split(","):
+                in_memory_zip.append(facts_folder+"/def.facts", "")
+            if facts_to_extract == "" or "pc" in facts_to_extract.lower().split(","):
+                in_memory_zip.append(facts_folder+"/pc.facts", "")
+            if facts_to_extract == "" or "use" in facts_to_extract.lower().split(","):
+                in_memory_zip.append(facts_folder+"/use.facts", "")
+            if facts_to_extract == "" or "arithmetic" in facts_to_extract.lower().split(","):
+                in_memory_zip.append(facts_folder+"/arithmetic.facts", "")
+            if facts_to_extract == "" or "storage" in facts_to_extract.lower().split(","):
+                in_memory_zip.append(facts_folder+"/storage.facts", "")
+            if facts_to_extract == "" or "condition" in facts_to_extract.lower().split(","):
+                in_memory_zip.append(facts_folder+"/condition.facts", "")
+            if facts_to_extract == "" or "transfer" in facts_to_extract.lower().split(","):
+                in_memory_zip.append(facts_folder+"/transfer.facts", "")
+            if facts_to_extract == "" or "call" in facts_to_extract.lower().split(","):
+                in_memory_zip.append(facts_folder+"/call.facts", "")
+            if facts_to_extract == "" or "throw" in facts_to_extract.lower().split(","):
+                in_memory_zip.append(facts_folder+"/throw.facts", "")
+            if facts_to_extract == "" or "seldestruct" in facts_to_extract.lower().split(","):
+                in_memory_zip.append(facts_folder+"/selfdestruct.facts", "")
+            if facts_to_extract == "" or "error" in facts_to_extract.lower().split(","):
+                in_memory_zip.append(facts_folder+"/error.facts", "")
+            if facts_to_extract == "" or "block" in facts_to_extract.lower().split(","):
+                in_memory_zip.append(facts_folder+"/block.facts", "")
+            if facts_to_extract == "" or "transaction" in facts_to_extract.lower().split(","):
+                in_memory_zip.append(facts_folder+"/transaction.facts", "")
 
         try:
             retrieval_begin = time.time()
@@ -349,7 +402,7 @@ class Extractor:
                         max_step = k+step
                     gas_used = trace_response["result"][index]["result"]["gas"]
 
-                    step = self.extract_facts_from_trace(facts_folder, trace, step, max_step, gas_used, block, transactions[index], taint_runner, stats, compress, in_memory_zip)
+                    step = self.extract_facts_from_trace(facts_folder, trace, step, max_step, gas_used, block, transactions[index], taint_runner, stats, compress, in_memory_zip, facts_to_extract)
 
                 if compress:
                     in_memory_zip.append(facts_folder+"/stats.json", json.dumps(stats))
@@ -366,7 +419,7 @@ class Extractor:
                 print("Extraction times: \t "+"{:.5f}".format(min(stats["extraction_times"]))+"s Min \t "+"{:.5f}".format(max(stats["extraction_times"]))+"s Max \t "+"{:.5f}".format(sum(stats["extraction_times"])/len(stats["extraction_times"]))+"s Mean.")
                 print()
 
-    def extract_facts_from_transactions(self, connection, transactions, blocks, facts_folder, compress):
+    def extract_facts_from_transactions(self, connection, transactions, blocks, facts_folder, compress, facts_to_extract=""):
         step = 0
         trace = {}
         max_step = 0
@@ -405,19 +458,32 @@ class Extractor:
         in_memory_zip = None
         if compress:
             in_memory_zip = InMemoryZip()
-            in_memory_zip.append(facts_folder+"/def.facts", "")
-            in_memory_zip.append(facts_folder+"/pc.facts", "")
-            in_memory_zip.append(facts_folder+"/use.facts", "")
-            in_memory_zip.append(facts_folder+"/arithmetic.facts", "")
-            in_memory_zip.append(facts_folder+"/storage.facts", "")
-            in_memory_zip.append(facts_folder+"/condition.facts", "")
-            in_memory_zip.append(facts_folder+"/transfer.facts", "")
-            in_memory_zip.append(facts_folder+"/call.facts", "")
-            in_memory_zip.append(facts_folder+"/throw.facts", "")
-            in_memory_zip.append(facts_folder+"/selfdestruct.facts", "")
-            in_memory_zip.append(facts_folder+"/error.facts", "")
-            in_memory_zip.append(facts_folder+"/block.facts", "")
-            in_memory_zip.append(facts_folder+"/transaction.facts", "")
+            if facts_to_extract == "" or "def" in facts_to_extract.lower().split(","):
+                in_memory_zip.append(facts_folder+"/def.facts", "")
+            if facts_to_extract == "" or "pc" in facts_to_extract.lower().split(","):
+                in_memory_zip.append(facts_folder+"/pc.facts", "")
+            if facts_to_extract == "" or "use" in facts_to_extract.lower().split(","):
+                in_memory_zip.append(facts_folder+"/use.facts", "")
+            if facts_to_extract == "" or "arithmetic" in facts_to_extract.lower().split(","):
+                in_memory_zip.append(facts_folder+"/arithmetic.facts", "")
+            if facts_to_extract == "" or "storage" in facts_to_extract.lower().split(","):
+                in_memory_zip.append(facts_folder+"/storage.facts", "")
+            if facts_to_extract == "" or "condition" in facts_to_extract.lower().split(","):
+                in_memory_zip.append(facts_folder+"/condition.facts", "")
+            if facts_to_extract == "" or "transfer" in facts_to_extract.lower().split(","):
+                in_memory_zip.append(facts_folder+"/transfer.facts", "")
+            if facts_to_extract == "" or "call" in facts_to_extract.lower().split(","):
+                in_memory_zip.append(facts_folder+"/call.facts", "")
+            if facts_to_extract == "" or "throw" in facts_to_extract.lower().split(","):
+                in_memory_zip.append(facts_folder+"/throw.facts", "")
+            if facts_to_extract == "" or "seldestruct" in facts_to_extract.lower().split(","):
+                in_memory_zip.append(facts_folder+"/selfdestruct.facts", "")
+            if facts_to_extract == "" or "error" in facts_to_extract.lower().split(","):
+                in_memory_zip.append(facts_folder+"/error.facts", "")
+            if facts_to_extract == "" or "block" in facts_to_extract.lower().split(","):
+                in_memory_zip.append(facts_folder+"/block.facts", "")
+            if facts_to_extract == "" or "transaction" in facts_to_extract.lower().split(","):
+                in_memory_zip.append(facts_folder+"/transaction.facts", "")
 
         try:
             for transaction in transactions:
@@ -443,7 +509,7 @@ class Extractor:
                     block = blocks[transaction["blockNumber"]]
                 else:
                     block = format_block(settings.W3.eth.get_block(transaction["blockNumber"]))
-                step = self.extract_facts_from_trace(facts_folder, trace, step, max_step, gas_used, block, transaction, taint_runner, stats, compress, in_memory_zip)
+                step = self.extract_facts_from_trace(facts_folder, trace, step, max_step, gas_used, block, transaction, taint_runner, stats, compress, in_memory_zip, facts_to_extract)
                 # Free memory
                 trace = {}
 
