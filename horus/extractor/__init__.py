@@ -75,9 +75,9 @@ class Extractor:
             if facts_to_extract == "" or "pc" in facts_to_extract.lower().split(","):    
                 if "pc" in trace[step]:
                     if compress:
-                        in_memory_zip.append(facts_folder+"/pc.facts", "%d\t%d\t%s\t%s\t%s\r\n" % (step, trace[step]["pc"], trace[step]["contract"], transaction["hash"], trace[step]["op"]))
+                        in_memory_zip.append(facts_folder+"/pc.facts", "%d\t%d\t%s\r\n" % (step, trace[step]["pc"], trace[step]["contract"]))
                     else:
-                        pc_facts.write("%d\t%d\t%s\t%s\t%s\r\n" % (step, trace[step]["pc"], trace[step]["contract"], transaction["hash"], trace[step]["op"]))
+                        pc_facts.write("%d\t%d\t%s\r\n" % (step, trace[step]["pc"], trace[step]["contract"]))
 
             # Use facts
             if facts_to_extract == "" or "use" in facts_to_extract.lower().split(","):

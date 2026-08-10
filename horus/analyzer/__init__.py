@@ -91,10 +91,14 @@ class Analyzer:
             print("Running Soufflé in interpreter mode...")
             proc = subprocess.Popen(shlex.split("souffle"+j+p+l+" -D "+results+" -F "+facts+" "+datalog_file), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             out, err = proc.communicate()
+            if proc.returncode != 0:
+                print("Exit code:", proc.returncode)
         else: 
             if os.path.isfile(execution_path+"/analyzer/executable/analyzer"):
-                proc = subprocess.Popen(shlex.split(execution_path+"/analyzer/executable/analyzer"+j+p+" -D "+results+" -F "+facts), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                proc = subprocess.Popen(shlex.split(execution_path+"/analyzer/executable/analyzer"+j+p+l+" -D "+results+" -F "+facts), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 out, err = proc.communicate()
+                if proc.returncode != 0:
+                    print("Exit code:", proc.returncode)
         if out:
             print("Souffle: "+out.decode('utf-8'))
         if err:
