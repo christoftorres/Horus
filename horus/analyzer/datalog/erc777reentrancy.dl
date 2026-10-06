@@ -11,7 +11,7 @@ ERC777Reentrancy(hash, timestamp, caller, callee, amount, asset) :-
   call(step3, hash, "CALL", callee, from, _, amount, _,  _, _, 1),
   !match("0", amount),
   step2 < step3,
-  transaction(hash, _, block, from, _, _, _, _, 1),
+  transaction(hash, _, block, from, _, _, _, _, _, 1),
   block(block, _, _, timestamp),
   asset = "Ether";
 
@@ -24,7 +24,7 @@ ERC777Reentrancy(hash, timestamp, caller, callee, amount, asset) :-
   transfer(step4, hash, _, to, callee, amount),
   !match("0", amount),
   step3 < step4,
-  transaction(hash, _, block, _, _, _, _, _, 1),
+  transaction(hash, _, block, _, _, _, _, _, _, 1),
   block(block, _, _, timestamp),
   asset = "Token".
 .output ERC777Reentrancy

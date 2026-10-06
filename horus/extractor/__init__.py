@@ -293,9 +293,9 @@ class Extractor:
             if transaction["to"] == None:
                 transaction["to"] = ""
             if compress:
-                in_memory_zip.append(facts_folder+"/transaction.facts", "%s\t%d\t%d\t%s\t%s\t%s\t%d\t%d\t%d\r\n" % (transaction["hash"], transaction["transactionIndex"], transaction["blockNumber"], transaction["from"], transaction["to"], transaction["input"].replace("0x", ""), gas_used, transaction["gas"], _status))
+                in_memory_zip.append(facts_folder+"/transaction.facts", "%s\t%d\t%d\t%s\t%s\t%d\t%s\t%d\t%d\t%d\r\n" % (transaction["hash"], transaction["transactionIndex"], transaction["blockNumber"], transaction["from"], transaction["to"], transaction["value"], transaction["input"].replace("0x", ""), gas_used, transaction["gas"], _status))
             else:
-                transaction_facts.write("%s\t%d\t%d\t%s\t%s\t%s\t%d\t%d\t%d\r\n" % (transaction["hash"], transaction["transactionIndex"], transaction["blockNumber"], transaction["from"], transaction["to"], transaction["input"].replace("0x", ""), gas_used, transaction["gas"], _status))
+                transaction_facts.write("%s\t%d\t%d\t%s\t%s\t%d\t%s\t%d\t%d\t%d\r\n" % (transaction["hash"], transaction["transactionIndex"], transaction["blockNumber"], transaction["from"], transaction["to"], transaction["value"], transaction["input"].replace("0x", ""), gas_used, transaction["gas"], _status))
 
         if not compress:
             if facts_to_extract == "" or "def" in facts_to_extract.lower().split(","):

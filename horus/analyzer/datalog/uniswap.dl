@@ -13,6 +13,6 @@ UniswapHack(hash, block, timestamp, caller, callee, attacker, amount, profit) :-
   call(step4, hash, "CALL", callee, attacker, _, profit, _, _, _, 1),
   !match("0", profit),
   step3 < step4,
-  transaction(hash, _, block, attacker, _, _, _, _, 1),
+  transaction(hash, _, block, attacker, _, _, _, _, _, 1),
   block(block, _, _, timestamp).
 .output UniswapHack
