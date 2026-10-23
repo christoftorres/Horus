@@ -182,7 +182,8 @@ class Extractor:
                         _contract = trace[step]["contract"]
                         _from = settings.W3.to_checksum_address("0x"+hex(int(trace[step]["stack"][-4])).replace("0x", "").zfill(40)).lower()
                         _to = settings.W3.to_checksum_address("0x"+hex(int(trace[step]["stack"][-5])).replace("0x", "").zfill(40)).lower()
-                        _value = int(trace[step]["memory"], 16)
+                        _value = "0x%064x" % int(trace[step]["memory"], 16)
+
                         if compress:
                             in_memory_zip.append(facts_folder+"/transfer.facts", "%d\t%s\t%s\t%s\t%s\t%s\r\n" % (step, _transaction_hash, _contract, _from, _to, _value))
                         else:
