@@ -15,6 +15,11 @@ from .data_flow_analysis import TaintRunner
 from .call_flow_analysis import CallFlowAnalysis
 from .in_memory_zip import InMemoryZip
 
+def to_int(value):
+    """Parse a trace value that Geth may return as a decimal or 0x-prefixed hex string."""
+    value = str(value)
+    return int(value, 16) if value.startswith("0x") else int(value)
+
 class Extractor:
     def extract_facts_from_trace(self, facts_folder, trace, step, max_step, gas_used, block, transaction, taint_runner, stats, compress, in_memory_zip, facts_to_extract=""):
         if settings.DEBUG_MODE:
@@ -31,6 +36,7 @@ class Extractor:
                 arithmetic_facts    = open(facts_folder+"/arithmetic.facts",    "a")
             if facts_to_extract == "" or "storage" in facts_to_extract.lower().split(","):
                 storage_facts       = open(facts_folder+"/storage.facts",       "a")
+                sstore_delta_facts  = open(facts_folder+"/sstore_delta.facts",  "a")
             if facts_to_extract == "" or "condition" in facts_to_extract.lower().split(","):
                 condition_facts     = open(facts_folder+"/condition.facts",     "a")
             if facts_to_extract == "" or "transfer" in facts_to_extract.lower().split(","):
@@ -39,7 +45,7 @@ class Extractor:
                 call_facts          = open(facts_folder+"/call.facts",          "a")
             if facts_to_extract == "" or "throw" in facts_to_extract.lower().split(","):
                 throw_facts         = open(facts_folder+"/throw.facts",         "a")
-            if facts_to_extract == "" or "seldestruct" in facts_to_extract.lower().split(","):
+            if facts_to_extract == "" or "selfdestruct" in facts_to_extract.lower().split(","):
                 selfdestruct_facts  = open(facts_folder+"/selfdestruct.facts",  "a")
             if facts_to_extract == "" or "error" in facts_to_extract.lower().split(","):
                 error_facts         = open(facts_folder+"/error.facts",         "a")
@@ -164,6 +170,20 @@ class Extractor:
                         in_memory_zip.append(facts_folder+"/storage.facts", "%d\t%s\t%s\t%s\t%s\t%s\t%s\t%d\r\n" % (step, _opcode, _transaction_hash, _caller, _contract, _storage_index, _value, _depth))
                     else:
                         storage_facts.write("%d\t%s\t%s\t%s\t%s\t%s\t%s\t%d\r\n" % (step, _opcode, _transaction_hash, _caller, _contract, _storage_index, _value, _depth))
+
+                    # SSTORE delta facts: the change this write applies to the slot, using the
+                    # pre-write value the tracer read from EVM state ("old").  All values are
+                    # emitted as 0x + 64 hex digits so that string order equals numeric order.
+                    if _opcode == "SSTORE" and "old" in trace[step]:
+                        _old = to_int(trace[step]["old"])
+                        _new = to_int(_value)
+                        _delta = _new - _old
+                        _direction = "inc" if _delta > 0 else ("dec" if _delta < 0 else "same")
+                        _row = "%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\r\n" % (step, _transaction_hash, _contract, "0x%064x" % to_int(_storage_index), "0x%064x" % _old, "0x%064x" % _new, "0x%064x" % abs(_delta), _direction)
+                        if compress:
+                            in_memory_zip.append(facts_folder+"/sstore_delta.facts", _row)
+                        else:
+                            sstore_delta_facts.write(_row)
 
             # Condition facts
             if facts_to_extract == "" or "condition" in facts_to_extract.lower().split(","):    
@@ -309,6 +329,7 @@ class Extractor:
                 arithmetic_facts.close()
             if facts_to_extract == "" or "storage" in facts_to_extract.lower().split(","):
                 storage_facts.close()
+                sstore_delta_facts.close()
             if facts_to_extract == "" or "condition" in facts_to_extract.lower().split(","):
                 condition_facts.close()
             if facts_to_extract == "" or "transfer" in facts_to_extract.lower().split(","):
@@ -317,7 +338,7 @@ class Extractor:
                 call_facts.close()
             if facts_to_extract == "" or "throw" in facts_to_extract.lower().split(","):
                 throw_facts.close()
-            if facts_to_extract == "" or "seldestruct" in facts_to_extract.lower().split(","):
+            if facts_to_extract == "" or "selfdestruct" in facts_to_extract.lower().split(","):
                 selfdestruct_facts.close()
             if facts_to_extract == "" or "error" in facts_to_extract.lower().split(","):
                 error_facts.close()
@@ -360,6 +381,7 @@ class Extractor:
                 in_memory_zip.append(facts_folder+"/arithmetic.facts", "")
             if facts_to_extract == "" or "storage" in facts_to_extract.lower().split(","):
                 in_memory_zip.append(facts_folder+"/storage.facts", "")
+                in_memory_zip.append(facts_folder+"/sstore_delta.facts", "")
             if facts_to_extract == "" or "condition" in facts_to_extract.lower().split(","):
                 in_memory_zip.append(facts_folder+"/condition.facts", "")
             if facts_to_extract == "" or "transfer" in facts_to_extract.lower().split(","):
@@ -368,7 +390,7 @@ class Extractor:
                 in_memory_zip.append(facts_folder+"/call.facts", "")
             if facts_to_extract == "" or "throw" in facts_to_extract.lower().split(","):
                 in_memory_zip.append(facts_folder+"/throw.facts", "")
-            if facts_to_extract == "" or "seldestruct" in facts_to_extract.lower().split(","):
+            if facts_to_extract == "" or "selfdestruct" in facts_to_extract.lower().split(","):
                 in_memory_zip.append(facts_folder+"/selfdestruct.facts", "")
             if facts_to_extract == "" or "error" in facts_to_extract.lower().split(","):
                 in_memory_zip.append(facts_folder+"/error.facts", "")
@@ -469,6 +491,7 @@ class Extractor:
                 in_memory_zip.append(facts_folder+"/arithmetic.facts", "")
             if facts_to_extract == "" or "storage" in facts_to_extract.lower().split(","):
                 in_memory_zip.append(facts_folder+"/storage.facts", "")
+                in_memory_zip.append(facts_folder+"/sstore_delta.facts", "")
             if facts_to_extract == "" or "condition" in facts_to_extract.lower().split(","):
                 in_memory_zip.append(facts_folder+"/condition.facts", "")
             if facts_to_extract == "" or "transfer" in facts_to_extract.lower().split(","):
@@ -477,7 +500,7 @@ class Extractor:
                 in_memory_zip.append(facts_folder+"/call.facts", "")
             if facts_to_extract == "" or "throw" in facts_to_extract.lower().split(","):
                 in_memory_zip.append(facts_folder+"/throw.facts", "")
-            if facts_to_extract == "" or "seldestruct" in facts_to_extract.lower().split(","):
+            if facts_to_extract == "" or "selfdestruct" in facts_to_extract.lower().split(","):
                 in_memory_zip.append(facts_folder+"/selfdestruct.facts", "")
             if facts_to_extract == "" or "error" in facts_to_extract.lower().split(","):
                 in_memory_zip.append(facts_folder+"/error.facts", "")

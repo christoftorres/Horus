@@ -7,7 +7,8 @@
         this.structLogs.push({"op": log.op.toString(), "stack": [log.stack.peek(1), log.stack.peek(0)], "depth": log.getDepth(), "contract": toHex(log.contract.getAddress()), "error": log.getError(), "pc": log.getPC()});
         break;
       case "SSTORE":
-        this.structLogs.push({"op": log.op.toString(), "stack": [log.stack.peek(1), log.stack.peek(0)], "depth": log.getDepth(), "contract": toHex(log.contract.getAddress()), "error": log.getError(), "pc": log.getPC()});
+        /* "old": the slot's value before this write, read from live EVM state (step runs before the opcode executes). */
+        this.structLogs.push({"op": log.op.toString(), "stack": [log.stack.peek(1), log.stack.peek(0)], "old": toHex(db.getState(log.contract.getAddress(), toWord(log.stack.peek(0).toString(16)))), "depth": log.getDepth(), "contract": toHex(log.contract.getAddress()), "error": log.getError(), "pc": log.getPC()});
         break;
       case "SLOAD":
         this.structLogs.push({"op": log.op.toString(), "stack": [log.stack.peek(0)], "depth": log.getDepth(), "contract": toHex(log.contract.getAddress()), "error": log.getError(), "pc": log.getPC()});
